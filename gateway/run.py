@@ -2849,9 +2849,9 @@ class GatewayRunner:
             thread_meta = self._thread_metadata_for_source(event.source, reply_anchor)
             if self._queue_during_drain_enabled():
                 self._queue_or_replace_pending_event(session_key, event)
-                message = f"⏳ Gateway {self._status_action_gerund()} — queued for the next turn after it comes back."
+                message = t("gateway.gateway_busy_queued", action=self._status_action_gerund())
             else:
-                message = f"⏳ Gateway is {self._status_action_gerund()} and is not accepting another turn right now."
+                message = t("gateway.gateway_busy_blocking", action=self._status_action_gerund())
 
             await adapter._send_with_retry(
                 chat_id=event.source.chat_id,
@@ -2957,20 +2957,11 @@ class GatewayRunner:
 
         status_detail = f" ({', '.join(status_parts)})" if status_parts else ""
         if is_steer_mode:
-            message = (
-                f"⏩ Steered into current run{status_detail}. "
-                f"Your message arrives after the next tool call."
-            )
+            message = t("gateway.steered_into_run", detail=f"{status_detail}. " if status_detail else "")
         elif is_queue_mode:
-            message = (
-                f"⏳ Queued for the next turn{status_detail}. "
-                f"I'll respond once the current task finishes."
-            )
-        else:
-            message = (
-                f"⚡ Interrupting current task{status_detail}. "
-                f"I'll respond to your message shortly."
-            )
+            message = t("gateway.queued_next_turn", detail=f"{status_detail}. " if status_detail else "")
+        elif is_interrupt_mode:
+            message = t("gateway.interrupting_task", detail=f"{status_detail}. " if status_detail else "")
 
         # First-touch onboarding: the very first time a user sends a message
         # while the agent is busy, append a one-time hint explaining the
@@ -7004,9 +6995,9 @@ class GatewayRunner:
                 if self._queue_during_drain_enabled():
                     self._queue_or_replace_pending_event(_quick_key, event)
                 return (
-                    f"⏳ Gateway {self._status_action_gerund()} — queued for the next turn after it comes back."
+                    t("gateway.gateway_busy_queued", action=self._status_action_gerund())
                     if self._queue_during_drain_enabled()
-                    else f"⏳ Gateway is {self._status_action_gerund()} and is not accepting another turn right now."
+                    else t("gateway.gateway_busy_blocking", action=self._status_action_gerund())
                 )
             if self._busy_input_mode == "queue":
                 logger.debug("PRIORITY queue follow-up for session %s", _quick_key)
@@ -7299,7 +7290,7 @@ class GatewayRunner:
             return await self._handle_voice_command(event)
 
         if self._draining:
-            return f"⏳ Gateway is {self._status_action_gerund()} and is not accepting new work right now."
+            return t("gateway.gateway_busy_blocking", action=self._status_action_gerund())
 
         # User-defined quick commands (bypass agent loop, no LLM call)
         if command:
@@ -9563,12 +9554,12 @@ class GatewayRunner:
             return None
 
         if action == "list":
-            lines = ["**Gateway platforms**"]
+            lines = [t("gateway.platform_header")]
             connected = sorted(p.value for p in self.adapters.keys())
             if connected:
-                lines.append("Connected: " + ", ".join(connected))
+                lines.append(t("gateway.platform_connected") + ", ".join(connected))
             else:
-                lines.append("Connected: (none)")
+                lines.append(t("gateway.platform_connected") + t("gateway.platform_none"))
             failed = getattr(self, "_failed_platforms", {}) or {}
             if failed:
                 for p, info in failed.items():
@@ -11363,7 +11354,7 @@ class GatewayRunner:
             if not runtime_kwargs.get("api_key"):
                 await adapter.send(
                     source.chat_id,
-                    f"❌ Background task {task_id} failed: no provider credentials configured.",
+                    t("gateway.bg_task_no_credentials", id=task_id),
                     metadata=_thread_metadata,
                 )
                 return
@@ -11459,7 +11450,7 @@ class GatewayRunner:
                 elif not images and not media_files:
                     await adapter.send(
                         chat_id=source.chat_id,
-                        content=header + "(No response generated)",
+                        content=header + t("gateway.bg_task_no_response"),
                         metadata=_thread_metadata,
                     )
 
@@ -11498,7 +11489,7 @@ class GatewayRunner:
             try:
                 await adapter.send(
                     chat_id=source.chat_id,
-                    content=f"❌ Background task {task_id} failed: {e}",
+                    content=t("gateway.bg_task_failed", id=task_id, error=e),
                     metadata=_thread_metadata,
                 )
             except Exception:
@@ -13214,7 +13205,7 @@ class GatewayRunner:
 
         async def _on_confirm(choice: str):
             if choice == "cancel":
-                return f"🟡 /{command} cancelled. Conversation unchanged."
+                return t("gateway.confirm_cancelled", cmd=command)
             if choice == "always":
                 try:
                     from cli import save_config_value

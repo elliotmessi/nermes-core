@@ -514,9 +514,9 @@ gateway:
   no_response_generated: ⚠️ 处理已完成但未生成回复。可能是临时错误——请重新发送消息。
   gateway_busy_queued: ⏳ 网关正在{action}—已排队，待恢复后处理。
   gateway_busy_blocking: ⏳ 网关正在{action}，当前无法接受新消息。
-  steered_into_run: ⏩ 已加入当前运行{detail}。您的消息将在下一个工具调用后到达。
-  queued_next_turn: ⏳ 已排队等待下一轮{detail}。当前任务完成后将回复您。
-  interrupting_task: ⚡ 正在中断当前任务{detail}。即将回复您的消息。
+  steered_into_run: "⏩ 已加入当前运行{detail}您的消息将在下一个工具调用后到达。"
+  queued_next_turn: "⏳ 已排队等待下一轮{detail}当前任务完成后将回复您。"
+  interrupting_task: "⚡ 正在中断当前任务{detail}即将回复您的消息。"
   shutdown_restart: ⚠️ 网关正在重启—{hint}
   shutdown_interrupted: ⚠️ 网关正在关闭—您的当前任务将被中断。
   shutdown_restart_hint: 重启后发送任意消息,我将尝试从您离开的地方恢复。
