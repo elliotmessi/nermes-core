@@ -159,7 +159,7 @@ def _gateway_provider_error_reply(text: str) -> str:
             "error out of chat; check gateway logs for details or try rephrasing."
         )
     if _GATEWAY_RATE_LIMIT_RE.search(text):
-        return "⏱️ The model provider is rate-limiting requests. Please wait a moment and try again."
+        return t("gateway.provider_rate_limited")
     return (
         "⚠️ The model provider failed after retries. I kept raw provider details "
         "out of chat; check gateway logs for diagnostics."
@@ -1014,12 +1014,12 @@ def _dequeue_pending_event(adapter, session_key: str) -> MessageEvent | None:
     return adapter.get_pending_message(session_key)
 
 
-_INTERRUPT_REASON_STOP = "Stop requested"
-_INTERRUPT_REASON_RESET = "Session reset requested"
-_INTERRUPT_REASON_TIMEOUT = "Execution timed out (inactivity)"
-_INTERRUPT_REASON_SSE_DISCONNECT = "SSE client disconnected"
-_INTERRUPT_REASON_GATEWAY_SHUTDOWN = "Gateway shutting down"
-_INTERRUPT_REASON_GATEWAY_RESTART = "Gateway restarting"
+_INTERRUPT_REASON_STOP = t("gateway.interrupt_stop")
+_INTERRUPT_REASON_RESET = t("gateway.interrupt_reset")
+_INTERRUPT_REASON_TIMEOUT = t("gateway.interrupt_timeout")
+_INTERRUPT_REASON_SSE_DISCONNECT = t("gateway.interrupt_sse_disconnect")
+_INTERRUPT_REASON_GATEWAY_SHUTDOWN = t("gateway.interrupt_shutdown")
+_INTERRUPT_REASON_GATEWAY_RESTART = t("gateway.interrupt_restart")
 
 _CONTROL_INTERRUPT_MESSAGES = frozenset(
     {
@@ -1037,7 +1037,7 @@ def _is_control_interrupt_message(message: Optional[str]) -> bool:
     """Return True when an interrupt message is internal control flow."""
     if not message:
         return False
-    normalized = " ".join(str(message).strip().split()).lower()
+    normalized = t("gateway.media_image", url=url).join(str(message).strip().split()).lower()
     return normalized in _CONTROL_INTERRUPT_MESSAGES
 
 
@@ -1073,7 +1073,7 @@ def _skill_slug_from_frontmatter(skill_md: Path) -> tuple[str | None, str | None
     for line in content[3:end].splitlines():
         line = line.strip()
         if line.startswith("name:"):
-            raw = line.split(":", 1)[1].strip()
+            raw = line.split(t("gateway.media_image", url=url), 1)[1].strip()
             # Strip YAML quote wrappers if present
             if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in {'"', "'"}:
                 raw = raw[1:-1]
@@ -1081,7 +1081,7 @@ def _skill_slug_from_frontmatter(skill_md: Path) -> tuple[str | None, str | None
             break
     if not declared_name:
         return None, None
-    slug = declared_name.lower().replace(" ", "-").replace("_", "-")
+    slug = declared_name.lower().replace(t("gateway.media_image", url=url), "-").replace("_", "-")
     # Mirror _SKILL_INVALID_CHARS and _SKILL_MULTI_HYPHEN from skill_commands
     import re as _re
     slug = _re.sub(r"[^a-z0-9-]", "", slug)
@@ -1125,10 +1125,7 @@ def _check_unavailable_skill(command_name: str) -> str | None:
                 # disabled is keyed by the declared frontmatter name (what
                 # skills.disabled / skills.platform_disabled store).
                 if slug == normalized and declared_name in disabled:
-                    return (
-                        f"The **{command_name}** skill is installed but disabled.\n"
-                        f"Enable it with: `hermes skills config`"
-                    )
+                    return t("gateway.skill_disabled", name=command_name)
 
         # Check optional skills (shipped with repo but not installed)
         from hermes_constants import get_optional_skills_dir
@@ -1146,10 +1143,7 @@ def _check_unavailable_skill(command_name: str) -> str | None:
                     rel = skill_md.parent.relative_to(optional_dir)
                     parts = list(rel.parts)
                     install_path = f"official/{'/'.join(parts)}"
-                    return (
-                        f"The **{command_name}** skill is available but not installed.\n"
-                        f"Install it with: `hermes skills install {install_path}`"
-                    )
+                    return t("gateway.skill_not_installed", name=command_name, path=install_path)
     except Exception:
         pass
     return None
@@ -1254,7 +1248,7 @@ def _parse_session_key(session_key: str) -> "dict | None":
     the suffix may be a user_id (per-user isolation) rather than a
     thread_id, so we leave ``thread_id`` out to avoid mis-routing.
     """
-    parts = session_key.split(":")
+    parts = session_key.split(t("gateway.media_image", url=url))
     if len(parts) >= 5 and parts[0] == "agent" and parts[1] == "main":
         result = {
             "platform": parts[2],
@@ -1324,25 +1318,15 @@ def _normalize_empty_agent_response(
             for p in ("context", "token", "too large", "too long", "exceed", "payload")
         ) or ("400" in error_str and history_len > 50)
         if is_context_failure:
-            return (
-                "⚠️ Session too large for the model's context window.\n"
-                "Use /compact to compress the conversation, or "
-                "/reset to start fresh."
-            )
-        return (
-            f"The request failed: {str(error_detail)[:300]}\n"
-            "Try again or use /reset to start a fresh session."
-        )
+            return t("gateway.session_too_large")
+        return t("gateway.request_failed", error=str(error_detail)[:300])
 
     api_calls = int(agent_result.get("api_calls", 0) or 0)
     if api_calls > 0 and not agent_result.get("interrupted"):
         if agent_result.get("partial"):
             err = agent_result.get("error", "processing incomplete")
-            return f"⚠️ Processing stopped: {str(err)[:200]}. Try again."
-        return (
-            "⚠️ Processing completed but no response was generated. "
-            "This may be a transient error — try sending your message again."
-        )
+            return t("gateway.processing_stopped", error=str(err)[:200])
+        return t("gateway.no_response_generated")
 
     return response
 
@@ -1729,7 +1713,7 @@ class GatewayRunner:
                 continue
             key = str(chat_id)
             # Skip legacy unprefixed keys (warn and skip)
-            if ":" not in key:
+            if t("gateway.media_image", url=url) not in key:
                 logger.warning(
                     "Skipping legacy unprefixed voice mode key %r during migration. "
                     "Re-enable voice mode on that chat to rebuild the prefixed key.",
@@ -2550,7 +2534,7 @@ class GatewayRunner:
             logger.warning("Prefill messages file not found: %s", path)
             return []
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, t("gateway.media_image", url=url), encoding="utf-8") as f:
                 data = json.load(f)
             if not isinstance(data, list):
                 logger.warning("Prefill messages file must contain a JSON array: %s", path)
@@ -2629,7 +2613,7 @@ class GatewayRunner:
                 persist_global = True
             else:
                 value_tokens.append(token)
-        return " ".join(value_tokens).strip().lower(), persist_global
+        return t("gateway.media_image", url=url).join(value_tokens).strip().lower(), persist_global
 
     def _resolve_session_reasoning_config(
         self,
@@ -3454,7 +3438,7 @@ class GatewayRunner:
             )
             return
 
-        cmd = " ".join(shlex.quote(part) for part in hermes_cmd)
+        cmd = t("gateway.media_image", url=url).join(shlex.quote(part) for part in hermes_cmd)
         shell_cmd = (
             f"while kill -0 {current_pid} 2>/dev/null; do sleep 0.2; done; "
             f"{cmd} gateway restart"
@@ -4353,7 +4337,7 @@ class GatewayRunner:
                     # Keys look like "agent:main:telegram:dm:12345" — platform is field [2].
                     _platforms: dict[str, int] = {}
                     for _k, _e in _expired_entries:
-                        _parts = _k.split(":")
+                        _parts = _k.split(t("gateway.media_image", url=url))
                         _plat = _parts[2] if len(_parts) > 2 else "unknown"
                         _platforms[_plat] = _platforms.get(_plat, 0) + 1
                     _plat_summary = ", ".join(
@@ -4368,7 +4352,7 @@ class GatewayRunner:
                     try:
                         try:
                             from hermes_cli.plugins import invoke_hook as _invoke_hook
-                            _parts = key.split(":")
+                            _parts = key.split(t("gateway.media_image", url=url))
                             _platform = _parts[2] if len(_parts) > 2 else ""
                             _invoke_hook(
                                 "on_session_finalize",
@@ -6543,7 +6527,7 @@ class GatewayRunner:
             if cmd in {"approve", "yes"}:
                 response_text = "y"
             elif cmd in {"deny", "no"}:
-                response_text = "n"
+                response_text = t("gateway.media_image", url=url)
             else:
                 _recognized_cmd = None
                 if cmd:
@@ -6578,7 +6562,7 @@ class GatewayRunner:
             # Recognized slash command during a pending update prompt:
             # unblock the detached update subprocess by writing a blank
             # response so ``_gateway_prompt`` returns the prompt's default
-            # (typically a safe "n" / skip) and exits cleanly instead of
+            # (typically a safe t("gateway.media_image", url=url) / skip) and exits cleanly instead of
             # blocking on stdin until the 30-minute watcher timeout.
             # The slash command then falls through to normal dispatch.
             if _recognized_cmd:
@@ -7825,7 +7809,7 @@ class GatewayRunner:
         """Inner handler that runs under the _running_agents sentinel guard."""
         _msg_start_time = time.time()
         _platform_name = source.platform.value if hasattr(source.platform, "value") else str(source.platform)
-        _msg_preview = (event.text or "")[:80].replace("\n", " ")
+        _msg_preview = (event.text or "")[:80].replace("\n", t("gateway.media_image", url=url))
         logger.info(
             "inbound message: platform=%s user=%s chat=%s msg=%r",
             _platform_name, source.user_name or source.user_id or "unknown",
@@ -9490,7 +9474,7 @@ class GatewayRunner:
         )
         if running_processes:
             for proc in running_processes[:12]:
-                cmd = " ".join(str(proc.get("command", "")).split())
+                cmd = t("gateway.media_image", url=url).join(str(proc.get("command", "")).split())
                 if len(cmd) > 90:
                     cmd = cmd[:87] + "..."
                 lines.append(
@@ -10912,7 +10896,7 @@ class GatewayRunner:
         """
         from difflib import SequenceMatcher
 
-        normalized = re.sub(r"\s+", " ", transcript).strip().lower()
+        normalized = re.sub(r"\s+", t("gateway.media_image", url=url), transcript).strip().lower()
         normalized = re.sub(r"[^\w\s]", "", normalized)
         if not normalized:
             return False
@@ -12077,7 +12061,7 @@ class GatewayRunner:
 
     def _sanitize_telegram_topic_title(self, title: str) -> str:
         """Return a Bot API-safe forum topic name from a generated session title."""
-        cleaned = re.sub(r"\s+", " ", str(title or "")).strip()
+        cleaned = re.sub(r"\s+", t("gateway.media_image", url=url), str(title or "")).strip()
         if not cleaned:
             return "Hermes Chat"
         # Telegram forum topic names are short (currently 1-128 chars). Keep
@@ -13658,7 +13642,7 @@ class GatewayRunner:
                     **windows_detach_popen_kwargs(),
                 )
             else:
-                hermes_cmd_str = " ".join(shlex.quote(part) for part in hermes_cmd)
+                hermes_cmd_str = t("gateway.media_image", url=url).join(shlex.quote(part) for part in hermes_cmd)
                 update_cmd = (
                     f"PYTHONUNBUFFERED=1 {hermes_cmd_str} update --gateway"
                     f" > {shlex.quote(str(output_path))} 2>&1; "
