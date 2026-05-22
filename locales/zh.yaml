@@ -349,3 +349,6 @@ gateway:
     session_db_unavailable_prefix: "会话数据库不可用"
     session_not_found:           "数据库中未找到该会话。"
     warn_passthrough:            "⚠️ {error}"
+
+  unknown_command:             "未知命令 `/{command}`"
+  unknown_command_hint:        "输入 /commands 查看可用命令，或去掉前导斜杠作为普通消息发送。"

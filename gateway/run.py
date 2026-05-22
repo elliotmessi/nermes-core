@@ -7470,10 +7470,8 @@ class GatewayRunner:
                             source.platform.value if source.platform else "?",
                         )
                         return (
-                            f"Unknown command `/{command}`. "
-                            f"Type /commands to see what's available, "
-                            f"or resend without the leading slash to send "
-                            f"as a regular message."
+                            f"{t('gateway.unknown_command', command=command)}\n"
+                            f"{t('gateway.unknown_command_hint')}"
                         )
             except Exception as e:
                 logger.debug("Skill command check failed (non-fatal): %s", e)
