@@ -1,14 +1,14 @@
 #!/bin/bash
 # ============================================================================
-# Hermes Agent Installer
+# Nermes Agent 安装程序
 # ============================================================================
-# Installation script for Linux, macOS, and Android/Termux.
-# Uses uv for desktop/server installs and Python's stdlib venv + pip on Termux.
+# Linux、macOS 和 Android/Termux 的安装脚本。
+# 桌面/服务器安装使用 uv，Termux 使用 Python 标准库 venv + pip。
 #
-# Usage:
+# 用法：
 #   curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
 #
-# Or with options:
+# 或带选项：
 #   curl -fsSL ... | bash -s -- --no-venv --skip-setup
 #
 # ============================================================================
@@ -20,11 +20,11 @@ set -e
 # can force pip/entrypoints to import a different checkout than the one being
 # installed, which makes fresh installs appear broken or stale.
 if [ -n "${PYTHONPATH:-}" ]; then
-    echo "⚠ Ignoring inherited PYTHONPATH during install to avoid module shadowing"
+    echo "⚠ 安装期间忽略继承的 PYTHONPATH，以避免模块遮蔽"
     unset PYTHONPATH
 fi
 if [ -n "${PYTHONHOME:-}" ]; then
-    echo "⚠ Ignoring inherited PYTHONHOME during install"
+    echo "⚠ 安装期间忽略继承的 PYTHONHOME"
     unset PYTHONHOME
 fi
 
@@ -129,39 +129,39 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            echo "Hermes Agent Installer"
+            echo "Nermes Agent 安装程序"
             echo ""
-            echo "Usage: install.sh [OPTIONS]"
+            echo "用法：install.sh [选项]"
             echo ""
-            echo "Options:"
-            echo "  --no-venv      Don't create virtual environment"
-            echo "  --skip-setup   Skip interactive setup wizard"
-            echo "  --skip-browser Skip Playwright/Chromium install (browser tools won't work)"
-            echo "  --branch NAME  Git branch to install (default: main)"
-            echo "  --dir PATH     Installation directory"
-            echo "                   default (non-root):  ~/.hermes/hermes-agent"
-            echo "                   default (root, Linux): /usr/local/lib/hermes-agent"
-            echo "  --hermes-home PATH  Data directory (default: ~/.hermes, or \$HERMES_HOME)"
-            echo "  -h, --help     Show this help"
+            echo "选项："
+            echo "  --no-venv      不创建虚拟环境"
+            echo "  --skip-setup   跳过交互式设置向导"
+            echo "  --skip-browser 跳过 Playwright/Chromium 安装（浏览器工具将不可用）"
+            echo "  --branch NAME  要安装的 Git 分支（默认：main）"
+            echo "  --dir PATH     安装目录"
+            echo "                   默认（非 root）：    ~/.hermes/hermes-agent"
+            echo "                   默认（root, Linux）：/usr/local/lib/hermes-agent"
+            echo "  --hermes-home PATH  数据目录（默认：~/.hermes，或 \$HERMES_HOME）"
+            echo "  -h, --help     显示此帮助"
             echo ""
-            echo "Notes:"
-            echo "  When running as root on Linux, Hermes installs the code under"
-            echo "  /usr/local/lib/hermes-agent and links the command into"
-            echo "  /usr/local/bin/hermes (FHS layout — matches Claude Code / Codex CLI)."
-            echo "  Data, config, sessions, and logs still live in \$HERMES_HOME"
-            echo "  (default /root/.hermes).  This keeps Docker bind-mounted volumes"
-            echo "  small and ensures the command is on PATH for all shells."
-            echo "  Existing installs at \$HERMES_HOME/hermes-agent are preserved in-place."
-            echo "  --ensure DEPS  Install only specified deps (comma-separated)"
-            echo "                   Supported: node, browser, ripgrep, ffmpeg"
-            echo "                   Does NOT clone repo or create venv"
-            echo "  --postinstall  Run post-install setup only (for pip users)"
-            echo "                   Installs optional deps + runs hermes setup"
-            echo "                   Does NOT clone repo or create venv"
+            echo "说明："
+            echo "  以 root 身份在 Linux 上运行时，Hermes 将代码安装到"
+            echo "  /usr/local/lib/hermes-agent，并将命令链接到"
+            echo "  /usr/local/bin/hermes（FHS 布局 — 与 Claude Code / Codex CLI 一致）。"
+            echo "  数据、配置、会话和日志仍位于 \$HERMES_HOME"
+            echo "  （默认 /root/.hermes）。这有助于保持 Docker 挂载卷"
+            echo "  简洁，并确保命令在所有 shell 的 PATH 中。"
+            echo "  已安装在 \$HERMES_HOME/hermes-agent 的现有安装将原地保留。"
+            echo "  --ensure DEPS  仅安装指定依赖（逗号分隔）"
+            echo "                  支持：node, browser, ripgrep, ffmpeg"
+            echo "                  不克隆仓库或创建虚拟环境"
+            echo "  --postinstall  仅运行安装后设置（适用于 pip 用户）"
+            echo "                  安装可选依赖 + 运行 hermes setup"
+            echo "                  不克隆仓库或创建虚拟环境"
             exit 0
             ;;
         *)
-            echo "Unknown option: $1"
+            echo "未知选项：$1"
             exit 1
             ;;
     esac
@@ -175,9 +175,9 @@ print_banner() {
     echo ""
     echo -e "${MAGENTA}${BOLD}"
     echo "┌─────────────────────────────────────────────────────────┐"
-    echo "│             ⚕ Hermes Agent Installer                    │"
+    echo "│             ⚕ Nermes Agent 安装程序                     │"
     echo "├─────────────────────────────────────────────────────────┤"
-    echo "│  An open source AI agent by Nous Research.              │"
+    echo "│  Nous Research 开源 AI Agent                           │"
     echo "└─────────────────────────────────────────────────────────┘"
     echo -e "${NC}"
 }
@@ -255,7 +255,7 @@ is_termux() {
 # Always no-op when the user set --dir or $HERMES_INSTALL_DIR.
 resolve_install_layout() {
     if [ "$INSTALL_DIR_EXPLICIT" = true ]; then
-        log_info "Install directory: $INSTALL_DIR (explicit)"
+        log_info "安装目录：$INSTALL_DIR（用户指定）"
         return 0
     fi
 
@@ -271,16 +271,16 @@ resolve_install_layout() {
     if [ "$OS" = "linux" ] && [ "$(id -u)" -eq 0 ]; then
         if [ -d "$HERMES_HOME/hermes-agent/.git" ]; then
             INSTALL_DIR="$HERMES_HOME/hermes-agent"
-            log_info "Existing install detected at $INSTALL_DIR — keeping legacy layout"
-            log_info "  (new root installs use /usr/local/lib/hermes-agent)"
+            log_info "检测到已有安装位于 $INSTALL_DIR — 保留旧版布局"
+            log_info "  （新的 root 安装将使用 /usr/local/lib/hermes-agent）"
             return 0
         fi
         INSTALL_DIR="/usr/local/lib/hermes-agent"
         ROOT_FHS_LAYOUT=true
-        log_info "Root install on Linux — using FHS layout"
-        log_info "  Code:    $INSTALL_DIR"
-        log_info "  Command: /usr/local/bin/hermes"
-        log_info "  Data:    $HERMES_HOME (unchanged)"
+        log_info "Linux 上以 root 安装 — 使用 FHS 布局"
+        log_info "  代码：    $INSTALL_DIR"
+        log_info "  命令：    /usr/local/bin/hermes"
+        log_info "  数据：    $HERMES_HOME（不变）"
         return 0
     fi
 
@@ -345,18 +345,18 @@ detect_os() {
         CYGWIN*|MINGW*|MSYS*)
             OS="windows"
             DISTRO="windows"
-            log_error "Windows detected. Please use the PowerShell installer:"
+            log_error "检测到 Windows。请使用 PowerShell 安装程序："
             log_info "  iex (irm https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.ps1)"
             exit 1
             ;;
         *)
             OS="unknown"
             DISTRO="unknown"
-            log_warn "Unknown operating system"
+            log_warn "未知的操作系统"
             ;;
     esac
 
-    log_success "Detected: $OS ($DISTRO)"
+    log_success "检测到：$OS（$DISTRO）"
 }
 
 # ============================================================================
@@ -365,18 +365,18 @@ detect_os() {
 
 install_uv() {
     if [ "$DISTRO" = "termux" ]; then
-        log_info "Termux detected — using Python's stdlib venv + pip instead of uv"
+        log_info "检测到 Termux — 使用 Python 标准库 venv + pip 替代 uv"
         UV_CMD=""
         return 0
     fi
 
-    log_info "Checking for uv package manager..."
+    log_info "检查 uv 包管理器..."
 
     # Check common locations for uv
     if command -v uv &> /dev/null; then
         UV_CMD="uv"
         UV_VERSION=$($UV_CMD --version 2>/dev/null)
-        log_success "uv found ($UV_VERSION)"
+        log_success "找到 uv（$UV_VERSION）"
         return 0
     fi
 
@@ -384,7 +384,7 @@ install_uv() {
     if [ -x "$HOME/.local/bin/uv" ]; then
         UV_CMD="$HOME/.local/bin/uv"
         UV_VERSION=$($UV_CMD --version 2>/dev/null)
-        log_success "uv found at ~/.local/bin ($UV_VERSION)"
+        log_success "在 ~/.local/bin 找到 uv（$UV_VERSION）"
         return 0
     fi
 
@@ -392,12 +392,12 @@ install_uv() {
     if [ -x "$HOME/.cargo/bin/uv" ]; then
         UV_CMD="$HOME/.cargo/bin/uv"
         UV_VERSION=$($UV_CMD --version 2>/dev/null)
-        log_success "uv found at ~/.cargo/bin ($UV_VERSION)"
+        log_success "在 ~/.cargo/bin 找到 uv（$UV_VERSION）"
         return 0
     fi
 
     # Install uv
-    log_info "Installing uv (fast Python package manager)..."
+    log_info "正在安装 uv（快速 Python 包管理器）..."
     # Capture installer output so a failure shows the user WHY (network,
     # glibc mismatch on old distros, missing curl, ~/.local/bin not
     # writable, disk full, corp proxy / TLS interception, etc.) instead
@@ -410,10 +410,10 @@ install_uv() {
     _uv_install_log="$(mktemp 2>/dev/null || echo "/tmp/hermes-uv-install.$$.log")"
     _uv_installer="$(mktemp 2>/dev/null || echo "/tmp/hermes-uv-installer.$$.sh")"
     if ! curl -LsSf https://astral.sh/uv/install.sh -o "$_uv_installer" 2>"$_uv_install_log"; then
-        log_error "Failed to download uv installer from https://astral.sh/uv/install.sh"
-        log_info "curl output:"
+        log_error "下载 uv 安装程序失败（https://astral.sh/uv/install.sh）"
+        log_info "curl 输出："
         sed 's/^/    /' "$_uv_install_log" >&2
-        log_info "Install manually: https://docs.astral.sh/uv/getting-started/installation/"
+        log_info "手动安装：https://docs.astral.sh/uv/getting-started/installation/"
         rm -f "$_uv_install_log" "$_uv_installer"
         exit 1
     fi
@@ -427,21 +427,21 @@ install_uv() {
         elif command -v uv &> /dev/null; then
             UV_CMD="uv"
         else
-            log_error "uv installer reported success but binary not found on PATH"
-            log_info "Installer output:"
+            log_error "uv 安装程序报告成功，但未在 PATH 中找到可执行文件"
+            log_info "安装程序输出："
             sed 's/^/    /' "$_uv_install_log" >&2
-            log_info "Try adding ~/.local/bin to your PATH and re-running"
+            log_info "尝试将 ~/.local/bin 添加到 PATH 后重新运行"
             rm -f "$_uv_install_log"
             exit 1
         fi
         rm -f "$_uv_install_log"
         UV_VERSION=$($UV_CMD --version 2>/dev/null)
-        log_success "uv installed ($UV_VERSION)"
+        log_success "uv 已安装（$UV_VERSION）"
     else
-        log_error "Failed to install uv"
-        log_info "Installer output:"
+        log_error "安装 uv 失败"
+        log_info "安装程序输出："
         sed 's/^/    /' "$_uv_install_log" >&2
-        log_info "Install manually: https://docs.astral.sh/uv/getting-started/installation/"
+        log_info "手动安装：https://docs.astral.sh/uv/getting-started/installation/"
         rm -f "$_uv_install_log" "$_uv_installer"
         exit 1
     fi
@@ -449,69 +449,69 @@ install_uv() {
 
 check_python() {
     if [ "$DISTRO" = "termux" ]; then
-        log_info "Checking Termux Python..."
+        log_info "检查 Termux Python..."
         if command -v python >/dev/null 2>&1; then
             PYTHON_PATH="$(command -v python)"
             if "$PYTHON_PATH" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
                 PYTHON_FOUND_VERSION="$("$PYTHON_PATH" --version 2>/dev/null)"
-                log_success "Python found: $PYTHON_FOUND_VERSION"
+                log_success "找到 Python：$PYTHON_FOUND_VERSION"
                 return 0
             fi
         fi
 
-        log_info "Installing Python via pkg..."
+        log_info "通过 pkg 安装 Python..."
         pkg install -y python >/dev/null
         PYTHON_PATH="$(command -v python)"
         PYTHON_FOUND_VERSION="$("$PYTHON_PATH" --version 2>/dev/null)"
-        log_success "Python installed: $PYTHON_FOUND_VERSION"
+        log_success "Python 已安装：$PYTHON_FOUND_VERSION"
         return 0
     fi
 
-    log_info "Checking Python $PYTHON_VERSION..."
+    log_info "检查 Python $PYTHON_VERSION..."
 
     # Let uv handle Python — it can download and manage Python versions
     # First check if a suitable Python is already available
     if PYTHON_PATH="$("$UV_CMD" python find "$PYTHON_VERSION" 2>/dev/null)"; then
         PYTHON_FOUND_VERSION="$("$PYTHON_PATH" --version 2>/dev/null)"
-        log_success "Python found: $PYTHON_FOUND_VERSION"
+        log_success "找到 Python：$PYTHON_FOUND_VERSION"
         return 0
     fi
 
     # Python not found — use uv to install it (no sudo needed!)
-    log_info "Python $PYTHON_VERSION not found, installing via uv..."
+    log_info "未找到 Python $PYTHON_VERSION，通过 uv 安装..."
     if "$UV_CMD" python install "$PYTHON_VERSION"; then
         PYTHON_PATH="$("$UV_CMD" python find "$PYTHON_VERSION")"
         PYTHON_FOUND_VERSION="$("$PYTHON_PATH" --version 2>/dev/null)"
-        log_success "Python installed: $PYTHON_FOUND_VERSION"
+        log_success "Python 已安装：$PYTHON_FOUND_VERSION"
     else
-        log_error "Failed to install Python $PYTHON_VERSION"
-        log_info "Install Python $PYTHON_VERSION manually, then re-run this script"
+        log_error "安装 Python $PYTHON_VERSION 失败"
+        log_info "请手动安装 Python $PYTHON_VERSION，然后重新运行此脚本"
         exit 1
     fi
 }
 
 check_git() {
-    log_info "Checking Git..."
+    log_info "检查 Git..."
 
     if command -v git &> /dev/null; then
         GIT_VERSION=$(git --version | awk '{print $3}')
-        log_success "Git $GIT_VERSION found"
+        log_success "找到 Git $GIT_VERSION"
         return 0
     fi
 
-    log_error "Git not found"
+    log_error "未找到 Git"
 
     if [ "$DISTRO" = "termux" ]; then
-        log_info "Installing Git via pkg..."
+        log_info "通过 pkg 安装 Git..."
         pkg install -y git >/dev/null
         if command -v git >/dev/null 2>&1; then
             GIT_VERSION=$(git --version | awk '{print $3}')
-            log_success "Git $GIT_VERSION installed"
+            log_success "Git $GIT_VERSION 已安装"
             return 0
         fi
     fi
 
-    log_info "Please install Git:"
+    log_info "请安装 Git："
 
     case "$OS" in
         linux)
@@ -526,7 +526,7 @@ check_git() {
                     log_info "  sudo pacman -S git"
                     ;;
                 *)
-                    log_info "  Use your package manager to install git"
+                    log_info "  请使用您的包管理器安装 git"
                     ;;
             esac
             ;;
@@ -535,7 +535,7 @@ check_git() {
             ;;
         macos)
             log_info "  xcode-select --install"
-            log_info "  Or: brew install git"
+            log_info "  或：brew install git"
             ;;
     esac
 
@@ -543,11 +543,11 @@ check_git() {
 }
 
 check_node() {
-    log_info "Checking Node.js (for browser tools)..."
+    log_info "检查 Node.js（用于浏览器工具）..."
 
     if command -v node &> /dev/null; then
         local found_ver=$(node --version)
-        log_success "Node.js $found_ver found"
+        log_success "找到 Node.js $found_ver"
         HAS_NODE=true
         return 0
     fi
@@ -556,29 +556,29 @@ check_node() {
     if [ -x "$HERMES_HOME/node/bin/node" ]; then
         export PATH="$HERMES_HOME/node/bin:$PATH"
         local found_ver=$("$HERMES_HOME/node/bin/node" --version)
-        log_success "Node.js $found_ver found (Hermes-managed)"
+        log_success "找到 Node.js $found_ver（Hermes 管理）"
         HAS_NODE=true
         return 0
     fi
 
     if [ "$DISTRO" = "termux" ]; then
-        log_info "Node.js not found — installing Node.js via pkg..."
+        log_info "未找到 Node.js — 通过 pkg 安装 Node.js..."
     else
-        log_info "Node.js not found — installing Node.js $NODE_VERSION LTS..."
+        log_info "未找到 Node.js — 安装 Node.js $NODE_VERSION LTS..."
     fi
     install_node
 }
 
 install_node() {
     if [ "$DISTRO" = "termux" ]; then
-        log_info "Installing Node.js via pkg..."
+        log_info "通过 pkg 安装 Node.js..."
         if pkg install -y nodejs >/dev/null; then
             local installed_ver
             installed_ver=$(node --version 2>/dev/null)
-            log_success "Node.js $installed_ver installed via pkg"
+            log_success "Node.js $installed_ver 已通过 pkg 安装"
             HAS_NODE=true
         else
-            log_warn "Failed to install Node.js via pkg"
+            log_warn "通过 pkg 安装 Node.js 失败"
             HAS_NODE=false
         fi
         return 0
@@ -591,8 +591,8 @@ install_node() {
         aarch64|arm64) node_arch="arm64"  ;;
         armv7l)        node_arch="armv7l" ;;
         *)
-            log_warn "Unsupported architecture ($arch) for Node.js auto-install"
-            log_info "Install manually: https://nodejs.org/en/download/"
+            log_warn "不支持的架构（$arch），无法自动安装 Node.js"
+            log_info "手动安装：https://nodejs.org/en/download/"
             HAS_NODE=false
             return 0
             ;;
@@ -603,7 +603,7 @@ install_node() {
         linux) node_os="linux"  ;;
         macos) node_os="darwin" ;;
         *)
-            log_warn "Unsupported OS for Node.js auto-install"
+            log_warn "不支持的操作系统，无法自动安装 Node.js"
             HAS_NODE=false
             return 0
             ;;
@@ -613,19 +613,19 @@ install_node() {
     local index_url="https://nodejs.org/dist/latest-v${NODE_VERSION}.x/"
     local tarball_name
     tarball_name=$(curl -fsSL "$index_url" \
-        | grep -oE "node-v${NODE_VERSION}\.[0-9]+\.[0-9]+-${node_os}-${node_arch}\.tar\.xz" \
+        | grep -oE "node-v${NODE_VERSION}\\.[0-9]+\\.[0-9]+-${node_os}-${node_arch}\\.tar\\.xz" \
         | head -1)
 
     # Fallback to .tar.gz if .tar.xz not available
     if [ -z "$tarball_name" ]; then
         tarball_name=$(curl -fsSL "$index_url" \
-            | grep -oE "node-v${NODE_VERSION}\.[0-9]+\.[0-9]+-${node_os}-${node_arch}\.tar\.gz" \
+            | grep -oE "node-v${NODE_VERSION}\\.[0-9]+\\.[0-9]+-${node_os}-${node_arch}\\.tar\\.gz" \
             | head -1)
     fi
 
     if [ -z "$tarball_name" ]; then
-        log_warn "Could not find Node.js $NODE_VERSION binary for $node_os-$node_arch"
-        log_info "Install manually: https://nodejs.org/en/download/"
+        log_warn "找不到 $node_os-$node_arch 架构的 Node.js $NODE_VERSION 二进制包"
+        log_info "手动安装：https://nodejs.org/en/download/"
         HAS_NODE=false
         return 0
     fi
@@ -634,15 +634,15 @@ install_node() {
     local tmp_dir
     tmp_dir=$(mktemp -d)
 
-    log_info "Downloading $tarball_name..."
+    log_info "正在下载 $tarball_name..."
     if ! curl -fsSL "$download_url" -o "$tmp_dir/$tarball_name"; then
-        log_warn "Download failed"
+        log_warn "下载失败"
         rm -rf "$tmp_dir"
         HAS_NODE=false
         return 0
     fi
 
-    log_info "Extracting to ~/.hermes/node/..."
+    log_info "解压到 ~/.hermes/node/..."
     if [[ "$tarball_name" == *.tar.xz ]]; then
         tar xf "$tmp_dir/$tarball_name" -C "$tmp_dir"
     else
@@ -653,7 +653,7 @@ install_node() {
     extracted_dir=$(ls -d "$tmp_dir"/node-v* 2>/dev/null | head -1)
 
     if [ ! -d "$extracted_dir" ]; then
-        log_warn "Extraction failed"
+        log_warn "解压失败"
         rm -rf "$tmp_dir"
         HAS_NODE=false
         return 0
@@ -674,42 +674,42 @@ install_node() {
 
     local installed_ver
     installed_ver=$("$HERMES_HOME/node/bin/node" --version 2>/dev/null)
-    log_success "Node.js $installed_ver installed to ~/.hermes/node/"
+    log_success "Node.js $installed_ver 已安装到 ~/.hermes/node/"
     HAS_NODE=true
 }
 
 check_network_prerequisites() {
-    log_info "Checking internet connectivity for package install and web tools..."
+    log_info "检查网络连接（用于包安装和 Web 工具）..."
 
     local url
     local failed=false
     local checks=("https://pypi.org/simple/" "https://duckduckgo.com/")
 
     if ! command -v curl >/dev/null 2>&1; then
-        log_warn "curl not found; skipping connectivity probes"
+        log_warn "未找到 curl；跳过网络连通性检测"
         return 0
     fi
 
     for url in "${checks[@]}"; do
         if ! curl -fsSI --max-time 8 "$url" >/dev/null 2>&1; then
             failed=true
-            log_warn "Could not reach $url"
+            log_warn "无法访问 $url"
         fi
     done
 
     if [ "$failed" = false ]; then
-        log_success "Internet connectivity looks good"
+        log_success "网络连接正常"
         return 0
     fi
 
     if [ "$DISTRO" = "termux" ]; then
-        log_warn "Termux network prerequisites may be incomplete."
-        log_info "Try: pkg install -y ca-certificates curl && pkg update"
-        log_info "If mirrors are stale: termux-change-repo"
-        log_info "Then test: curl -I https://pypi.org/simple/ && curl -I https://duckduckgo.com/"
+        log_warn "Termux 网络前置条件可能不完整。"
+        log_info "尝试：pkg install -y ca-certificates curl && pkg update"
+        log_info "如果镜像过旧：termux-change-repo"
+        log_info "然后测试：curl -I https://pypi.org/simple/ && curl -I https://duckduckgo.com/"
     else
-        log_warn "Network checks failed. Hermes install may complete, but web search and dependency downloads can fail."
-        log_info "Verify internet/DNS and retry if pip install fails."
+        log_warn "网络检查失败。安装仍可完成，但 Web 搜索和依赖下载可能失败。"
+        log_info "如果 pip 安装失败，请检查网络/DNS 后重试。"
     fi
 }
 
@@ -720,18 +720,18 @@ install_system_packages() {
     local need_ripgrep=false
     local need_ffmpeg=false
 
-    log_info "Checking ripgrep (fast file search)..."
+    log_info "检查 ripgrep（快速文件搜索）..."
     if command -v rg &> /dev/null; then
-        log_success "$(rg --version | head -1) found"
+        log_success "$(rg --version | head -1) 已找到"
         HAS_RIPGREP=true
     else
         need_ripgrep=true
     fi
 
-    log_info "Checking ffmpeg (TTS voice messages)..."
+    log_info "检查 ffmpeg（TTS 语音消息）..."
     if command -v ffmpeg &> /dev/null; then
         local ffmpeg_ver=$(ffmpeg -version 2>/dev/null | head -1 | awk '{print $3}')
-        log_success "ffmpeg $ffmpeg_ver found"
+        log_success "ffmpeg $ffmpeg_ver 已找到"
         HAS_FFMPEG=true
     else
         need_ffmpeg=true
@@ -748,16 +748,16 @@ install_system_packages() {
             termux_pkgs+=("ffmpeg")
         fi
 
-        log_info "Installing Termux packages: ${termux_pkgs[*]}"
+        log_info "正在安装 Termux 包：${termux_pkgs[*]}"
         if pkg install -y "${termux_pkgs[@]}" >/dev/null; then
-            [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep installed"
-            [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg installed"
-            log_success "Termux build dependencies installed"
+            [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep 已安装"
+            [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg 已安装"
+            log_success "Termux 构建依赖已安装"
             return 0
         fi
 
-        log_warn "Could not auto-install all Termux packages"
-        log_info "Install manually: pkg install ${termux_pkgs[*]}"
+        log_warn "无法自动安装所有 Termux 包"
+        log_info "手动安装：pkg install ${termux_pkgs[*]}"
         return 0
     fi
 
@@ -770,28 +770,28 @@ install_system_packages() {
     local desc_parts=()
     local pkgs=()
     if [ "$need_ripgrep" = true ]; then
-        desc_parts+=("ripgrep for faster file search")
+        desc_parts+=("ripgrep（用于更快的文件搜索）")
         pkgs+=("ripgrep")
     fi
     if [ "$need_ffmpeg" = true ]; then
-        desc_parts+=("ffmpeg for TTS voice messages")
+        desc_parts+=("ffmpeg（用于 TTS 语音消息）")
         pkgs+=("ffmpeg")
     fi
     local description
-    description=$(IFS=" and "; echo "${desc_parts[*]}")
+    description=$(IFS=" 和 "; echo "${desc_parts[*]}")
 
     # ── macOS: brew ──
     if [ "$OS" = "macos" ]; then
         if command -v brew &> /dev/null; then
-            log_info "Installing ${pkgs[*]} via Homebrew..."
+            log_info "通过 Homebrew 安装 ${pkgs[*]}..."
             if brew install "${pkgs[@]}"; then
-                [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep installed"
-                [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg installed"
+                [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep 已安装"
+                [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg 已安装"
                 return 0
             fi
         fi
-        log_warn "Could not auto-install (brew not found or install failed)"
-        log_info "Install manually: brew install ${pkgs[*]}"
+        log_warn "无法自动安装（未找到 brew 或安装失败）"
+        log_info "手动安装：brew install ${pkgs[*]}"
         return 0
     fi
 
@@ -813,30 +813,30 @@ install_system_packages() {
 
         # Already root — just install
         if [ "$(id -u)" -eq 0 ]; then
-            log_info "Installing ${pkgs[*]}..."
+            log_info "正在安装 ${pkgs[*]}..."
             if $install_cmd; then
-                [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep installed"
-                [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg installed"
+                [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep 已安装"
+                [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg 已安装"
                 return 0
             fi
         # Passwordless sudo — just install
         elif command -v sudo &> /dev/null && sudo -n true 2>/dev/null; then
-            log_info "Installing ${pkgs[*]}..."
+            log_info "正在安装 ${pkgs[*]}..."
             if sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a $install_cmd; then
-                [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep installed"
-                [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg installed"
+                [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep 已安装"
+                [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg 已安装"
                 return 0
             fi
         # sudo needs password — ask once for everything
         elif command -v sudo &> /dev/null; then
             if [ "$IS_INTERACTIVE" = true ]; then
                 echo ""
-                log_info "sudo is needed ONLY to install optional system packages (${pkgs[*]}) via your package manager."
-                log_info "Hermes Agent itself does not require or retain root access."
-                if prompt_yes_no "Install ${description}? (requires sudo)" "no"; then
+                log_info "仅需 sudo 来通过包管理器安装可选系统包（${pkgs[*]}）。"
+                log_info "Hermes Agent 本身不需要也不保留 root 权限。"
+                if prompt_yes_no "安装 ${description}？（需要 sudo）" "no"; then
                     if sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a $install_cmd; then
-                        [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep installed"
-                        [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg installed"
+                        [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep 已安装"
+                        [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg 已安装"
                         return 0
                     fi
                 fi
@@ -847,18 +847,18 @@ install_system_packages() {
                 # in Docker builds where the device node is in the mount namespace
                 # but opening fails with ENXIO. See #16746.
                 echo ""
-                log_info "sudo is needed ONLY to install optional system packages (${pkgs[*]}) via your package manager."
-                log_info "Hermes Agent itself does not require or retain root access."
-                if prompt_yes_no "Install ${description}?" "yes"; then
+                log_info "仅需 sudo 来通过包管理器安装可选系统包（${pkgs[*]}）。"
+                log_info "Hermes Agent 本身不需要也不保留 root 权限。"
+                if prompt_yes_no "安装 ${description}？" "yes"; then
                     if sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a $install_cmd < /dev/tty; then
-                        [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep installed"
-                        [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg installed"
+                        [ "$need_ripgrep" = true ] && HAS_RIPGREP=true && log_success "ripgrep 已安装"
+                        [ "$need_ffmpeg" = true ]  && HAS_FFMPEG=true  && log_success "ffmpeg 已安装"
                         return 0
                     fi
                 fi
             else
-                log_warn "Non-interactive mode and no terminal available — cannot install system packages"
-                log_info "Install manually after setup completes: sudo $install_cmd"
+                log_warn "非交互模式且无可用终端 — 无法安装系统包"
+                log_info "安装完成后手动安装：sudo $install_cmd"
             fi
         fi
     fi
@@ -866,9 +866,9 @@ install_system_packages() {
     # ── Fallback for ripgrep: cargo ──
     if [ "$need_ripgrep" = true ] && [ "$HAS_RIPGREP" = false ]; then
         if command -v cargo &> /dev/null; then
-            log_info "Trying cargo install ripgrep (no sudo needed)..."
+            log_info "尝试通过 cargo 安装 ripgrep（无需 sudo）..."
             if cargo install ripgrep; then
-                log_success "ripgrep installed via cargo"
+                log_success "通过 cargo 安装 ripgrep 成功"
                 HAS_RIPGREP=true
             fi
         fi
@@ -876,25 +876,25 @@ install_system_packages() {
 
     # ── Show manual instructions for anything still missing ──
     if [ "$HAS_RIPGREP" = false ] && [ "$need_ripgrep" = true ]; then
-        log_warn "ripgrep not installed (file search will use grep fallback)"
+        log_warn "ripgrep 未安装（文件搜索将使用 grep 替代）"
         show_manual_install_hint "ripgrep"
     fi
     if [ "$HAS_FFMPEG" = false ] && [ "$need_ffmpeg" = true ]; then
-        log_warn "ffmpeg not installed (TTS voice messages will be limited)"
+        log_warn "ffmpeg 未安装（TTS 语音消息功能将受限）"
         show_manual_install_hint "ffmpeg"
     fi
 }
 
 show_manual_install_hint() {
     local pkg="$1"
-    log_info "To install $pkg manually:"
+    log_info "手动安装 $pkg："
     case "$OS" in
         linux)
             case "$DISTRO" in
                 ubuntu|debian) log_info "  sudo apt install $pkg" ;;
                 fedora)        log_info "  sudo dnf install $pkg" ;;
                 arch)          log_info "  sudo pacman -S $pkg"   ;;
-                *)             log_info "  Use your package manager or visit the project homepage" ;;
+                *)             log_info "  请使用您的包管理器或访问项目主页" ;;
             esac
             ;;
         android)
@@ -909,18 +909,18 @@ show_manual_install_hint() {
 # ============================================================================
 
 clone_repo() {
-    log_info "Installing to $INSTALL_DIR..."
+    log_info "正在安装到 $INSTALL_DIR..."
 
     if [ -d "$INSTALL_DIR" ]; then
         if [ -d "$INSTALL_DIR/.git" ]; then
-            log_info "Existing installation found, updating..."
+            log_info "检测到已有安装，正在更新..."
             cd "$INSTALL_DIR"
 
             local autostash_ref=""
             if [ -n "$(git status --porcelain)" ]; then
                 local stash_name
                 stash_name="hermes-install-autostash-$(date -u +%Y%m%d-%H%M%S)"
-                log_info "Local changes detected, stashing before update..."
+                log_info "检测到本地修改，更新前暂存..."
                 git stash push --include-untracked -m "$stash_name"
                 autostash_ref="stash@{0}"
             fi
@@ -933,9 +933,9 @@ clone_repo() {
                 local restore_now="yes"
                 if [ -t 0 ] && [ -t 1 ]; then
                     echo
-                    log_warn "Local changes were stashed before updating."
-                    log_warn "Restoring them may reapply local customizations onto the updated codebase."
-                    printf "Restore local changes now? [Y/n] "
+                    log_warn "更新前暂存了本地修改。"
+                    log_warn "恢复可能会将本地自定义内容重新应用到更新后的代码上。"
+                    printf "立即恢复本地修改？[Y/n] "
                     read -r restore_answer
                     case "$restore_answer" in
                         ""|y|Y|yes|YES|Yes) restore_now="yes" ;;
@@ -944,42 +944,42 @@ clone_repo() {
                 fi
 
                 if [ "$restore_now" = "yes" ]; then
-                    log_info "Restoring local changes..."
+                    log_info "正在恢复本地修改..."
                     if git stash apply "$autostash_ref"; then
                         git stash drop "$autostash_ref" >/dev/null
-                        log_warn "Local changes were restored on top of the updated codebase."
-                        log_warn "Review git diff / git status if Hermes behaves unexpectedly."
+                        log_warn "本地修改已恢复到更新后的代码库上。"
+                        log_warn "如果 Hermes 行为异常，请检查 git diff / git status。"
                     else
-                        log_error "Update succeeded, but restoring local changes failed. Your changes are still preserved in git stash."
-                        log_info "Resolve manually with: git stash apply $autostash_ref"
+                        log_error "更新成功，但恢复本地修改失败。您的修改仍保存在 git stash 中。"
+                        log_info "手动恢复：git stash apply $autostash_ref"
                         exit 1
                     fi
                 else
-                    log_info "Skipped restoring local changes."
-                    log_info "Your changes are still preserved in git stash."
-                    log_info "Restore manually with: git stash apply $autostash_ref"
+                    log_info "跳过恢复本地修改。"
+                    log_info "您的修改仍保存在 git stash 中。"
+                    log_info "手动恢复：git stash apply $autostash_ref"
                 fi
             fi
         else
-            log_error "Directory exists but is not a git repository: $INSTALL_DIR"
-            log_info "Remove it or choose a different directory with --dir"
+            log_error "目录已存在但不是一个 git 仓库：$INSTALL_DIR"
+            log_info "请删除它或使用 --dir 指定其他目录"
             exit 1
         fi
     else
         # Try SSH first (for private repo access), fall back to HTTPS
         # GIT_SSH_COMMAND disables interactive prompts and sets a short timeout
         # so SSH fails fast instead of hanging when no key is configured.
-        log_info "Trying SSH clone..."
+        log_info "尝试 SSH 克隆..."
         if GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=5" \
            git clone --branch "$BRANCH" "$REPO_URL_SSH" "$INSTALL_DIR" 2>/dev/null; then
-            log_success "Cloned via SSH"
+            log_success "通过 SSH 克隆成功"
         else
             rm -rf "$INSTALL_DIR" 2>/dev/null  # Clean up partial SSH clone
-            log_info "SSH failed, trying HTTPS..."
+            log_info "SSH 失败，尝试 HTTPS..."
             if git clone --branch "$BRANCH" "$REPO_URL_HTTPS" "$INSTALL_DIR"; then
-                log_success "Cloned via HTTPS"
+                log_success "通过 HTTPS 克隆成功"
             else
-                log_error "Failed to clone repository"
+                log_error "克隆仓库失败"
                 exit 1
             fi
         fi
@@ -987,43 +987,43 @@ clone_repo() {
 
     cd "$INSTALL_DIR"
 
-    log_success "Repository ready"
+    log_success "仓库已就绪"
 }
 
 setup_venv() {
     if [ "$USE_VENV" = false ]; then
-        log_info "Skipping virtual environment (--no-venv)"
+        log_info "跳过虚拟环境（--no-venv）"
         return 0
     fi
 
     if [ "$DISTRO" = "termux" ]; then
-        log_info "Creating virtual environment with Termux Python..."
+        log_info "使用 Termux Python 创建虚拟环境..."
 
         if [ -d "venv" ]; then
-            log_info "Virtual environment already exists, recreating..."
+            log_info "虚拟环境已存在，正在重新创建..."
             rm -rf venv
         fi
 
         "$PYTHON_PATH" -m venv venv
-        log_success "Virtual environment ready ($(./venv/bin/python --version 2>/dev/null))"
+        log_success "虚拟环境已就绪（$(./venv/bin/python --version 2>/dev/null)）"
         return 0
     fi
 
-    log_info "Creating virtual environment with Python $PYTHON_VERSION..."
+    log_info "使用 Python $PYTHON_VERSION 创建虚拟环境..."
 
     if [ -d "venv" ]; then
-        log_info "Virtual environment already exists, recreating..."
+        log_info "虚拟环境已存在，正在重新创建..."
         rm -rf venv
     fi
 
     # uv creates the venv and pins the Python version in one step
     $UV_CMD venv venv --python "$PYTHON_VERSION"
 
-    log_success "Virtual environment ready (Python $PYTHON_VERSION)"
+    log_success "虚拟环境已就绪（Python $PYTHON_VERSION）"
 }
 
 install_deps() {
-    log_info "Installing dependencies..."
+    log_info "正在安装依赖..."
 
     if [ "$DISTRO" = "termux" ]; then
         if [ "$USE_VENV" = true ]; then
@@ -1039,7 +1039,7 @@ install_deps() {
                 ANDROID_API_LEVEL=24
             fi
             export ANDROID_API_LEVEL
-            log_info "Using ANDROID_API_LEVEL=$ANDROID_API_LEVEL for Android wheel builds"
+            log_info "使用 ANDROID_API_LEVEL=$ANDROID_API_LEVEL 构建 Android wheel"
         fi
 
         "$PIP_PYTHON" -m pip install --upgrade pip setuptools wheel >/dev/null
@@ -1050,33 +1050,33 @@ install_deps() {
         # sdist with a one-line marker patch (Linux source path is fine on
         # Android).  Stopgap until psutil#2762 ships upstream.
         if "$PIP_PYTHON" -c 'import sys; raise SystemExit(0 if sys.platform == "android" else 1)' 2>/dev/null; then
-            log_info "Android Python detected: prebuilding psutil compatibility shim..."
+            log_info "检测到 Android Python：正在预构建 psutil 兼容性补丁..."
             if ! "$PIP_PYTHON" "$INSTALL_DIR/scripts/install_psutil_android.py" --pip "$PIP_PYTHON -m pip"; then
-                log_warn "psutil Android prebuild failed — package install will likely fail next."
-                log_info "Workaround: manually rerun 'python scripts/install_psutil_android.py' once your toolchain is set up."
+                log_warn "psutil Android 预构建失败 — 下一步包安装可能失败。"
+                log_info "解决方法：工具链就绪后，手动重新运行 'python scripts/install_psutil_android.py'"
             fi
         fi
 
         # Try the broad Termux profile first (best-effort "install all" for Android),
         # then fall back to the conservative Termux baseline, then base package.
         if ! "$PIP_PYTHON" -m pip install -e '.[termux-all]' -c constraints-termux.txt; then
-            log_warn "Termux broad profile (.[termux-all]) failed, trying baseline Termux profile..."
+            log_warn "Termux 宽泛配置（.[termux-all]）失败，尝试基础 Termux 配置..."
             if ! "$PIP_PYTHON" -m pip install -e '.[termux]' -c constraints-termux.txt; then
-                log_warn "Termux baseline profile (.[termux]) failed, trying base install..."
+                log_warn "Termux 基础配置（.[termux]）失败，尝试基础安装..."
                 if ! "$PIP_PYTHON" -m pip install -e '.' -c constraints-termux.txt; then
-                    log_error "Package installation failed on Termux."
-                    log_info "Ensure these packages are installed: pkg install clang rust make pkg-config libffi openssl ca-certificates curl"
-                    log_info "Then re-run: cd $INSTALL_DIR && python -m pip install -e '.[termux-all]' -c constraints-termux.txt"
+                    log_error "Termux 上的包安装失败。"
+                    log_info "请确保已安装这些包：pkg install clang rust make pkg-config libffi openssl ca-certificates curl"
+                    log_info "然后重新运行：cd $INSTALL_DIR && python -m pip install -e '.[termux-all]' -c constraints-termux.txt"
                     exit 1
                 fi
             fi
         fi
 
-        log_success "Main package installed"
-        log_info "Termux note: matrix e2ee and local faster-whisper extras are excluded from .[termux-all] due to upstream Android wheel/toolchain blockers."
-        log_info "Termux note: browser/WhatsApp tooling is not installed by default; see the Termux guide for optional follow-up steps."
+        log_success "主包已安装"
+        log_info "Termux 说明：matrix e2ee 和本地 faster-whisper 附加功能已从 .[termux-all] 中排除，因为上游 Android wheel/工具链存在阻塞问题。"
+        log_info "Termux 说明：默认不安装浏览器/WhatsApp 工具；请参阅 Termux 指南中的可选后续步骤。"
 
-        log_success "All dependencies installed"
+        log_success "所有依赖已安装"
         return 0
     fi
 
@@ -1096,17 +1096,17 @@ install_deps() {
             fi
         done
         if [ "$need_build_tools" = true ]; then
-            log_info "Some build tools may be needed for Python packages..."
+            log_info "Python 包可能需要一些构建工具..."
             if command -v sudo &> /dev/null; then
                 if sudo -n true 2>/dev/null; then
                     sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get install -y -qq build-essential python3-dev libffi-dev >/dev/null 2>&1 || true
-                    log_success "Build tools installed"
+                    log_success "构建工具已安装"
                 else
-                    log_info "sudo is needed ONLY to install build tools (build-essential, python3-dev, libffi-dev) via apt."
-                    log_info "Hermes Agent itself does not require or retain root access."
-                    if prompt_yes_no "Install build tools?" "yes"; then
+                    log_info "仅需 sudo 来通过 apt 安装构建工具（build-essential, python3-dev, libffi-dev）。"
+                    log_info "Hermes Agent 本身不需要也不保留 root 权限。"
+                    if prompt_yes_no "安装构建工具？" "yes"; then
                         sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get install -y -qq build-essential python3-dev libffi-dev >/dev/null 2>&1 || true
-                        log_success "Build tools installed"
+                        log_success "构建工具已安装"
                     fi
                 fi
             fi
@@ -1126,9 +1126,9 @@ install_deps() {
     # lockfile is stale, missing, or out-of-sync with the current
     # extras spec, NOT because they're equivalent in posture.
     if [ -f "uv.lock" ]; then
-        log_info "Trying tier: hash-verified (uv.lock) ..."
-        log_info "(this resolves + downloads the curated [all] set — first run on a"
-        log_info " fresh venv can take 1-5 minutes; uv prints progress below)"
+        log_info "尝试层级：哈希验证（uv.lock）..."
+        log_info "（这将解析并下载精选的 [all] 依赖集——在全新虚拟环境上首次运行"
+        log_info " 可能需要 1-5 分钟；uv 会在下方打印进度）"
         # Stream uv's progress directly to the user instead of swallowing
         # it with `2>"$(mktemp)"`.  Two reasons:
         #   1. `--extra all --locked` against a fresh venv has to pull
@@ -1151,13 +1151,13 @@ install_deps() {
         # uv's own progress UI handles TTY detection and downgrades
         # gracefully when stdout/stderr aren't terminals.
         if UV_PROJECT_ENVIRONMENT="$INSTALL_DIR/venv" $UV_CMD sync --extra all --locked; then
-            log_success "Main package installed (hash-verified via uv.lock)"
-            log_success "All dependencies installed"
+            log_success "主包已安装（通过 uv.lock 哈希验证）"
+            log_success "所有依赖已安装"
             return 0
         fi
-        log_warn "uv.lock sync failed (see uv output above), falling back to PyPI resolve..."
+        log_warn "uv.lock 同步失败（见上方 uv 输出），回退到 PyPI 解析..."
     else
-        log_info "uv.lock not found — falling back to PyPI resolve (no hash verification)"
+        log_info "未找到 uv.lock — 回退到 PyPI 解析（无哈希验证）"
     fi
 
     # Multi-tier fallback. The point of the tiers is that ONE compromised
@@ -1204,7 +1204,7 @@ except Exception as e:
 PY
     )"
     if [ -z "$_ALL_EXTRAS_CSV" ]; then
-        log_warn "Could not parse [all] from pyproject.toml; falling back to .[all] only."
+        log_warn "无法从 pyproject.toml 解析 [all] 依赖；仅回退到 .[all]。"
         _ALL_EXTRAS_CSV=""
     fi
 
@@ -1230,14 +1230,14 @@ PY
 
     install_tier() {
         local name="$1"; local spec="$2"
-        log_info "Trying tier: $name ..."
+        log_info "尝试层级：$name ..."
         if $UV_CMD pip install -e "$spec" 2>"$ALL_INSTALL_LOG"; then
-            log_success "Main package installed ($name)"
+            log_success "主包已安装（$name）"
             _installed=true
             _tier_name="$name"
             return 0
         fi
-        log_warn "Tier '$name' failed. Top of pip output:"
+        log_warn "层级 '$name' 失败。pip 输出顶部："
         head -5 "$ALL_INSTALL_LOG" | sed 's/^/    /' >&2
         return 1
     }
@@ -1249,44 +1249,44 @@ PY
     rm -f "$ALL_INSTALL_LOG"
 
     if [ "$_installed" = false ]; then
-        log_error "Package installation failed even with no extras."
-        log_info "Check that build tools are installed: sudo apt install build-essential python3-dev"
-        log_info "Then re-run: cd $INSTALL_DIR && uv pip install -e '.[all]'"
+        log_error "即使没有附加功能，包安装也失败了。"
+        log_info "请检查是否已安装构建工具：sudo apt install build-essential python3-dev"
+        log_info "然后重新运行：cd $INSTALL_DIR && uv pip install -e '.[all]'"
         exit 1
     fi
 
     if [ "$_tier_name" != "all (with RL/matrix extras)" ]; then
-        log_warn "Note: installed via fallback tier ($_tier_name)."
-        log_info "Some optional features may be missing. After resolving any"
-        log_info "PyPI/network issue, re-run: $UV_CMD pip install -e '.[all]'"
+        log_warn "注意：通过回退层级安装（$_tier_name）。"
+        log_info "某些可选功能可能缺失。解决 PyPI/网络问题后，"
+        log_info "重新运行：$UV_CMD pip install -e '.[all]'"
     fi
 
-    log_success "Main package installed"
+    log_success "主包已安装"
 
-    log_success "All dependencies installed"
+    log_success "所有依赖已安装"
 }
 
 setup_path() {
-    log_info "Setting up hermes command..."
+    log_info "正在设置 hermes 命令..."
 
     if [ "$USE_VENV" = true ]; then
         HERMES_BIN="$INSTALL_DIR/venv/bin/hermes"
     else
         HERMES_BIN="$(which hermes 2>/dev/null || echo "")"
         if [ -z "$HERMES_BIN" ]; then
-            log_warn "hermes not found on PATH after install"
+            log_warn "安装后未在 PATH 中找到 hermes"
             return 0
         fi
     fi
 
     # Verify the entry point script was actually generated
     if [ ! -x "$HERMES_BIN" ]; then
-        log_warn "hermes entry point not found at $HERMES_BIN"
-        log_info "This usually means the pip install didn't complete successfully."
+        log_warn "在 $HERMES_BIN 未找到 hermes 入口点"
+        log_info "这通常意味着 pip 安装未成功完成。"
         if [ "$DISTRO" = "termux" ]; then
-            log_info "Try: cd $INSTALL_DIR && python -m pip install -e '.[termux-all]' -c constraints-termux.txt"
+            log_info "尝试：cd $INSTALL_DIR && python -m pip install -e '.[termux-all]' -c constraints-termux.txt"
         else
-            log_info "Try: cd $INSTALL_DIR && uv pip install -e '.[all]'"
+            log_info "尝试：cd $INSTALL_DIR && uv pip install -e '.[all]'"
         fi
         return 0
     fi
@@ -1311,12 +1311,12 @@ unset PYTHONHOME
 exec "$HERMES_BIN" "\$@"
 EOF
     chmod +x "$command_link_dir/hermes"
-    log_success "Installed hermes launcher → $command_link_display_dir/hermes"
+    log_success "hermes 启动器已安装 → $command_link_display_dir/hermes"
 
     if [ "$DISTRO" = "termux" ]; then
         export PATH="$command_link_dir:$PATH"
-        log_info "$command_link_display_dir is the native Termux command path"
-        log_success "hermes command ready"
+        log_info "$command_link_display_dir 是原生的 Termux 命令路径"
+        log_success "hermes 命令已就绪"
         return 0
     fi
 
@@ -1333,14 +1333,14 @@ EOF
         # which is the exact scenario where RHEL root loses /usr/local/bin.
         if env -i HOME="$HOME" TERM="${TERM:-dumb}" bash -i -c 'command -v hermes' \
                 >/dev/null 2>&1; then
-            log_info "/usr/local/bin is already on PATH for all shells"
-            log_success "hermes command ready"
+            log_info "/usr/local/bin 已经在所有 shell 的 PATH 中"
+            log_success "hermes 命令已就绪"
             return 0
         fi
 
-        log_info "hermes not on PATH in non-login shells (common on RHEL-family)"
+        log_info "hermes 在非登录 shell 中不在 PATH 上（RHEL 系列常见）"
         PATH_LINE='export PATH="/usr/local/bin:$PATH"'
-        PATH_COMMENT='# Hermes Agent — ensure /usr/local/bin is on PATH (RHEL non-login shells)'
+        PATH_COMMENT='# Hermes Agent — 确保 /usr/local/bin 在 PATH 中（RHEL 非登录 shell）'
         for SHELL_CONFIG in "$HOME/.bashrc" "$HOME/.bash_profile"; do
             [ -f "$SHELL_CONFIG" ] || continue
             if ! grep -v '^[[:space:]]*#' "$SHELL_CONFIG" 2>/dev/null \
@@ -1348,10 +1348,10 @@ EOF
                 echo "" >> "$SHELL_CONFIG"
                 echo "$PATH_COMMENT" >> "$SHELL_CONFIG"
                 echo "$PATH_LINE" >> "$SHELL_CONFIG"
-                log_success "Added /usr/local/bin to PATH in $SHELL_CONFIG"
+                log_success "已将 /usr/local/bin 添加到 $SHELL_CONFIG 的 PATH 中"
             fi
         done
-        log_success "hermes command ready"
+        log_success "hermes 命令已就绪"
         return 0
     fi
 
@@ -1397,9 +1397,9 @@ EOF
         for SHELL_CONFIG in "${SHELL_CONFIGS[@]}"; do
             if ! grep -v '^[[:space:]]*#' "$SHELL_CONFIG" 2>/dev/null | grep -qE 'PATH=.*\.local/bin'; then
                 echo "" >> "$SHELL_CONFIG"
-                echo "# Hermes Agent — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
+                echo "# Hermes Agent — 确保 ~/.local/bin 在 PATH 中" >> "$SHELL_CONFIG"
                 echo "$PATH_LINE" >> "$SHELL_CONFIG"
-                log_success "Added ~/.local/bin to PATH in $SHELL_CONFIG"
+                log_success "已将 ~/.local/bin 添加到 $SHELL_CONFIG 的 PATH 中"
             fi
         done
 
@@ -1407,28 +1407,28 @@ EOF
         if [ "$IS_FISH" = "true" ]; then
             if ! grep -q 'fish_add_path.*\.local/bin' "$FISH_CONFIG" 2>/dev/null; then
                 echo "" >> "$FISH_CONFIG"
-                echo "# Hermes Agent — ensure ~/.local/bin is on PATH" >> "$FISH_CONFIG"
+                echo "# Hermes Agent — 确保 ~/.local/bin 在 PATH 中" >> "$FISH_CONFIG"
                 echo 'fish_add_path "$HOME/.local/bin"' >> "$FISH_CONFIG"
-                log_success "Added ~/.local/bin to PATH in $FISH_CONFIG"
+                log_success "已将 ~/.local/bin 添加到 $FISH_CONFIG 的 PATH 中"
             fi
         fi
 
         if [ "$IS_FISH" = "false" ] && [ ${#SHELL_CONFIGS[@]} -eq 0 ]; then
-            log_warn "Could not detect shell config file to add ~/.local/bin to PATH"
-            log_info "Add manually: $PATH_LINE"
+            log_warn "无法检测到 shell 配置文件以将 ~/.local/bin 添加到 PATH"
+            log_info "手动添加：$PATH_LINE"
         fi
     else
-        log_info "~/.local/bin already on PATH"
+        log_info "~/.local/bin 已在 PATH 中"
     fi
 
     # Export for current session so hermes works immediately
     export PATH="$command_link_dir:$PATH"
 
-    log_success "hermes command ready"
+    log_success "hermes 命令已就绪"
 }
 
 copy_config_templates() {
-    log_info "Setting up configuration files..."
+    log_info "正在设置配置文件..."
 
     # Create ~/.hermes directory structure (config at top level, code in subdir)
     mkdir -p "$HERMES_HOME"/{cron,sessions,logs,pairing,hooks,image_cache,audio_cache,memories,skills}
@@ -1437,13 +1437,13 @@ copy_config_templates() {
     if [ ! -f "$HERMES_HOME/.env" ]; then
         if [ -f "$INSTALL_DIR/.env.example" ]; then
             cp "$INSTALL_DIR/.env.example" "$HERMES_HOME/.env"
-            log_success "Created ~/.hermes/.env from template"
+            log_success "已从模板创建 ~/.hermes/.env"
         else
             touch "$HERMES_HOME/.env"
-            log_success "Created ~/.hermes/.env"
+            log_success "已创建 ~/.hermes/.env"
         fi
     else
-        log_info "~/.hermes/.env already exists, keeping it"
+        log_info "~/.hermes/.env 已存在，保持不变"
     fi
     # Restrict .env permissions — this file holds API keys and tokens.
     # 0600 ensures only the file owner can read/write, matching standard
@@ -1455,10 +1455,10 @@ copy_config_templates() {
     if [ ! -f "$HERMES_HOME/config.yaml" ]; then
         if [ -f "$INSTALL_DIR/cli-config.yaml.example" ]; then
             cp "$INSTALL_DIR/cli-config.yaml.example" "$HERMES_HOME/config.yaml"
-            log_success "Created ~/.hermes/config.yaml from template"
+            log_success "已从模板创建 ~/.hermes/config.yaml"
         fi
     else
-        log_info "~/.hermes/config.yaml already exists, keeping it"
+        log_info "~/.hermes/config.yaml 已存在，保持不变"
     fi
 
     # Create SOUL.md if it doesn't exist (global persona file)
@@ -1480,20 +1480,20 @@ This file is loaded fresh each message -- no restart needed.
 Delete the contents (or this file) to use the default personality.
 -->
 SOUL_EOF
-        log_success "Created ~/.hermes/SOUL.md (edit to customize personality)"
+        log_success "已创建 ~/.hermes/SOUL.md（编辑以自定义个性）"
     fi
 
-    log_success "Configuration directory ready: ~/.hermes/"
+    log_success "配置目录已就绪：~/.hermes/"
 
     # Seed bundled skills into ~/.hermes/skills/ (manifest-based, one-time per skill)
-    log_info "Syncing bundled skills to ~/.hermes/skills/ ..."
+    log_info "正在同步内置技能到 ~/.hermes/skills/ ..."
     if "$INSTALL_DIR/venv/bin/python" "$INSTALL_DIR/tools/skills_sync.py" 2>/dev/null; then
-        log_success "Skills synced to ~/.hermes/skills/"
+        log_success "技能已同步到 ~/.hermes/skills/"
     else
         # Fallback: simple directory copy if Python sync fails
         if [ -d "$INSTALL_DIR/skills" ] && [ ! "$(ls -A "$HERMES_HOME/skills/" 2>/dev/null | grep -v '.bundled_manifest')" ]; then
             cp -r "$INSTALL_DIR/skills/"* "$HERMES_HOME/skills/" 2>/dev/null || true
-            log_success "Skills copied to ~/.hermes/skills/"
+            log_success "技能已复制到 ~/.hermes/skills/"
         fi
     fi
 }
@@ -1564,7 +1564,7 @@ configure_browser_env_from_system_browser() {
     fi
 
     if grep -q '^AGENT_BROWSER_EXECUTABLE_PATH=' "$env_file" 2>/dev/null; then
-        log_info "AGENT_BROWSER_EXECUTABLE_PATH already configured"
+        log_info "AGENT_BROWSER_EXECUTABLE_PATH 已配置"
         return 0
     fi
 
@@ -1573,46 +1573,46 @@ configure_browser_env_from_system_browser() {
         echo "# Hermes Agent browser tools — use the system Chrome/Chromium binary."
         echo "AGENT_BROWSER_EXECUTABLE_PATH=$browser_path"
     } >> "$env_file"
-    log_success "Configured browser tools to use $browser_path"
+    log_success "已将浏览器工具配置为使用 $browser_path"
 }
 
 install_node_deps() {
     if [ "$HAS_NODE" = false ]; then
-        log_info "Skipping Node.js dependencies (Node not installed)"
+        log_info "跳过 Node.js 依赖（Node 未安装）"
         return 0
     fi
 
     if [ "$DISTRO" = "termux" ]; then
-        log_info "Skipping automatic Node/browser dependency setup on Termux"
-        log_info "Browser automation is not part of the tested Termux install path yet."
-        log_info "If you want to experiment manually later, run: cd $INSTALL_DIR && npm install"
+        log_info "跳过 Termux 上的自动 Node/浏览器依赖设置"
+        log_info "浏览器自动化尚不属于经过测试的 Termux 安装路径。"
+        log_info "如果以后想手动尝试，运行：cd $INSTALL_DIR && npm install"
         return 0
     fi
 
     if [ -f "$INSTALL_DIR/package.json" ]; then
-        log_info "Installing Node.js dependencies (browser tools)..."
+        log_info "正在安装 Node.js 依赖（浏览器工具）..."
         cd "$INSTALL_DIR"
         npm install --silent 2>/dev/null || {
-            log_warn "npm install failed (browser tools may not work)"
+            log_warn "npm install 失败（浏览器工具可能无法工作）"
         }
-        log_success "Node.js dependencies installed"
+        log_success "Node.js 依赖已安装"
 
         # Install Playwright browser + system dependencies.
         # Playwright's --with-deps only supports apt-based systems natively.
         # For Arch/Manjaro we install the system libs via pacman first.
         # Other systems must install Chromium dependencies manually.
         if [ "$SKIP_BROWSER" = true ]; then
-            log_info "Skipping Playwright/Chromium install (--skip-browser)"
-            log_info "Browser tools will be unavailable until you run manually:"
+            log_info "跳过 Playwright/Chromium 安装（--skip-browser）"
+            log_info "浏览器工具将不可用，直到您手动运行："
             log_info "  cd $INSTALL_DIR && npx playwright install chromium"
-            log_info "On apt-based systems, an admin also needs to run:"
+            log_info "在 apt 系统上，管理员还需要运行："
             log_info "  sudo npx playwright install-deps chromium"
         else
-        log_info "Installing browser engine (Playwright Chromium)..."
+        log_info "正在安装浏览器引擎（Playwright Chromium）..."
         DETECTED_BROWSER_EXECUTABLE="$(find_system_browser 2>/dev/null || true)"
         if [ -n "$DETECTED_BROWSER_EXECUTABLE" ]; then
-            log_success "Found system Chrome/Chromium at $DETECTED_BROWSER_EXECUTABLE"
-            log_info "Skipping Playwright browser download; Hermes will use the system browser."
+            log_success "在 $DETECTED_BROWSER_EXECUTABLE 找到系统 Chrome/Chromium"
+            log_info "跳过 Playwright 浏览器下载；Hermes 将使用系统浏览器。"
         else
             case "$DISTRO" in
                 ubuntu|debian|raspbian|pop|linuxmint|elementary|zorin|kali|parrot)
@@ -1624,26 +1624,26 @@ install_node_deps() {
                     # to the browser-only install in that case, and print the
                     # exact command the admin needs to run separately.
                     if [ "$(id -u)" -eq 0 ] || (command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null); then
-                        log_info "Installing Playwright Chromium with system dependencies..."
+                        log_info "正在安装 Playwright Chromium 及系统依赖..."
                         cd "$INSTALL_DIR" && run_browser_install_with_timeout 600 npx playwright install --with-deps chromium 2>/dev/null || {
-                            log_warn "Playwright browser installation failed — browser tools will not work."
-                            log_warn "Try running manually: cd $INSTALL_DIR && npx playwright install --with-deps chromium"
+                            log_warn "Playwright 浏览器安装失败 — 浏览器工具将无法工作。"
+                            log_warn "尝试手动运行：cd $INSTALL_DIR && npx playwright install --with-deps chromium"
                         }
                     else
-                        log_warn "No sudo available — skipping system-library install (--with-deps)."
-                        log_info "Ask an administrator to run, one time, as root:"
+                        log_warn "没有可用的 sudo — 跳过系统库安装（--with-deps）。"
+                        log_info "请管理员以 root 身份运行一次："
                         log_info "  sudo npx playwright install-deps chromium"
-                        log_info "  (from $INSTALL_DIR, after Node.js deps are installed)"
-                        log_info "Installing Chromium binary into this user's Playwright cache..."
+                        log_info "  （从 $INSTALL_DIR 目录，Node.js 依赖安装后）"
+                        log_info "正在将 Chromium 二进制包安装到当前用户的 Playwright 缓存..."
                         cd "$INSTALL_DIR" && run_browser_install_with_timeout 600 npx playwright install chromium 2>/dev/null || {
-                            log_warn "Playwright browser installation failed — browser tools will not work."
-                            log_warn "Try running manually: cd $INSTALL_DIR && npx playwright install chromium"
+                            log_warn "Playwright 浏览器安装失败 — 浏览器工具将无法工作。"
+                            log_warn "尝试手动运行：cd $INSTALL_DIR && npx playwright install chromium"
                         }
                     fi
                     ;;
                 arch|manjaro|cachyos|endeavouros|garuda)
                     if command -v pacman &> /dev/null; then
-                        log_info "Arch-family distro detected — installing Chromium system dependencies via pacman..."
+                        log_info "检测到 Arch 系列发行版 — 通过 pacman 安装 Chromium 系统依赖..."
                         if command -v sudo &> /dev/null && sudo -n true 2>/dev/null; then
                             sudo NEEDRESTART_MODE=a pacman -S --noconfirm --needed \
                                 nss atk at-spi2-core cups libdrm libxkbcommon mesa pango cairo alsa-lib >/dev/null 2>&1 || true
@@ -1651,51 +1651,51 @@ install_node_deps() {
                             pacman -S --noconfirm --needed \
                                 nss atk at-spi2-core cups libdrm libxkbcommon mesa pango cairo alsa-lib >/dev/null 2>&1 || true
                         else
-                            log_warn "Cannot install browser deps without sudo. Run manually:"
+                            log_warn "没有 sudo 无法安装浏览器依赖。手动运行："
                             log_warn "  sudo pacman -S nss atk at-spi2-core cups libdrm libxkbcommon mesa pango cairo alsa-lib"
                         fi
                     fi
                     cd "$INSTALL_DIR" && run_browser_install_with_timeout 600 npx playwright install chromium 2>/dev/null || {
-                        log_warn "Playwright browser installation failed — browser tools will not work."
+                        log_warn "Playwright 浏览器安装失败 — 浏览器工具将无法工作。"
                     }
                     ;;
                 fedora|rhel|centos|rocky|alma)
-                    log_warn "Playwright does not support automatic dependency installation on RPM-based systems."
-                    log_info "Install Chromium system dependencies manually before using browser tools:"
+                    log_warn "Playwright 不支持在 RPM 系统上自动安装依赖。"
+                    log_info "使用浏览器工具前，请手动安装 Chromium 系统依赖："
                     log_info "  sudo dnf install nss atk at-spi2-core cups-libs libdrm libxkbcommon mesa-libgbm pango cairo alsa-lib"
                     cd "$INSTALL_DIR" && run_browser_install_with_timeout 600 npx playwright install chromium 2>/dev/null || {
-                        log_warn "Playwright browser installation failed — install dependencies above and retry."
+                        log_warn "Playwright 浏览器安装失败 — 请先安装上述依赖后重试。"
                     }
                     ;;
                 opensuse*|sles)
-                    log_warn "Playwright does not support automatic dependency installation on zypper-based systems."
-                    log_info "Install Chromium system dependencies manually before using browser tools:"
+                    log_warn "Playwright 不支持在 zypper 系统上自动安装依赖。"
+                    log_info "使用浏览器工具前，请手动安装 Chromium 系统依赖："
                     log_info "  sudo zypper install mozilla-nss libatk-1_0-0 at-spi2-core cups-libs libdrm2 libxkbcommon0 Mesa-libgbm1 pango cairo libasound2"
                     cd "$INSTALL_DIR" && run_browser_install_with_timeout 600 npx playwright install chromium 2>/dev/null || {
-                        log_warn "Playwright browser installation failed — install dependencies above and retry."
+                        log_warn "Playwright 浏览器安装失败 — 请先安装上述依赖后重试。"
                     }
                     ;;
                 *)
-                    log_warn "Playwright does not support automatic dependency installation on $DISTRO."
-                    log_info "Install Chromium/browser system dependencies for your distribution, then run:"
+                    log_warn "Playwright 不支持在 $DISTRO 上自动安装依赖。"
+                    log_info "请为您的发行版安装 Chromium/浏览器系统依赖，然后运行："
                     log_info "  cd $INSTALL_DIR && npx playwright install chromium"
-                    log_info "Browser tools will not work until dependencies are installed."
+                    log_info "浏览器工具在依赖安装完成之前将无法工作。"
                     cd "$INSTALL_DIR" && run_browser_install_with_timeout 600 npx playwright install chromium 2>/dev/null || true
                     ;;
             esac
         fi
         fi
-        log_success "Browser engine setup complete"
+        log_success "浏览器引擎设置完成"
     fi
 
     # Install TUI dependencies
     if [ -f "$INSTALL_DIR/ui-tui/package.json" ]; then
-        log_info "Installing TUI dependencies..."
+        log_info "正在安装 TUI 依赖..."
         cd "$INSTALL_DIR/ui-tui"
         npm install --silent 2>/dev/null || {
-            log_warn "TUI npm install failed (hermes --tui may not work)"
+            log_warn "TUI npm install 失败（hermes --tui 可能无法工作）"
         }
-        log_success "TUI dependencies installed"
+        log_success "TUI 依赖已安装"
     fi
 
 
@@ -1703,7 +1703,7 @@ install_node_deps() {
 
 run_setup_wizard() {
     if [ "$RUN_SETUP" = false ]; then
-        log_info "Skipping setup wizard (--skip-setup)"
+        log_info "跳过设置向导（--skip-setup）"
         return 0
     fi
 
@@ -1716,12 +1716,12 @@ run_setup_wizard() {
     # but opening fails with ENXIO, so the wizard would proceed and
     # then crash on `< /dev/tty` below.
     if ! (: </dev/tty) 2>/dev/null; then
-        log_info "Setup wizard skipped (no terminal available). Run 'hermes setup' after install."
+        log_info "跳过设置向导（无可用终端）。安装后运行 'hermes setup'。"
         return 0
     fi
 
     echo ""
-    log_info "Starting setup wizard..."
+    log_info "正在启动设置向导..."
     echo ""
 
     cd "$INSTALL_DIR"
@@ -1756,8 +1756,8 @@ maybe_start_gateway() {
     fi
 
     echo ""
-    log_info "Messaging platform token detected!"
-    log_info "The gateway needs to be running for Hermes to send/receive messages."
+    log_info "检测到消息平台令牌！"
+    log_info "需要保持网关运行，Hermes 才能收发消息。"
 
     # If WhatsApp is enabled and no session exists yet, run foreground first for QR scan
     WHATSAPP_VAL=$(grep "^WHATSAPP_ENABLED=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
@@ -1765,15 +1765,15 @@ maybe_start_gateway() {
     if [ "$WHATSAPP_VAL" = "true" ] && [ ! -f "$WHATSAPP_SESSION" ]; then
         if [ "$IS_INTERACTIVE" = true ]; then
             echo ""
-            log_info "WhatsApp is enabled but not yet paired."
-            log_info "Running 'hermes whatsapp' to pair via QR code..."
+            log_info "WhatsApp 已启用但尚未配对。"
+            log_info "运行 'hermes whatsapp' 通过二维码配对..."
             echo ""
-            if prompt_yes_no "Pair WhatsApp now?" "yes"; then
+            if prompt_yes_no "立即配对 WhatsApp？" "yes"; then
                 HERMES_CMD="$(get_hermes_command_path)"
                 $HERMES_CMD whatsapp || true
             fi
         else
-            log_info "WhatsApp pairing skipped (non-interactive). Run 'hermes whatsapp' to pair."
+            log_info "跳过 WhatsApp 配对（非交互模式）。运行 'hermes whatsapp' 进行配对。"
         fi
     fi
 
@@ -1781,18 +1781,18 @@ maybe_start_gateway() {
     # in Docker builds where the device node is in the mount namespace
     # but opening fails with ENXIO. See #16746.
     if ! (: </dev/tty) 2>/dev/null; then
-        log_info "Gateway setup skipped (no terminal available). Run 'hermes gateway install' later."
+        log_info "跳过网关设置（无可用终端）。稍后运行 'hermes gateway install'。"
         return 0
     fi
 
     echo ""
     local should_install_gateway=false
     if [ "$DISTRO" = "termux" ]; then
-        if prompt_yes_no "Would you like to start the gateway in the background?" "yes"; then
+        if prompt_yes_no "是否在后台启动网关？" "yes"; then
             should_install_gateway=true
         fi
     else
-        if prompt_yes_no "Would you like to install the gateway as a background service?" "yes"; then
+        if prompt_yes_no "是否将网关安装为后台服务？" "yes"; then
             should_install_gateway=true
         fi
     fi
@@ -1801,34 +1801,34 @@ maybe_start_gateway() {
         HERMES_CMD="$(get_hermes_command_path)"
 
         if [ "$DISTRO" != "termux" ] && command -v systemctl &> /dev/null; then
-            log_info "Installing systemd service..."
+            log_info "正在安装 systemd 服务..."
             if $HERMES_CMD gateway install 2>/dev/null; then
-                log_success "Gateway service installed"
+                log_success "网关服务已安装"
                 if $HERMES_CMD gateway start 2>/dev/null; then
-                    log_success "Gateway started! Your bot is now online."
+                    log_success "网关已启动！您的机器人现已在线。"
                 else
-                    log_warn "Service installed but failed to start. Try: hermes gateway start"
+                    log_warn "服务已安装但启动失败。尝试：hermes gateway start"
                 fi
             else
-                log_warn "Systemd install failed. You can start manually: hermes gateway"
+                log_warn "Systemd 安装失败。您可以手动启动：hermes gateway"
             fi
         else
             if [ "$DISTRO" = "termux" ]; then
-                log_info "Termux detected — starting gateway in best-effort background mode..."
+                log_info "检测到 Termux — 以后台尽力模式启动网关..."
             else
-                log_info "systemd not available — starting gateway in background..."
+                log_info "systemd 不可用 — 在后台启动网关..."
             fi
             nohup $HERMES_CMD gateway > "$HERMES_HOME/logs/gateway.log" 2>&1 &
             GATEWAY_PID=$!
-            log_success "Gateway started (PID $GATEWAY_PID). Logs: ~/.hermes/logs/gateway.log"
-            log_info "To stop: kill $GATEWAY_PID"
-            log_info "To restart later: hermes gateway"
+            log_success "网关已启动（PID $GATEWAY_PID）。日志：~/.hermes/logs/gateway.log"
+            log_info "停止：kill $GATEWAY_PID"
+            log_info "稍后重新启动：hermes gateway"
             if [ "$DISTRO" = "termux" ]; then
-                log_warn "Android may stop background processes when Termux is suspended or the system reclaims resources."
+                log_warn "当 Termux 被挂起或系统回收资源时，Android 可能会停止后台进程。"
             fi
         fi
     else
-        log_info "Skipped. Start the gateway later with: hermes gateway"
+        log_info "已跳过。稍后启动网关：hermes gateway"
     fi
 }
 
@@ -1836,42 +1836,42 @@ print_success() {
     echo ""
     echo -e "${GREEN}${BOLD}"
     echo "┌─────────────────────────────────────────────────────────┐"
-    echo "│              ✓ Installation Complete!                   │"
+    echo "│              ✓ 安装完成！                                │"
     echo "└─────────────────────────────────────────────────────────┘"
     echo -e "${NC}"
     echo ""
 
     # Show file locations
-    echo -e "${CYAN}${BOLD}📁 Your files:${NC}"
+    echo -e "${CYAN}${BOLD}📁 文件位置：${NC}"
     echo ""
-    echo -e "   ${YELLOW}Config:${NC}    $HERMES_HOME/config.yaml"
-    echo -e "   ${YELLOW}API Keys:${NC}  $HERMES_HOME/.env"
-    echo -e "   ${YELLOW}Data:${NC}      $HERMES_HOME/cron/, sessions/, logs/"
-    echo -e "   ${YELLOW}Code:${NC}      $INSTALL_DIR"
+    echo -e "   ${YELLOW}配置：${NC}    $HERMES_HOME/config.yaml"
+    echo -e "   ${YELLOW}API 密钥：${NC}  $HERMES_HOME/.env"
+    echo -e "   ${YELLOW}数据：${NC}      $HERMES_HOME/cron/, sessions/, logs/"
+    echo -e "   ${YELLOW}代码：${NC}      $INSTALL_DIR"
     echo ""
 
     echo -e "${CYAN}─────────────────────────────────────────────────────────${NC}"
     echo ""
-    echo -e "${CYAN}${BOLD}🚀 Commands:${NC}"
+    echo -e "${CYAN}${BOLD}🚀 命令：${NC}"
     echo ""
-    echo -e "   ${GREEN}hermes${NC}              Start chatting"
-    echo -e "   ${GREEN}hermes setup${NC}        Configure API keys & settings"
-    echo -e "   ${GREEN}hermes config${NC}       View/edit configuration"
-    echo -e "   ${GREEN}hermes config edit${NC}  Open config in editor"
-    echo -e "   ${GREEN}hermes gateway install${NC} Install gateway service (messaging + cron)"
-    echo -e "   ${GREEN}hermes update${NC}       Update to latest version"
+    echo -e "   ${GREEN}hermes${NC}              开始对话"
+    echo -e "   ${GREEN}hermes setup${NC}        配置 API 密钥和设置"
+    echo -e "   ${GREEN}hermes config${NC}       查看/编辑配置"
+    echo -e "   ${GREEN}hermes config edit${NC}  在编辑器中打开配置"
+    echo -e "   ${GREEN}hermes gateway install${NC} 安装网关服务（消息 + 定时任务）"
+    echo -e "   ${GREEN}hermes update${NC}       更新到最新版本"
     echo ""
 
     echo -e "${CYAN}─────────────────────────────────────────────────────────${NC}"
     echo ""
     if [ "$DISTRO" = "termux" ]; then
-        echo -e "${YELLOW}⚡ 'hermes' was linked into $(get_command_link_display_dir), which is already on PATH in Termux.${NC}"
+        echo -e "${YELLOW}⚡ 'hermes' 已链接到 $(get_command_link_display_dir)，该目录在 Termux 的 PATH 中。${NC}"
         echo ""
     elif [ "$ROOT_FHS_LAYOUT" = true ]; then
-        echo -e "${YELLOW}⚡ 'hermes' was linked into /usr/local/bin and is ready to use — no shell reload needed.${NC}"
+        echo -e "${YELLOW}⚡ 'hermes' 已链接到 /usr/local/bin，可直接使用 — 无需重新加载 shell。${NC}"
         echo ""
     else
-        echo -e "${YELLOW}⚡ Reload your shell to use 'hermes' command:${NC}"
+        echo -e "${YELLOW}⚡ 请重新加载 shell 以使用 'hermes' 命令：${NC}"
         echo ""
         LOGIN_SHELL="$(basename "${SHELL:-/bin/bash}")"
         if [ "$LOGIN_SHELL" = "zsh" ]; then
@@ -1881,7 +1881,7 @@ print_success() {
         elif [ "$LOGIN_SHELL" = "fish" ]; then
             echo "   source ~/.config/fish/config.fish"
         else
-            echo "   source ~/.bashrc   # or ~/.zshrc"
+            echo "   source ~/.bashrc   # 或 ~/.zshrc"
         fi
         echo ""
     fi
@@ -1889,8 +1889,8 @@ print_success() {
     # Show Node.js warning if auto-install failed
     if [ "$HAS_NODE" = false ]; then
         echo -e "${YELLOW}"
-        echo "Note: Node.js could not be installed automatically."
-        echo "Browser tools need Node.js. Install manually:"
+        echo "注意：无法自动安装 Node.js。"
+        echo "浏览器工具需要 Node.js。请手动安装："
         if [ "$DISTRO" = "termux" ]; then
             echo "  pkg install nodejs"
         else
@@ -1902,12 +1902,12 @@ print_success() {
     # Show ripgrep note if not installed
     if [ "$HAS_RIPGREP" = false ]; then
         echo -e "${YELLOW}"
-        echo "Note: ripgrep (rg) was not found. File search will use"
-        echo "grep as a fallback. For faster search in large codebases,"
+        echo "注意：未找到 ripgrep（rg）。文件搜索将使用"
+        echo "grep 作为替代。如需在大型代码库中更快搜索，"
         if [ "$DISTRO" = "termux" ]; then
-            echo "install ripgrep: pkg install ripgrep"
+            echo "请安装 ripgrep：pkg install ripgrep"
         else
-            echo "install ripgrep: sudo apt install ripgrep (or brew install ripgrep)"
+            echo "请安装 ripgrep：sudo apt install ripgrep（或 brew install ripgrep）"
         fi
         echo -e "${NC}"
     fi
@@ -1919,7 +1919,7 @@ ensure_browser() {
         if [ -x "$node_bin" ]; then
             export PATH="$HERMES_HOME/node/bin:$PATH"
         else
-            log_error "Node.js not found. Run with --ensure node first."
+            log_error "未找到 Node.js。请先使用 --ensure node。"
             return 1
         fi
     fi
@@ -1927,18 +1927,18 @@ ensure_browser() {
     local npm_bin
     npm_bin="$(command -v npm 2>/dev/null || echo "$HERMES_HOME/node/bin/npm")"
     if [ ! -x "$npm_bin" ]; then
-        log_error "npm not found"
+        log_error "未找到 npm"
         return 1
     fi
 
-    log_info "Installing agent-browser..."
+    log_info "正在安装 agent-browser..."
     local log_file
     log_file="$(mktemp)"
     if ! "$npm_bin" install -g --prefix "$HERMES_HOME/node" --silent --ignore-scripts \
         "agent-browser@^0.26.0" \
         "@askjo/camofox-browser@^1.5.2" \
         >"$log_file" 2>&1; then
-        log_error "npm install failed:"
+        log_error "npm install 失败："
         cat "$log_file" >&2
         rm -f "$log_file"
         return 1
@@ -1950,31 +1950,31 @@ ensure_browser() {
     sys_browser="$(find_system_browser 2>/dev/null || true)"
     if [ -n "$sys_browser" ]; then
         configure_browser_env_from_system_browser "$sys_browser"
-        log_info "System browser detected -- skipping Chromium download"
+        log_info "检测到系统浏览器 — 跳过 Chromium 下载"
         return 0
     fi
 
-    log_info "Installing Chromium via agent-browser install..."
+    log_info "正在通过 agent-browser install 安装 Chromium..."
     local ab_bin="$HERMES_HOME/node/bin/agent-browser"
     if [ -x "$ab_bin" ]; then
         "$ab_bin" install 2>/dev/null || {
-            log_warn "Chromium install failed. Browser tools may not work without a system browser."
+            log_warn "Chromium 安装失败。如果没有系统浏览器，浏览器工具可能无法工作。"
 
             # OS-specific hints (detect_os sets $DISTRO)
             case "${DISTRO:-unknown}" in
                 ubuntu|debian)
-                    log_info "Try: sudo apt-get install -y chromium-browser"
+                    log_info "尝试：sudo apt-get install -y chromium-browser"
                     ;;
                 arch)
-                    log_info "Try: sudo pacman -S chromium"
+                    log_info "尝试：sudo pacman -S chromium"
                     ;;
                 fedora|rhel|centos)
-                    log_info "Try: sudo dnf install -y chromium"
+                    log_info "尝试：sudo dnf install -y chromium"
                     ;;
             esac
         }
     else
-        log_warn "agent-browser not found at $ab_bin"
+        log_warn "在 $ab_bin 未找到 agent-browser"
     fi
 
     return 0
@@ -2011,7 +2011,7 @@ ensure_mode() {
                 fi
                 ;;
             *)
-                log_warn "Unknown dependency: $dep"
+                log_warn "未知依赖：$dep"
                 ;;
         esac
     done
@@ -2021,7 +2021,7 @@ postinstall_mode() {
     print_banner
     detect_os
 
-    log_info "Post-install mode: setting up Hermes for pip install"
+    log_info "安装后模式：为 pip 安装设置 Hermes"
 
     check_node
     check_network_prerequisites
@@ -2033,11 +2033,83 @@ postinstall_mode() {
 
     HERMES_CMD="$(command -v hermes 2>/dev/null || echo "")"
     if [ -n "$HERMES_CMD" ]; then
-        log_info "Running hermes setup..."
+        log_info "正在运行 hermes setup..."
         "$HERMES_CMD" setup
     else
-        log_warn "hermes command not found on PATH"
-        log_info "Try: python -m hermes_cli.main setup"
+        log_warn "在 PATH 中未找到 hermes 命令"
+        log_info "尝试：python -m hermes_cli.main setup"
+    fi
+}
+
+# ============================================================================
+# Profession selection
+# ============================================================================
+
+profession_selector() {
+    local professions_dir="$INSTALL_DIR/professions"
+    local selected=""
+
+    # 检测是否有职业预设
+    if [ ! -d "$professions_dir" ]; then
+        return 0
+    fi
+
+    local available=()
+    local display=()
+    while IFS= read -r dir; do
+        local name
+        name="$(basename "$dir")"
+        if [ -f "$dir/apply.sh" ]; then
+            available+=("$name")
+            # 中文显示名映射
+            case "$name" in
+                finance) display+=("财务（会计核算·税务·报表）") ;;
+                *) display+=("$name") ;;
+            esac
+        fi
+    done < <(find "$professions_dir" -maxdepth 1 -mindepth 1 -type d ! -name '.*' 2>/dev/null | sort)
+
+    if [ ${#available[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    echo ""
+    echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BOLD}🎯 可选：安装职业预设${NC}"
+    echo ""
+    echo "Nermes 支持针对不同职业优化的 AI 助手预设，"
+    echo "包括专业人格、知识库和专属技能包。"
+    echo ""
+    echo -e "可用职业："
+    for i in "${!available[@]}"; do
+        echo -e "  ${GREEN}$((i+1))${NC}) ${display[$i]}"
+    done
+    echo -e "  ${GREEN}0${NC}) 跳过，以后再说"
+    echo ""
+
+    if [ "$IS_INTERACTIVE" = true ]; then
+        read -r -p "请选择职业 [0-${#available[@]}，默认 0]: " choice || choice=""
+    elif [ -r /dev/tty ] && [ -w /dev/tty ]; then
+        printf "请选择职业 [0-%d，默认 0]: " "${#available[@]}" > /dev/tty
+        IFS= read -r choice < /dev/tty || choice=""
+    fi
+
+    choice="${choice:-0}"
+    choice="${choice#\"}\"; choice=\"${choice%\\\"}\""
+
+    if [ "$choice" -ge 1 ] 2>/dev/null && [ "$choice" -le "${#available[@]}" ]; then
+        selected="${available[$((choice-1))]}"
+        echo ""
+        log_info "正在应用「${display[$((choice-1))]}」职业预设..."
+        if bash "$professions_dir/$selected/apply.sh"; then
+            log_success "职业预设安装完成！"
+            echo ""
+            echo "📚 后续可安装更多专属技能包，运行："
+            echo "   hermes skills install <技能名>"
+        else
+            log_warn "职业预设安装失败，可稍后手动安装："
+            log_info "  bash $professions_dir/$selected/apply.sh"
+        fi
     fi
 }
 
@@ -2069,6 +2141,8 @@ main() {
     print_success
 
     echo "git" > "$HERMES_HOME/.install_method"
+
+    profession_selector
 }
 
 if [ -n "$ENSURE_DEPS" ]; then
