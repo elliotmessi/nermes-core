@@ -130,7 +130,7 @@ def run_backup(args) -> None:
     hermes_root = get_default_hermes_root()
 
     if not hermes_root.is_dir():
-        print(f"Error: Hermes home directory not found at {hermes_root}")
+        print(f"错误: 在 {hermes_root} 未找到 Hermes 主目录")
         sys.exit(1)
 
     # Determine output path
@@ -152,7 +152,7 @@ def run_backup(args) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Collect files
-    print(f"Scanning {display_hermes_home()} ...")
+    print(f"正在扫描 {display_hermes_home()} ...")
     files_to_add: list[tuple[Path, Path]] = []  # (absolute, relative)
     skipped_dirs = set()
 
@@ -186,12 +186,12 @@ def run_backup(args) -> None:
             files_to_add.append((fpath, rel))
 
     if not files_to_add:
-        print("No files to back up.")
+        print("没有可备份的文件。")
         return
 
     # Create the zip
     file_count = len(files_to_add)
-    print(f"Backing up {file_count} files ...")
+    print(f"正在备份 {file_count} 个文件 ...")
 
     total_bytes = 0
     errors = []
@@ -221,32 +221,32 @@ def run_backup(args) -> None:
 
             # Progress every 500 files
             if i % 500 == 0:
-                print(f"  {i}/{file_count} files ...")
+                print(f"  {i}/{file_count} 个文件 ...")
 
     elapsed = time.monotonic() - t0
     zip_size = out_path.stat().st_size
 
     # Summary
     print()
-    print(f"Backup complete: {out_path}")
-    print(f"  Files:       {file_count}")
-    print(f"  Original:    {_format_size(total_bytes)}")
-    print(f"  Compressed:  {_format_size(zip_size)}")
-    print(f"  Time:        {elapsed:.1f}s")
+    print(f"备份完成: {out_path}")
+    print(f"  文件数:      {file_count}")
+    print(f"  原始大小:    {_format_size(total_bytes)}")
+    print(f"  压缩后:      {_format_size(zip_size)}")
+    print(f"  耗时:        {elapsed:.1f}s")
 
     if skipped_dirs:
-        print(f"\n  Excluded directories:")
+        print(f"\n  已排除的目录:")
         for d in sorted(skipped_dirs):
             print(f"    {d}/")
 
     if errors:
-        print(f"\n  Warnings ({len(errors)} files skipped):")
+        print(f"\n  警告（{len(errors)} 个文件已跳过）:")
         for e in errors[:10]:
             print(e)
         if len(errors) > 10:
-            print(f"  ... and {len(errors) - 10} more")
+            print(f"  ... 以及其他 {len(errors) - 10} 个")
 
-    print(f"\nRestore with: hermes import {out_path.name}")
+    print(f"\n恢复命令: hermes import {out_path.name}")
 
 
 # ---------------------------------------------------------------------------
@@ -309,11 +309,11 @@ def run_import(args) -> None:
     zip_path = Path(args.zipfile).expanduser().resolve()
 
     if not zip_path.is_file():
-        print(f"Error: File not found: {zip_path}")
+        print(f"错误: 文件不存在: {zip_path}")
         sys.exit(1)
 
     if not zipfile.is_zipfile(zip_path):
-        print(f"Error: Not a valid zip file: {zip_path}")
+        print(f"错误: 不是有效的 zip 文件: {zip_path}")
         sys.exit(1)
 
     hermes_root = get_default_hermes_root()
@@ -322,18 +322,18 @@ def run_import(args) -> None:
         # Validate
         ok, reason = _validate_backup_zip(zf)
         if not ok:
-            print(f"Error: {reason}")
+            print(f"错误: {reason}")
             sys.exit(1)
 
         prefix = _detect_prefix(zf)
         members = [n for n in zf.namelist() if not n.endswith("/")]
         file_count = len(members)
 
-        print(f"Backup contains {file_count} files")
-        print(f"Target: {display_hermes_home()}")
+        print(f"备份包含 {file_count} 个文件")
+        print(f"目标路径: {display_hermes_home()}")
 
         if prefix:
-            print(f"Detected archive prefix: {prefix!r} (will be stripped)")
+            print(f"检测到归档前缀: {prefix!r}（将被剥离）")
 
         # Check for existing installation
         has_config = (hermes_root / "config.yaml").exists()
@@ -341,20 +341,20 @@ def run_import(args) -> None:
 
         if (has_config or has_env) and not args.force:
             print()
-            print("Warning: Target directory already has Hermes configuration.")
-            print("Importing will overwrite existing files with backup contents.")
+            print("警告: 目标目录已存在 Hermes 配置。")
+            print("导入将用备份内容覆盖现有文件。")
             print()
             try:
-                answer = input("Continue? [y/N] ").strip().lower()
+                answer = input("继续? [y/N] ").strip().lower()
             except (EOFError, KeyboardInterrupt):
-                print("\nAborted.")
+                print("\n已取消。")
                 sys.exit(1)
             if answer not in {"y", "yes"}:
-                print("Aborted.")
+                print("已取消。")
                 return
 
         # Extract
-        print(f"\nImporting {file_count} files ...")
+        print(f"\n正在导入 {file_count} 个文件 ...")
         hermes_root.mkdir(parents=True, exist_ok=True)
 
         errors = []
@@ -391,21 +391,21 @@ def run_import(args) -> None:
                 errors.append(f"  {rel}: {exc}")
 
             if restored % 500 == 0:
-                print(f"  {restored}/{file_count} files ...")
+                print(f"  {restored}/{file_count} 个文件 ...")
 
         elapsed = time.monotonic() - t0
 
         # Summary
         print()
-        print(f"Import complete: {restored} files restored in {elapsed:.1f}s")
-        print(f"  Target: {display_hermes_home()}")
+        print(f"导入完成: {restored} 个文件在 {elapsed:.1f}s 内恢复")
+        print(f"  目标路径: {display_hermes_home()}")
 
         if errors:
-            print(f"\n  Warnings ({len(errors)} files skipped):")
+            print(f"\n  警告（{len(errors)} 个文件已跳过）:")
             for e in errors[:10]:
                 print(e)
             if len(errors) > 10:
-                print(f"  ... and {len(errors) - 10} more")
+                print(f"  ... 以及其他 {len(errors) - 10} 个")
 
         # Post-import: restore profile wrapper scripts
         profiles_dir = hermes_root / "profiles"
@@ -425,7 +425,7 @@ def run_import(args) -> None:
                         continue
                     collision = check_alias_collision(profile_name)
                     if collision:
-                        print(f"  Skipped alias '{profile_name}': {collision}")
+                        print(f"  跳过别名 '{profile_name}': {collision}")
                         restored_profiles.append((profile_name, False))
                     else:
                         wrapper = create_wrapper_script(profile_name)
@@ -435,32 +435,32 @@ def run_import(args) -> None:
                     created = [n for n, ok in restored_profiles if ok]
                     skipped = [n for n, ok in restored_profiles if not ok]
                     if created:
-                        print(f"\n  Profile aliases restored: {', '.join(created)}")
+                        print(f"\n  配置文件别名已恢复: {', '.join(created)}")
                     if skipped:
-                        print(f"  Profile aliases skipped:  {', '.join(skipped)}")
+                        print(f"  配置文件别名已跳过:  {', '.join(skipped)}")
                     if not _is_wrapper_dir_in_path():
-                        print(f"\n  Note: {_get_wrapper_dir()} is not in your PATH.")
-                        print('  Add to your shell config (~/.bashrc or ~/.zshrc):')
+                        print(f"\n  注意: {_get_wrapper_dir()} 不在您的 PATH 中。")
+                        print('  添加到您的 shell 配置中 (~/.bashrc 或 ~/.zshrc):')
                         print('    export PATH="$HOME/.local/bin:$PATH"')
             except ImportError:
                 # hermes_cli.profiles might not be available (fresh install)
                 if any(profiles_dir.iterdir()):
-                    print(f"\n  Profiles detected but aliases could not be created.")
-                    print(f"  Run: hermes profile list  (after installing hermes)")
+                    print(f"\n  检测到配置文件但无法创建别名。")
+                    print(f"  运行: hermes profile list  (安装 hermes 后)")
 
         # Guidance
         print()
         if not (hermes_root / "hermes-agent").is_dir():
-            print("Note: The hermes-agent codebase was not included in the backup.")
-            print("  If this is a fresh install, run: hermes update")
+            print("注意: hermes-agent 代码库未包含在备份中。")
+            print("  如果是全新安装，运行: hermes update")
 
         if restored_profiles:
             gw_profiles = [n for n, _ in restored_profiles]
-            print("\nTo re-enable gateway services for profiles:")
+            print("\n要重新启用配置文件的 gateway 服务:")
             for pname in gw_profiles:
                 print(f"  hermes -p {pname} gateway install")
 
-        print("Done. Your Hermes configuration has been restored.")
+        print("完成。您的 Hermes 配置已恢复。")
 
 
 # ---------------------------------------------------------------------------
@@ -693,12 +693,12 @@ def run_quick_backup(args) -> None:
     label = getattr(args, "label", None)
     snap_id = create_quick_snapshot(label=label)
     if snap_id:
-        print(f"State snapshot created: {snap_id}")
+        print(f"状态快照已创建: {snap_id}")
         snaps = list_quick_snapshots()
-        print(f"  {len(snaps)} snapshot(s) stored in {display_hermes_home()}/state-snapshots/")
-        print(f"  Restore with: /snapshot restore {snap_id}")
+        print(f"  {len(snaps)} 个快照存储在 {display_hermes_home()}/state-snapshots/")
+        print(f"  恢复命令: /snapshot restore {snap_id}")
     else:
-        print("No state files found to snapshot.")
+        print("未找到要快照的状态文件。")
 
 
 # ---------------------------------------------------------------------------

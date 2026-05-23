@@ -45,13 +45,13 @@ def cron_list(show_all: bool = False):
     jobs = list_jobs(include_disabled=show_all)
 
     if not jobs:
-        print(color("No scheduled jobs.", Colors.DIM))
-        print(color("Create one with 'hermes cron create ...' or the /cron command in chat.", Colors.DIM))
+        print(color("没有已调度的任务。", Colors.DIM))
+        print(color("使用 'hermes cron create ...' 或聊天中的 /cron 命令创建一个。", Colors.DIM))
         return
 
     print()
     print(color("┌─────────────────────────────────────────────────────────────────────────┐", Colors.CYAN))
-    print(color("│                         Scheduled Jobs                                  │", Colors.CYAN))
+    print(color("│                             定时任务                                     │", Colors.CYAN))
     print(color("└─────────────────────────────────────────────────────────────────────────┘", Colors.CYAN))
     print()
 
@@ -74,33 +74,33 @@ def cron_list(show_all: bool = False):
 
         skills = job.get("skills") or ([job["skill"]] if job.get("skill") else [])
         if state == "paused":
-            status = color("[paused]", Colors.YELLOW)
+            status = color("[已暂停]", Colors.YELLOW)
         elif state == "completed":
-            status = color("[completed]", Colors.BLUE)
+            status = color("[已完成]", Colors.BLUE)
         elif job.get("enabled", True):
-            status = color("[active]", Colors.GREEN)
+            status = color("[活跃]", Colors.GREEN)
         else:
-            status = color("[disabled]", Colors.RED)
+            status = color("[已禁用]", Colors.RED)
 
         print(f"  {color(job_id, Colors.YELLOW)} {status}")
-        print(f"    Name:      {name}")
-        print(f"    Schedule:  {schedule}")
-        print(f"    Repeat:    {repeat_str}")
-        print(f"    Next run:  {next_run}")
-        print(f"    Deliver:   {deliver_str}")
+        print(f"    名称:      {name}")
+        print(f"    调度:      {schedule}")
+        print(f"    重复:      {repeat_str}")
+        print(f"    下次运行:  {next_run}")
+        print(f"    投递方式:  {deliver_str}")
         if skills:
-            print(f"    Skills:    {', '.join(skills)}")
+            print(f"    技能:      {', '.join(skills)}")
         script = job.get("script")
         if script:
-            print(f"    Script:    {script}")
+            print(f"    脚本:      {script}")
         if job.get("no_agent"):
-            print(f"    Mode:      {color('no-agent', Colors.DIM)} (script stdout delivered directly)")
+            print(f"    模式:      {color('no-agent', Colors.DIM)} (脚本 stdout 直接投递)")
         workdir = job.get("workdir")
         if workdir:
-            print(f"    Workdir:   {workdir}")
+            print(f"    工作目录:  {workdir}")
         profile = job.get("profile")
         if profile:
-            print(f"    Profile:   {profile}")
+            print(f"    配置文件:  {profile}")
 
         # Execution history
         last_status = job.get("last_status")
@@ -110,19 +110,19 @@ def cron_list(show_all: bool = False):
                 status_display = color("ok", Colors.GREEN)
             else:
                 status_display = color(f"{last_status}: {job.get('last_error', '?')}", Colors.RED)
-            print(f"    Last run:  {last_run}  {status_display}")
+            print(f"    上次运行:  {last_run}  {status_display}")
 
         delivery_err = job.get("last_delivery_error")
         if delivery_err:
-            print(f"    {color('⚠ Delivery failed:', Colors.YELLOW)} {delivery_err}")
+            print(f"    {color('⚠ 投递失败:', Colors.YELLOW)} {delivery_err}")
 
         print()
 
     from hermes_cli.gateway import find_gateway_pids
     if not find_gateway_pids():
-        print(color("  ⚠  Gateway is not running — jobs won't fire automatically.", Colors.YELLOW))
-        print(color("     Start it with: hermes gateway install", Colors.DIM))
-        print(color("                    sudo hermes gateway install --system  # Linux servers", Colors.DIM))
+        print(color("  ⚠ 网关未运行 — 任务不会自动触发。", Colors.YELLOW))
+        print(color("     启动它: hermes gateway install", Colors.DIM))
+        print(color("                     sudo hermes gateway install --system  # Linux 服务器", Colors.DIM))
         print()
 
 
@@ -141,26 +141,26 @@ def cron_status():
 
     pids = find_gateway_pids()
     if pids:
-        print(color("✓ Gateway is running — cron jobs will fire automatically", Colors.GREEN))
+        print(color("✓ 网关正在运行 — 定时任务将自动触发", Colors.GREEN))
         print(f"  PID: {', '.join(map(str, pids))}")
     else:
-        print(color("✗ Gateway is not running — cron jobs will NOT fire", Colors.RED))
+        print(color("✗ 网关未运行 — 定时任务将不会触发", Colors.RED))
         print()
-        print("  To enable automatic execution:")
-        print("    hermes gateway install    # Install as a user service")
-        print("    sudo hermes gateway install --system  # Linux servers: boot-time system service")
-        print("    hermes gateway            # Or run in foreground")
+        print("  要启用自动执行:")
+        print("    hermes gateway install    # 安装为用户服务")
+        print("    sudo hermes gateway install --system  # Linux 服务器：系统级开机服务")
+        print("    hermes gateway            # 或在前台运行")
 
     print()
 
     jobs = list_jobs(include_disabled=False)
     if jobs:
         next_runs = [j.get("next_run_at") for j in jobs if j.get("next_run_at")]
-        print(f"  {len(jobs)} active job(s)")
+        print(f"  {len(jobs)} 个活跃任务")
         if next_runs:
-            print(f"  Next run: {min(next_runs)}")
+            print(f"  下次运行: {min(next_runs)}")
     else:
-        print("  No active jobs")
+        print("  无活跃任务")
 
     print()
 
@@ -181,23 +181,23 @@ def cron_create(args):
         no_agent=getattr(args, "no_agent", False) or None,
     )
     if not result.get("success"):
-        print(color(f"Failed to create job: {result.get('error', 'unknown error')}", Colors.RED))
+        print(color(f"创建任务失败: {result.get('error', '未知错误')}", Colors.RED))
         return 1
-    print(color(f"Created job: {result['job_id']}", Colors.GREEN))
-    print(f"  Name: {result['name']}")
-    print(f"  Schedule: {result['schedule']}")
+    print(color(f"已创建任务: {result['job_id']}", Colors.GREEN))
+    print(f"  名称: {result['name']}")
+    print(f"  调度: {result['schedule']}")
     if result.get("skills"):
-        print(f"  Skills: {', '.join(result['skills'])}")
+        print(f"  技能: {', '.join(result['skills'])}")
     job_data = result.get("job", {})
     if job_data.get("script"):
-        print(f"  Script: {job_data['script']}")
+        print(f"  脚本: {job_data['script']}")
     if job_data.get("no_agent"):
-        print("  Mode: no-agent (script stdout delivered directly)")
+        print("  模式: no-agent (脚本 stdout 直接投递)")
     if job_data.get("workdir"):
-        print(f"  Workdir: {job_data['workdir']}")
+        print(f"  工作目录: {job_data['workdir']}")
     if job_data.get("profile"):
-        print(f"  Profile: {job_data['profile']}")
-    print(f"  Next run: {result['next_run_at']}")
+        print(f"  配置文件: {job_data['profile']}")
+    print(f"  下次运行: {result['next_run_at']}")
     return 0
 
 
@@ -209,10 +209,10 @@ def cron_edit(args):
     except AmbiguousJobReference as exc:
         print(color(str(exc), Colors.RED))
         for m in exc.matches:
-            print(f"  {m['id']}  (name: {m.get('name')!r})")
+            print(f"  {m['id']}  (名称: {m.get('name')!r})")
         return 1
     if not job:
-        print(color(f"Job not found: {args.job_id}", Colors.RED))
+        print(color(f"未找到任务: {args.job_id}", Colors.RED))
         return 1
 
     existing_skills = list(job.get("skills") or ([] if not job.get("skill") else [job.get("skill")]))
@@ -246,39 +246,39 @@ def cron_edit(args):
         no_agent=getattr(args, "no_agent", None),
     )
     if not result.get("success"):
-        print(color(f"Failed to update job: {result.get('error', 'unknown error')}", Colors.RED))
+        print(color(f"更新任务失败: {result.get('error', '未知错误')}", Colors.RED))
         return 1
 
     updated = result["job"]
-    print(color(f"Updated job: {updated['job_id']}", Colors.GREEN))
-    print(f"  Name: {updated['name']}")
-    print(f"  Schedule: {updated['schedule']}")
+    print(color(f"已更新任务: {updated['job_id']}", Colors.GREEN))
+    print(f"  名称: {updated['name']}")
+    print(f"  调度: {updated['schedule']}")
     if updated.get("skills"):
-        print(f"  Skills: {', '.join(updated['skills'])}")
+        print(f"  技能: {', '.join(updated['skills'])}")
     else:
-        print("  Skills: none")
+        print("  技能: 无")
     if updated.get("script"):
-        print(f"  Script: {updated['script']}")
+        print(f"  脚本: {updated['script']}")
     if updated.get("no_agent"):
-        print("  Mode: no-agent (script stdout delivered directly)")
+        print("  模式: no-agent (脚本 stdout 直接投递)")
     if updated.get("workdir"):
-        print(f"  Workdir: {updated['workdir']}")
+        print(f"  工作目录: {updated['workdir']}")
     if updated.get("profile"):
-        print(f"  Profile: {updated['profile']}")
+        print(f"  配置文件: {updated['profile']}")
     return 0
 
 
 def _job_action(action: str, job_id: str, success_verb: str) -> int:
     result = _cron_api(action=action, job_id=job_id)
     if not result.get("success"):
-        print(color(f"Failed to {action} job: {result.get('error', 'unknown error')}", Colors.RED))
+        print(color(f"操作失败: {result.get('error', '未知错误')}", Colors.RED))
         return 1
     job = result.get("job") or result.get("removed_job") or {}
-    print(color(f"{success_verb} job: {job.get('name', job_id)} ({job_id})", Colors.GREEN))
+    print(color(f"{success_verb} 任务: {job.get('name', job_id)} ({job_id})", Colors.GREEN))
     if action in {"resume", "run"} and result.get("job", {}).get("next_run_at"):
-        print(f"  Next run: {result['job']['next_run_at']}")
+        print(f"  下次运行: {result['job']['next_run_at']}")
     if action == "run":
-        print("  It will run on the next scheduler tick.")
+        print("  将在下一个调度器 tick 时运行。")
     return 0
 
 
@@ -306,17 +306,17 @@ def cron_command(args):
         return cron_edit(args)
 
     if subcmd == "pause":
-        return _job_action("pause", args.job_id, "Paused")
+        return _job_action("pause", args.job_id, "已暂停")
 
     if subcmd == "resume":
-        return _job_action("resume", args.job_id, "Resumed")
+        return _job_action("resume", args.job_id, "已恢复")
 
     if subcmd == "run":
-        return _job_action("run", args.job_id, "Triggered")
+        return _job_action("run", args.job_id, "已触发")
 
     if subcmd in {"remove", "rm", "delete"}:
-        return _job_action("remove", args.job_id, "Removed")
+        return _job_action("remove", args.job_id, "已删除")
 
-    print(f"Unknown cron command: {subcmd}")
-    print("Usage: hermes cron [list|create|edit|pause|resume|run|remove|status|tick]")
+    print(f"未知的 cron 命令: {subcmd}")
+    print("用法: hermes cron [list|create|edit|pause|resume|run|remove|status|tick]")
     sys.exit(1)

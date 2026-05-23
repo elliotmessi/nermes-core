@@ -42,7 +42,7 @@ def _resolve_short_name(name: str, sources, console: Console) -> str:
     from tools.skills_hub import unified_search
 
     c = console or _console
-    c.print(f"[dim]Resolving '{name}'...[/]")
+    c.print(f"[dim]正在解析 '{name}'...[/]")
 
     results = unified_search(name, sources, source_filter="all", limit=20)
 
@@ -50,32 +50,32 @@ def _resolve_short_name(name: str, sources, console: Console) -> str:
     exact = [r for r in results if r.name.lower() == name.lower()]
 
     if len(exact) == 1:
-        c.print(f"[dim]Resolved to: {exact[0].identifier}[/]")
+        c.print(f"[dim]解析结果: {exact[0].identifier}[/]")
         return exact[0].identifier
 
     if len(exact) > 1:
-        c.print(f"\n[yellow]Multiple skills named '{name}' found:[/]")
+        c.print(f"\n[yellow]发现多个名为 '{name}' 的技能:[/]")
         table = Table()
         table.add_column("Source", style="dim")
         table.add_column("Trust", style="dim")
         table.add_column("Identifier", style="bold cyan")
         for r in exact:
             trust_style = {"builtin": "bright_cyan", "trusted": "green", "community": "yellow"}.get(r.trust_level, "dim")
-            trust_label = "official" if r.source == "official" else r.trust_level
+            trust_label = "官方" if r.source == "official" else r.trust_level
             table.add_row(r.source, f"[{trust_style}]{trust_label}[/]", r.identifier)
         c.print(table)
-        c.print("[bold]Use the full identifier to install a specific one.[/]\n")
+        c.print("[bold]请使用完整标识符来安装特定的技能。[/]\n")
         return ""
 
     # No exact match — check if there are partial matches to suggest
     if results:
-        c.print(f"[yellow]No exact match for '{name}'. Did you mean one of these?[/]")
+        c.print(f"[yellow]未找到 '{name}' 的精确匹配。您是指以下之一吗?[/]")
         for r in results[:5]:
             c.print(f"  [cyan]{r.name}[/] — {r.identifier}")
         c.print()
         return ""
 
-    c.print(f"[bold red]Error:[/] No skill named '{name}' found in any source.\n")
+    c.print(f"[bold red]错误:[/] 在所有来源中未找到名为 '{name}' 的技能。\n")
     return ""
 
 
@@ -85,24 +85,24 @@ def _format_extra_metadata_lines(extra: Dict[str, Any]) -> list[str]:
         return lines
 
     if extra.get("repo_url"):
-        lines.append(f"[bold]Repo:[/] {extra['repo_url']}")
+        lines.append(f"[bold]仓库:[/] {extra['repo_url']}")
     if extra.get("detail_url"):
-        lines.append(f"[bold]Detail Page:[/] {extra['detail_url']}")
+        lines.append(f"[bold]详情页:[/] {extra['detail_url']}")
     if extra.get("index_url"):
-        lines.append(f"[bold]Index:[/] {extra['index_url']}")
+        lines.append(f"[bold]索引:[/] {extra['index_url']}")
     if extra.get("endpoint"):
-        lines.append(f"[bold]Endpoint:[/] {extra['endpoint']}")
+        lines.append(f"[bold]端点:[/] {extra['endpoint']}")
     if extra.get("install_command"):
-        lines.append(f"[bold]Install Command:[/] {extra['install_command']}")
+        lines.append(f"[bold]安装命令:[/] {extra['install_command']}")
     if extra.get("installs") is not None:
-        lines.append(f"[bold]Installs:[/] {extra['installs']}")
+        lines.append(f"[bold]安装数:[/] {extra['installs']}")
     if extra.get("weekly_installs"):
-        lines.append(f"[bold]Weekly Installs:[/] {extra['weekly_installs']}")
+        lines.append(f"[bold]周安装数:[/] {extra['weekly_installs']}")
 
     security = extra.get("security_audits")
     if isinstance(security, dict) and security:
         ordered = ", ".join(f"{name}={status}" for name, status in sorted(security.items()))
-        lines.append(f"[bold]Security:[/] {ordered}")
+        lines.append(f"[bold]安全审计:[/] {ordered}")
 
     return lines
 
@@ -197,14 +197,13 @@ def _prompt_for_skill_name(c: Console, url: str, default: str = "") -> Optional[
     """Prompt interactively for a skill name. Returns None on cancel/EOF."""
     c.print()
     c.print(
-        f"[yellow]The SKILL.md at {url} doesn't declare a `name:` in its "
-        f"frontmatter,[/]\n[yellow]and the URL path doesn't produce a valid "
-        f"identifier either.[/]"
+        f"[yellow]{url} 中的 SKILL.md 未在其 frontmatter 中声明 `name:`，[/]"
+        f"[yellow]且 URL 路径也未生成有效的标识符。[/]"
     )
     default_hint = f" [{default}]" if default else ""
     c.print(
-        f"[bold]Enter a skill name{default_hint}:[/] "
-        f"[dim](lowercase letters, digits, hyphens, underscores; starts with a letter)[/]"
+        f"[bold]输入技能名称{default_hint}:[/] "
+        f"[dim]（小写字母、数字、连字符、下划线；以字母开头）[/]"
     )
     try:
         answer = input("Name: ").strip()
@@ -213,7 +212,7 @@ def _prompt_for_skill_name(c: Console, url: str, default: str = "") -> Optional[
     if not answer and default:
         answer = default
     if not _is_valid_installed_skill_name(answer):
-        c.print(f"[bold red]Invalid name:[/] {answer!r}. Aborting install.\n")
+        c.print(f"[bold red]无效名称:[/] {answer!r}。安装已中止。\n")
         return None
     return answer
 
@@ -223,22 +222,22 @@ def _prompt_for_category(c: Console, existing: List[str]) -> str:
     c.print()
     if existing:
         c.print(
-            "[bold]Pick a category[/] "
-            "[dim](reuse an existing bucket, type a new one, or press Enter to install flat)[/]"
+            "[bold]选择一个类别[/] "
+            "[dim]（复用现有桶，输入新类别，或按 Enter 扁平安装）[/]"
         )
-        c.print(f"[dim]Existing: {', '.join(existing)}[/]")
+        c.print(f"[dim]现有: {', '.join(existing)}[/]")
     else:
         c.print(
-            "[bold]Category[/] [dim](optional — press Enter to install flat at ~/.hermes/skills/<name>/)[/]"
+            "[bold]类别[/] [dim]（可选 — 按 Enter 扁平安装到 ~/.hermes/skills/<name>/）[/]"
         )
     try:
-        answer = input("Category: ").strip()
+        answer = input("类别: ").strip()
     except (EOFError, KeyboardInterrupt):
         return ""
     if not answer:
         return ""
     if not _VALID_CATEGORY_RE.match(answer):
-        c.print(f"[dim]Invalid category {answer!r} — installing flat.[/]")
+        c.print(f"[dim]无效类别 {answer!r} — 将扁平安装。[/]")
         return ""
     return answer
 
@@ -249,18 +248,18 @@ def do_search(query: str, source: str = "all", limit: int = 10,
     from tools.skills_hub import GitHubAuth, create_source_router, unified_search
 
     c = console or _console
-    c.print(f"\n[bold]Searching for:[/] {query}")
+    c.print(f"\n[bold]正在搜索:[/] {query}")
 
     auth = GitHubAuth()
     sources = create_source_router(auth)
-    with c.status("[bold]Searching registries..."):
+    with c.status("[bold]正在搜索注册表..."):
         results = unified_search(query, sources, source_filter=source, limit=limit)
 
     if not results:
-        c.print("[dim]No skills found matching your query.[/]\n")
+        c.print("[dim]未找到匹配您查询的技能。[/]\n")
         return
 
-    table = Table(title=f"Skills Hub — {len(results)} result(s)")
+    table = Table(title=f"技能中心 — {len(results)} 个结果")
     table.add_column("Name", style="bold cyan")
     table.add_column("Description", max_width=60)
     table.add_column("Source", style="dim")
@@ -269,7 +268,7 @@ def do_search(query: str, source: str = "all", limit: int = 10,
 
     for r in results:
         trust_style = {"builtin": "bright_cyan", "trusted": "green", "community": "yellow"}.get(r.trust_level, "dim")
-        trust_label = "official" if r.source == "official" else r.trust_level
+        trust_label = "官方" if r.source == "official" else r.trust_level
         table.add_row(
             r.name,
             r.description[:60] + ("..." if len(r.description) > 60 else ""),
@@ -279,8 +278,8 @@ def do_search(query: str, source: str = "all", limit: int = 10,
         )
 
     c.print(table)
-    c.print("[dim]Use: hermes skills inspect <identifier> to preview, "
-            "hermes skills install <identifier> to install[/]\n")
+    c.print("[dim]使用: hermes skills inspect <identifier> 预览，"
+            "hermes skills install <identifier> 安装[/]\n")
 
 
 def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
@@ -310,7 +309,7 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
         "lobehub": 500, "browse-sh": 500,
     }
 
-    with c.status("[bold]Fetching skills from registries..."):
+    with c.status("[bold]从注册表中获取技能..."):
         all_results, source_counts, timed_out = parallel_search_sources(
             sources,
             query="",
@@ -320,7 +319,7 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
         )
 
     if not all_results:
-        c.print("[dim]No skills found in the Skills Hub.[/]\n")
+        c.print("[dim]在技能中心未找到技能。[/]\n")
         return
 
     # Deduplicate by identifier, preferring higher trust.
@@ -352,14 +351,14 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     official_count = sum(1 for r in deduped if r.source == "official")
 
     # Build header
-    source_label = f"— {source}" if source != "all" else "— all sources"
-    loaded_label = f"{total} skills loaded"
+    source_label = f"— {source}" if source != "all" else "— 所有来源"
+    loaded_label = f"已加载 {total} 个技能"
     if timed_out:
-        loaded_label += f", {len(timed_out)} source(s) still loading"
-    c.print(f"\n[bold]Skills Hub — Browse {source_label}[/]"
-            f"  [dim]({loaded_label}, page {page}/{total_pages})[/]")
+        loaded_label += f"，{len(timed_out)} 个来源仍在加载"
+    c.print(f"\n[bold]技能中心 — 浏览 {source_label}[/]"
+            f"  [dim]({loaded_label}，第 {page}/{total_pages} 页)[/]")
     if official_count > 0 and page == 1:
-        c.print(f"[bright_cyan]★ {official_count} official optional skill(s) from Nous Research[/]")
+        c.print(f"[bright_cyan]★ {official_count} 个来自 Nous Research 的官方可选技能[/]")
     c.print()
 
     # Build table
@@ -373,7 +372,7 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     for i, r in enumerate(page_items, start=start + 1):
         trust_style = {"builtin": "bright_cyan", "trusted": "green",
                        "community": "yellow"}.get(r.trust_level, "dim")
-        trust_label = "★ official" if r.source == "official" else r.trust_level
+        trust_label = "★ 官方" if r.source == "official" else r.trust_level
 
         desc = r.description[:50]
         if len(r.description) > 50:
@@ -402,13 +401,13 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     # Source summary
     if source == "all" and source_counts:
         parts = [f"{sid}: {ct}" for sid, ct in sorted(source_counts.items())]
-        c.print(f"  [dim]Sources: {', '.join(parts)}[/]")
+        c.print(f"  [dim]来源: {', '.join(parts)}[/]")
 
     if timed_out:
-        c.print(f"  [yellow]⚡ Slow sources skipped: {', '.join(timed_out)} "
-                f"— run again for cached results[/]")
+        c.print(f"  [yellow]⚡ 慢速来源已跳过: {', '.join(timed_out)} "
+                f"— 再次运行以获取缓存结果[/]")
 
-    c.print("[dim]Tip: 'hermes skills search <query>' searches deeper across all registries[/]\n")
+    c.print("[dim]提示: 'hermes skills search <query>' 在所有注册表中深度搜索[/]\n")
 
 
 def do_install(identifier: str, category: str = "", force: bool = False,
@@ -443,7 +442,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
         if not identifier:
             return
 
-    c.print(f"\n[bold]Fetching:[/] {identifier}")
+    c.print(f"\n[bold]正在获取:[/] {identifier}")
 
     meta, bundle, _matched_source = _resolve_source_meta_and_bundle(identifier, sources)
 
@@ -454,14 +453,14 @@ def do_install(identifier: str, category: str = "", force: bool = False,
             or getattr(getattr(src, "github", None), "is_rate_limited", False)
             for src in sources
         )
-        c.print(f"[bold red]Error:[/] Could not fetch '{identifier}' from any source.")
+        c.print(f"[bold red]错误:[/] 无法从任何来源获取 '{identifier}'。")
         if rate_limited:
             c.print(
-                "[yellow]Hint:[/] GitHub API rate limit exhausted "
-                "(unauthenticated: 60 requests/hour).\n"
-                "Set [bold]GITHUB_TOKEN[/] in your .env or install the "
-                "[bold]gh[/] CLI and run [bold]gh auth login[/] "
-                "to raise the limit to 5,000/hr.\n"
+                "[yellow]提示:[/] GitHub API 速率限制已用完 "
+                "（未认证: 60 请求/小时）。\n"
+                "在 .env 中设置 [bold]GITHUB_TOKEN[/] 或安装 "
+                "[bold]gh[/] CLI 并运行 [bold]gh auth login[/] "
+                "以将限制提高到 5,000/小时。\n"
             )
         else:
             c.print()
@@ -478,9 +477,9 @@ def do_install(identifier: str, category: str = "", force: bool = False,
             bundle_meta["awaiting_name"] = False
         elif name_override:
             c.print(
-                f"[bold red]Invalid --name:[/] {name_override!r}. "
-                "Must be a lowercase identifier (letters, digits, hyphens, "
-                "underscores; starts with a letter).\n"
+                f"[bold red]无效的 --name:[/] {name_override!r}。"
+                "必须是小写标识符（字母、数字、连字符、"
+                "下划线；以字母开头）。\n"
             )
             return
         elif skip_confirm:
@@ -488,14 +487,13 @@ def do_install(identifier: str, category: str = "", force: bool = False,
             # prompt — emit an actionable error.
             url = bundle_meta.get("url") or identifier
             c.print(
-                f"[bold red]Cannot install from URL:[/] {url}\n"
-                "[yellow]The SKILL.md has no `name:` in its frontmatter, "
-                "and the URL path doesn't produce a valid identifier.[/]\n\n"
-                "Retry with an explicit name:\n"
+                f"[bold red]无法从 URL 安装:[/] {url}\n"
+                "[yellow]SKILL.md 没有 `name:` 的 frontmatter，"
+                "且 URL 路径未生成有效标识符。[/]\n\n"
+                "使用显式名称重试:\n"
                 f"  [bold]/skills install {url} --name <your-name>[/]\n"
                 f"  [bold]hermes skills install {url} --name <your-name>[/]\n\n"
-                "[dim]Or ask the SKILL.md's author to add a `name:` field to "
-                "its YAML frontmatter.[/]\n"
+                "[dim]或要求 SKILL.md 的作者在 YAML frontmatter 中添加 `name:` 字段。[/]\n"
             )
             return
         else:
@@ -503,7 +501,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
             url = bundle_meta.get("url") or identifier
             chosen = _prompt_for_skill_name(c, url)
             if not chosen:
-                c.print("[dim]Installation cancelled.[/]\n")
+                c.print("[dim]安装已取消。[/]\n")
                 return
             bundle.name = chosen
             bundle_meta["awaiting_name"] = False
@@ -529,9 +527,9 @@ def do_install(identifier: str, category: str = "", force: bool = False,
     lock = HubLockFile()
     existing = lock.get_installed(bundle.name)
     if existing:
-        c.print(f"[yellow]Warning:[/] '{bundle.name}' is already installed at {existing['install_path']}")
+        c.print(f"[yellow]警告:[/] '{bundle.name}' 已安装在 {existing['install_path']}")
         if not force:
-            c.print("Use --force to reinstall.\n")
+            c.print("使用 --force 重新安装。\n")
             return
 
     extra_metadata = dict(getattr(meta, "extra", {}) or {})
@@ -541,15 +539,15 @@ def do_install(identifier: str, category: str = "", force: bool = False,
     try:
         q_path = quarantine_bundle(bundle)
     except ValueError as exc:
-        c.print(f"[bold red]Installation blocked:[/] {exc}\n")
+        c.print(f"[bold red]安装被阻止:[/] {exc}\n")
         from tools.skills_hub import append_audit_log
         append_audit_log("BLOCKED", bundle.name, bundle.source,
                          bundle.trust_level, "invalid_path", str(exc))
         return
-    c.print(f"[dim]Quarantined to {q_path.relative_to(q_path.parent.parent.parent)}[/]")
+    c.print(f"[dim]已隔离到 {q_path.relative_to(q_path.parent.parent.parent)}[/]")
 
     # Scan
-    c.print("[bold]Running security scan...[/]")
+    c.print("[bold]正在运行安全扫描...[/]")
     scan_source = getattr(bundle, "identifier", "") or getattr(meta, "identifier", "") or identifier
     result = scan_skill(q_path, source=scan_source)
     c.print(format_scan_report(result))
@@ -557,7 +555,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
     # Check install policy
     allowed, reason = should_allow_install(result, force=force)
     if not allowed:
-        c.print(f"\n[bold red]Installation blocked:[/] {reason}")
+        c.print(f"\n[bold red]安装被阻止:[/] {reason}")
         # Clean up quarantine
         shutil.rmtree(q_path, ignore_errors=True)
         from tools.skills_hub import append_audit_log
@@ -569,7 +567,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
     if extra_metadata:
         metadata_lines = _format_extra_metadata_lines(extra_metadata)
         if metadata_lines:
-            c.print(Panel("\n".join(metadata_lines), title="Upstream Metadata", border_style="blue"))
+            c.print(Panel("\n".join(metadata_lines), title="上游元数据", border_style="blue"))
 
     # Confirm with user — show appropriate warning based on source
     # skip_confirm bypasses the prompt (needed in TUI mode where input() hangs)
@@ -577,30 +575,30 @@ def do_install(identifier: str, category: str = "", force: bool = False,
         c.print()
         if bundle.source == "official":
             c.print(Panel(
-                "[bold bright_cyan]This is an official optional skill maintained by Nous Research.[/]\n\n"
-                "It ships with hermes-agent but is not activated by default.\n"
-                "Installing will copy it to your skills directory where the agent can use it.\n\n"
-                f"Files will be at: [cyan]{display_hermes_home()}/skills/{category + '/' if category else ''}{bundle.name}/[/]",
-                title="Official Skill",
+                "[bold bright_cyan]这是由 Nous Research 维护的官方可选技能。[/]\n\n"
+                "它与 hermes-agent 一同发布但默认未激活。\n"
+                "安装将将其复制到您的技能目录中，供 agent 使用。\n\n"
+                f"文件位置: [cyan]{display_hermes_home()}/skills/{category + '/' if category else ''}{bundle.name}/[/]",
+                title="官方技能",
                 border_style="bright_cyan",
             ))
         else:
             c.print(Panel(
-                "[bold yellow]You are installing a third-party skill at your own risk.[/]\n\n"
-                "External skills can contain instructions that influence agent behavior,\n"
-                "shell commands, and scripts. Even after automated scanning, you should\n"
-                "review the installed files before use.\n\n"
-                f"Files will be at: [cyan]{display_hermes_home()}/skills/{category + '/' if category else ''}{bundle.name}/[/]",
-                title="Disclaimer",
+                "[bold yellow]您正在自行承担风险安装第三方技能。[/]\n\n"
+                "外部技能可能包含影响 agent 行为的指令、"
+                "shell 命令和脚本。即使在自动扫描后，您也应"
+                "在使用前审查已安装的文件。\n\n"
+                f"文件位置: [cyan]{display_hermes_home()}/skills/{category + '/' if category else ''}{bundle.name}/[/]",
+                title="免责声明",
                 border_style="yellow",
             ))
-        c.print(f"[bold]Install '{bundle.name}'?[/]")
+        c.print(f"[bold]安装 '{bundle.name}'?[/]")
         try:
-            answer = input("Confirm [y/N]: ").strip().lower()
+            answer = input("确认 [y/N]: ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             answer = "n"
         if answer not in {"y", "yes"}:
-            c.print("[dim]Installation cancelled.[/]\n")
+            c.print("[dim]安装已取消。[/]\n")
             shutil.rmtree(q_path, ignore_errors=True)
             return
 
@@ -608,15 +606,15 @@ def do_install(identifier: str, category: str = "", force: bool = False,
     try:
         install_dir = install_from_quarantine(q_path, bundle.name, category, bundle, result)
     except ValueError as exc:
-        c.print(f"[bold red]Installation blocked:[/] {exc}\n")
+        c.print(f"[bold red]安装被阻止:[/] {exc}\n")
         shutil.rmtree(q_path, ignore_errors=True)
         from tools.skills_hub import append_audit_log
         append_audit_log("BLOCKED", bundle.name, bundle.source,
                          bundle.trust_level, "invalid_path", str(exc))
         return
     from tools.skills_hub import SKILLS_DIR
-    c.print(f"[bold green]Installed:[/] {install_dir.relative_to(SKILLS_DIR)}")
-    c.print(f"[dim]Files: {', '.join(bundle.files.keys())}[/]\n")
+    c.print(f"[bold green]已安装:[/] {install_dir.relative_to(SKILLS_DIR)}")
+    c.print(f"[dim]文件: {', '.join(bundle.files.keys())}[/]\n")
 
     if invalidate_cache:
         # Invalidate the skills prompt cache so the new skill appears immediately
@@ -626,8 +624,8 @@ def do_install(identifier: str, category: str = "", force: bool = False,
         except Exception:
             pass
     else:
-        c.print("[dim]Skill will be available in your next session.[/]")
-        c.print("[dim]Use /reset to start a new session now, or --now to activate immediately (invalidates prompt cache).[/]\n")
+        c.print("[dim]技能将在您下一次会话中可用。[/]")
+        c.print("[dim]使用 /reset 立即开始新会话，或使用 --now 立即激活（使提示缓存失效）。[/]\n")
 
 
 def do_inspect(identifier: str, console: Optional[Console] = None) -> None:
@@ -646,7 +644,7 @@ def do_inspect(identifier: str, console: Optional[Console] = None) -> None:
     meta, bundle, _matched_source = _resolve_source_meta_and_bundle(identifier, sources)
 
     if not meta:
-        c.print(f"[bold red]Error:[/] Could not find '{identifier}' in any source.\n")
+        c.print(f"[bold red]错误:[/] 无法在任何来源找到 '{identifier}'。\n")
         return
 
     c.print()
@@ -654,17 +652,17 @@ def do_inspect(identifier: str, console: Optional[Console] = None) -> None:
     trust_label = "official" if meta.source == "official" else meta.trust_level
 
     info_lines = [
-        f"[bold]Name:[/] {meta.name}",
-        f"[bold]Description:[/] {meta.description}",
-        f"[bold]Source:[/] {meta.source}",
-        f"[bold]Trust:[/] [{trust_style}]{trust_label}[/]",
-        f"[bold]Identifier:[/] {meta.identifier}",
+        f"[bold]名称:[/] {meta.name}",
+        f"[bold]描述:[/] {meta.description}",
+        f"[bold]来源:[/] {meta.source}",
+        f"[bold]信任级别:[/] [{trust_style}]{trust_label}[/]",
+        f"[bold]标识符:[/] {meta.identifier}",
     ]
     if meta.tags:
-        info_lines.append(f"[bold]Tags:[/] {', '.join(meta.tags)}")
+        info_lines.append(f"[bold]标签:[/] {', '.join(meta.tags)}")
     info_lines.extend(_format_extra_metadata_lines(meta.extra))
 
-    c.print(Panel("\n".join(info_lines), title=f"Skill: {meta.name}"))
+    c.print(Panel("\n".join(info_lines), title=f"技能: {meta.name}"))
 
     if bundle and "SKILL.md" in bundle.files:
         content = bundle.files["SKILL.md"]
@@ -674,8 +672,8 @@ def do_inspect(identifier: str, console: Optional[Console] = None) -> None:
         lines = content.split("\n")
         preview = "\n".join(lines[:50])
         if len(lines) > 50:
-            preview += f"\n\n... ({len(lines) - 50} more lines)"
-        c.print(Panel(preview, title="SKILL.md Preview", subtitle="hermes skills install <id> to install"))
+            preview += f"\n\n... （还有 {len(lines) - 50} 行）"
+        c.print(Panel(preview, title="SKILL.md 预览", subtitle="hermes skills install <id> 安装"))
 
     c.print()
 
@@ -870,7 +868,7 @@ def do_check(name: Optional[str] = None, console: Optional[Console] = None) -> N
     c = console or _console
     results = check_for_skill_updates(name=name)
     if not results:
-        c.print("[dim]No hub-installed skills to check.[/]\n")
+        c.print("[dim]没有中心安装的技能可以检查。[/]\n")
         return
 
     table = Table(title="Skill Updates")
@@ -883,7 +881,7 @@ def do_check(name: Optional[str] = None, console: Optional[Console] = None) -> N
 
     c.print(table)
     update_count = sum(1 for entry in results if entry.get("status") == "update_available")
-    c.print(f"[dim]{update_count} update(s) available across {len(results)} checked skill(s)[/]\n")
+    c.print(f"[dim]{update_count} 个更新可用，涉及 {len(results)} 个已检查技能[/]\n")
 
 
 def do_update(name: Optional[str] = None, console: Optional[Console] = None) -> None:
@@ -894,16 +892,16 @@ def do_update(name: Optional[str] = None, console: Optional[Console] = None) -> 
     lock = HubLockFile()
     updates = [entry for entry in check_for_skill_updates(name=name) if entry.get("status") == "update_available"]
     if not updates:
-        c.print("[dim]No updates available.[/]\n")
+        c.print("[dim]没有可用更新。[/]\n")
         return
 
     for entry in updates:
         installed = lock.get_installed(entry["name"])
         category = _derive_category_from_install_path(installed.get("install_path", "")) if installed else ""
-        c.print(f"[bold]Updating:[/] {entry['name']}")
+        c.print(f"[bold]正在更新:[/] {entry['name']}")
         do_install(entry["identifier"], category=category, force=True, console=c)
 
-    c.print(f"[bold green]Updated {len(updates)} skill(s).[/]\n")
+    c.print(f"[bold green]已更新 {len(updates)} 个技能。[/]\n")
 
 
 def do_audit(name: Optional[str] = None, console: Optional[Console] = None) -> None:
@@ -916,22 +914,22 @@ def do_audit(name: Optional[str] = None, console: Optional[Console] = None) -> N
     installed = lock.list_installed()
 
     if not installed:
-        c.print("[dim]No hub-installed skills to audit.[/]\n")
+        c.print("[dim]没有中心安装的技能可以审计。[/]\n")
         return
 
     targets = installed
     if name:
         targets = [e for e in installed if e["name"] == name]
         if not targets:
-            c.print(f"[bold red]Error:[/] '{name}' is not a hub-installed skill.\n")
+            c.print(f"[bold red]错误:[/] '{name}' 不是中心安装的技能。\n")
             return
 
-    c.print(f"\n[bold]Auditing {len(targets)} skill(s)...[/]\n")
+    c.print(f"\n[bold]正在审计 {len(targets)} 个技能...[/]\n")
 
     for entry in targets:
         skill_path = SKILLS_DIR / entry["install_path"]
         if not skill_path.exists():
-            c.print(f"[yellow]Warning:[/] {entry['name']} — path missing: {entry['install_path']}")
+            c.print(f"[yellow]警告:[/] {entry['name']} — 路径缺失: {entry['install_path']}")
             continue
 
         result = scan_skill(skill_path, source=entry.get("identifier", entry["source"]))
@@ -949,13 +947,13 @@ def do_uninstall(name: str, console: Optional[Console] = None,
 
     # skip_confirm bypasses the prompt (needed in TUI mode where input() hangs)
     if not skip_confirm:
-        c.print(f"\n[bold]Uninstall '{name}'?[/]")
+        c.print(f"\n[bold]卸载 '{name}'?[/]")
         try:
-            answer = input("Confirm [y/N]: ").strip().lower()
+            answer = input("确认 [y/N]: ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             answer = "n"
         if answer not in {"y", "yes"}:
-            c.print("[dim]Cancelled.[/]\n")
+            c.print("[dim]已取消。[/]\n")
             return
 
     success, msg = uninstall_skill(name)
@@ -968,10 +966,10 @@ def do_uninstall(name: str, console: Optional[Console] = None,
             except Exception:
                 pass
         else:
-            c.print("[dim]Change will take effect in your next session.[/]")
-            c.print("[dim]Use /reset to start a new session now, or --now to apply immediately (invalidates prompt cache).[/]\n")
-    else:
-        c.print(f"[bold red]Error:[/] {msg}\n")
+            c.print("[dim]变更将在下一次会话中生效。[/]")
+            c.print("[dim]使用 /reset 立即开始新会话，或使用 --now 立即应用（使提示缓存失效）。[/]\n")
+        else:
+            c.print(f"[bold red]错误:[/] {msg}\n")
 
 
 def do_reset(name: str, restore: bool = False,
@@ -984,8 +982,8 @@ def do_reset(name: str, restore: bool = False,
     c = console or _console
 
     if not skip_confirm and restore:
-        c.print(f"\n[bold]Restore '{name}' from bundled source?[/]")
-        c.print("[dim]This will DELETE your current copy and re-copy the bundled version.[/]")
+        c.print(f"\n[bold]从捆绑源恢复 '{name}'?[/]")
+        c.print("[dim]这将删除您当前的副本并重新复制捆绑版本。[/]")
         try:
             answer = input("Confirm [y/N]: ").strip().lower()
         except (EOFError, KeyboardInterrupt):

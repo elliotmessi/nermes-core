@@ -195,13 +195,13 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
     """
     kanban_parser = parent_subparsers.add_parser(
         "kanban",
-        help="Multi-profile collaboration board (tasks, links, comments)",
+        help="多配置协作看板（任务、链接、评论）",
         description=(
-            "Durable SQLite-backed task board shared across Hermes profiles. "
-            "Tasks are claimed atomically, can depend on other tasks, and "
-            "are executed by a named profile in an isolated workspace. "
-            "See https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban "
-            "or docs/hermes-kanban-v1-spec.pdf for the full design."
+            "Hermes 配置间共享的持久化 SQLite 任务看板。"
+            "任务可原子化领取，可依赖其他任务，"
+            "由指定配置在独立工作空间中执行。"
+            "详见 https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban "
+            "或 docs/hermes-kanban-v1-spec.pdf。"
         ),
     )
     # --- global --board flag ---
@@ -223,379 +223,378 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
     sub = kanban_parser.add_subparsers(dest="kanban_action")
 
     # --- init ---
-    sub.add_parser("init", help="Create kanban.db if missing (idempotent)")
+    sub.add_parser("init", help="如果 kanban.db 不存在则创建（幂等）")
 
     # --- boards (new in v2: multi-project support) ---
     p_boards = sub.add_parser(
         "boards",
-        help="Manage kanban boards (one board per project / workstream)",
+        help="管理看板（每个项目/工作流一个看板）",
         description=(
-            "Boards let you separate unrelated streams of work "
-            "(projects, repos, domains) into isolated queues. Each "
-            "board has its own DB, workspaces directory, and dispatcher "
-            "loop — tasks on one board cannot collide with tasks on "
-            "another. The first board is 'default' and always exists."
+            "看板让您将不相关的工作流（项目、仓库、领域）"
+            "分离到独立队列中。每个看板有自己的数据库、"
+            "工作空间目录和调度器循环——不同看板上的任务不会互相影响。"
+            "第一个看板是 'default'，始终存在。"
         ),
     )
     boards_sub = p_boards.add_subparsers(dest="boards_action")
 
     b_list = boards_sub.add_parser(
         "list", aliases=["ls"],
-        help="List all boards with task counts",
+        help="列出所有看板及其任务数",
     )
     b_list.add_argument("--json", action="store_true")
     b_list.add_argument("--all", action="store_true",
-                        help="Include archived boards too")
+                        help="同时包含已归档的看板")
 
     b_create = boards_sub.add_parser(
         "create", aliases=["new"],
-        help="Create a new board",
+        help="创建新看板",
     )
     b_create.add_argument("slug",
-                          help="Board slug (kebab-case, e.g. atm10-server)")
+                          help="看板标识符（kebab-case，如 atm10-server）")
     b_create.add_argument("--name", default=None,
-                          help="Human-readable display name (defaults to Title Case of slug)")
+                          help="人类可读的显示名称（默认为标识符的首字母大写形式）")
     b_create.add_argument("--description", default=None,
-                          help="Optional description")
+                          help="可选描述")
     b_create.add_argument("--icon", default=None,
-                          help="Optional emoji or single-character icon for the dashboard")
+                          help="可选的仪表盘图标（Emoji 或单个字符）")
     b_create.add_argument("--color", default=None,
-                          help="Optional hex color (e.g. '#8b5cf6') for the dashboard")
+                          help="可选的仪表盘十六进制颜色（如 '#8b5cf6'）")
     b_create.add_argument("--switch", action="store_true",
-                          help="Switch to the new board after creating it")
+                          help="创建后切换到新看板")
     b_create.add_argument("--default-workdir", default=None,
-                          help="Default workspace path for tasks created on this board")
+                          help="为此看板上的任务设置的默认工作空间路径")
 
     b_rm = boards_sub.add_parser(
         "rm", aliases=["remove", "delete"],
-        help="Archive (default) or delete a board",
+        help="归档（默认）或删除看板",
     )
     b_rm.add_argument("slug")
     b_rm.add_argument("--delete", action="store_true",
-                      help="Hard-delete the board directory instead of archiving it. "
-                           "Default is to move it to boards/_archived/ so it's recoverable.")
+                      help="硬删除看板目录而非归档。"
+                           "默认将移至 boards/_archived/ 以便恢复。")
 
     b_switch = boards_sub.add_parser(
         "switch", aliases=["use"],
-        help="Set the active board for subsequent CLI calls",
+        help="设置后续 CLI 调用的活动看板",
     )
     b_switch.add_argument("slug")
 
     boards_sub.add_parser(
         "show", aliases=["current"],
-        help="Print the currently-active board slug",
+        help="打印当前活动的看板标识符",
     )
 
     b_rename = boards_sub.add_parser(
         "rename",
-        help="Change a board's human-readable display name (slug is immutable)",
+        help="更改看板的显示名称（标识符不可变）",
     )
     b_rename.add_argument("slug")
-    b_rename.add_argument("name", help="New display name")
+    b_rename.add_argument("name", help="新显示名称")
 
     b_set_wd = boards_sub.add_parser(
         "set-default-workdir",
-        help="Set the default workspace path for tasks on a board",
+        help="设置看板上任务的默认工作空间路径",
     )
     b_set_wd.add_argument("slug")
     b_set_wd.add_argument("path", nargs="?", default=None,
-                          help="Absolute path to use as default workdir. Omit to clear.")
+                          help="用作默认工作目录的绝对路径。留空则清除。")
 
     # --- create ---
-    p_create = sub.add_parser("create", help="Create a new task")
-    p_create.add_argument("title", help="Task title")
-    p_create.add_argument("--body", default=None, help="Optional opening post")
-    p_create.add_argument("--assignee", default=None, help="Profile name to assign")
+    p_create = sub.add_parser("create", help="创建新任务")
+    p_create.add_argument("title", help="任务标题")
+    p_create.add_argument("--body", default=None, help="可选的初始内容")
+    p_create.add_argument("--assignee", default=None, help="要分配的配置名称")
     p_create.add_argument("--parent", action="append", default=[],
-                          help="Parent task id (repeatable)")
+                          help="父任务 ID（可重复）")
     p_create.add_argument("--workspace", default="scratch",
                           help="scratch | worktree | worktree:<path> | dir:<path> "
-                               "(default: scratch)")
+                               "（默认：scratch）")
     p_create.add_argument("--branch", default=None,
-                          help="Branch name for worktree tasks, e.g. wt/t6-wire")
-    p_create.add_argument("--tenant", default=None, help="Tenant namespace")
-    p_create.add_argument("--priority", type=int, default=0, help="Priority tiebreaker")
+                          help="工作树任务的分支名称，如 wt/t6-wire")
+    p_create.add_argument("--tenant", default=None, help="租户命名空间")
+    p_create.add_argument("--priority", type=int, default=0, help="优先级排序")
     p_create.add_argument("--triage", action="store_true",
-                          help="Park in triage — a specifier will flesh out the spec and promote to todo")
+                          help="放入分类队列 — 将由指定者完善规格后提升为待办")
     p_create.add_argument("--idempotency-key", default=None,
-                          help="Dedup key. If a non-archived task with this key exists, "
-                               "its id is returned instead of creating a duplicate.")
+                          help="去重键。如果存在具有此键且未归档的任务，"
+                               "将返回其 ID 而非创建重复项。")
     p_create.add_argument("--max-runtime", default=None,
-                          help="Per-task runtime cap. Accepts seconds (300) or "
-                               "durations (90s, 30m, 2h, 1d). When exceeded, "
-                               "the dispatcher SIGTERMs (then SIGKILLs) the worker "
-                               "and re-queues the task.")
+                          help="每个任务的运行时间上限。接受秒数（300）或"
+                               "时长（90s、30m、2h、1d）。超时后，"
+                               "调度器将发送 SIGTERM（然后 SIGKILL）给工人"
+                               "并重新排队任务。")
     p_create.add_argument("--created-by", default="user",
-                          help="Author name recorded on the task (default: user)")
+                          help="记录在任务上的作者名称（默认：user）")
     p_create.add_argument("--skill", action="append", default=[], dest="skills",
-                          help="Skill to force-load into the worker "
-                               "(repeatable). Appended to the built-in "
-                               "kanban-worker skill. Example: "
+                          help="强制加载到工人中的技能"
+                               "（可重复）。附加到内置的"
+                               "kanban-worker 技能中。示例："
                                "--skill translation --skill github-code-review")
     p_create.add_argument("--max-retries", type=int, default=None,
                           metavar="N",
-                          help="Per-task override for the consecutive-failure "
-                               "circuit breaker. Trip on the Nth failure — "
-                               "e.g. --max-retries 1 blocks on the first "
-                               "failure (no retries), --max-retries 3 allows "
-                               "two retries. Omit to use the dispatcher's "
-                               "kanban.failure_limit config "
-                               f"(default {kb.DEFAULT_FAILURE_LIMIT}).")
+                          help="连续失败断路器的"
+                               "每任务覆盖值。在第 N 次失败时触发 — "
+                               "例如 --max-retries 1 在第一次失败时阻塞"
+                               "（不重试），--max-retries 3 允许"
+                               "两次重试。省略则使用调度器的"
+                               "kanban.failure_limit 配置"
+                               f"（默认 {kb.DEFAULT_FAILURE_LIMIT}）。")
     p_create.add_argument("--initial-status",
                           choices=sorted(kb.VALID_INITIAL_STATUSES),
                           default="running",
-                          help="Initial card status. Use 'blocked' for cards "
-                               "that require immediate human ops (R3 gate) "
-                               "to skip the brief running-to-blocked transition.")
-    p_create.add_argument("--json", action="store_true", help="Emit JSON output")
+                          help="初始卡片状态。对需要立即人工操作的卡片 "
+                               "使用 'blocked'（R3 门控）"
+                               "以跳过短暂的 running→blocked 转换。")
+    p_create.add_argument("--json", action="store_true", help="输出 JSON")
 
     # --- swarm ---
     p_swarm = sub.add_parser(
         "swarm",
-        help="Create a Kanban Swarm v1 graph (parallel workers → verifier → synthesizer)",
+        help="创建 Kanban Swarm v1 图（并行工人 → 验证者 → 综合者）",
     )
-    p_swarm.add_argument("goal", help="Swarm goal / final outcome")
+    p_swarm.add_argument("goal", help="Swarm 目标 / 最终成果")
     p_swarm.add_argument(
         "--worker",
         action="append",
         default=[],
         metavar="PROFILE:TITLE[:SKILL,SKILL]",
-        help="Parallel worker card (repeatable)",
+        help="并行工人卡片（可重复）",
     )
-    p_swarm.add_argument("--verifier", required=True, help="Verifier profile")
-    p_swarm.add_argument("--synthesizer", required=True, help="Synthesizer/writer profile")
-    p_swarm.add_argument("--tenant", default=None, help="Tenant namespace")
-    p_swarm.add_argument("--priority", type=int, default=0, help="Priority tiebreaker")
-    p_swarm.add_argument("--created-by", default=None, help="Creator/anchor profile")
-    p_swarm.add_argument("--idempotency-key", default=None, help="Dedup key for the root card")
-    p_swarm.add_argument("--json", action="store_true", help="Emit JSON output")
+    p_swarm.add_argument("--verifier", required=True, help="验证者配置")
+    p_swarm.add_argument("--synthesizer", required=True, help="综合者/编写者配置")
+    p_swarm.add_argument("--tenant", default=None, help="租户命名空间")
+    p_swarm.add_argument("--priority", type=int, default=0, help="优先级排序")
+    p_swarm.add_argument("--created-by", default=None, help="创建者/锚点配置")
+    p_swarm.add_argument("--idempotency-key", default=None, help="根卡片的去重键")
+    p_swarm.add_argument("--json", action="store_true", help="输出 JSON")
 
     # --- list ---
-    p_list = sub.add_parser("list", aliases=["ls"], help="List tasks")
+    p_list = sub.add_parser("list", aliases=["ls"], help="列出任务")
     p_list.add_argument("--mine", action="store_true",
-                        help="Filter by $HERMES_PROFILE as assignee")
+                        help="按 $HERMES_PROFILE 过滤作为负责人")
     p_list.add_argument("--assignee", default=None)
     p_list.add_argument("--status", default=None,
                         choices=sorted(kb.VALID_STATUSES))
     p_list.add_argument("--tenant", default=None)
     p_list.add_argument("--session", default=None,
-                        help="Filter by originating chat/agent session id "
-                             "(set on tasks created from inside an ACP loop)")
+                        help="按来源聊天/代理会话 ID 过滤"
+                             "（在 ACP 循环内部创建的任务上设置）")
     p_list.add_argument("--archived", action="store_true",
-                        help="Include archived tasks")
+                        help="包含已归档的任务")
     p_list.add_argument("--json", action="store_true")
     p_list.add_argument(
         "--sort",
         default=None,
         choices=sorted(kb.VALID_SORT_ORDERS.keys()),
-        help="Sort order for listed tasks (default: priority)",
+        help="列出任务的排序方式（默认：优先级）",
     )
     p_list.add_argument(
         "--workflow-template-id",
         default=None,
         metavar="ID",
-        help="Restrict to tasks with this workflow_template_id",
+        help="限制为此 workflow_template_id 的任务",
     )
     p_list.add_argument(
         "--step-key",
         default=None,
         dest="current_step_key",
         metavar="KEY",
-        help="Restrict to tasks with this current_step_key",
+        help="限制为此 current_step_key 的任务",
     )
 
     # --- show ---
-    p_show = sub.add_parser("show", help="Show a task with comments + events")
+    p_show = sub.add_parser("show", help="显示任务及其评论和事件")
     p_show.add_argument("task_id")
     p_show.add_argument("--json", action="store_true")
     p_show.add_argument(
         "--state-type",
         choices=("status", "outcome"),
         default=None,
-        help="With --state-name: filter listed runs by task_runs column",
+        help="与 --state-name 搭配：按 task_runs 列过滤运行记录",
     )
     p_show.add_argument(
         "--state-name",
         default=None,
         metavar="VALUE",
-        help="With --state-type: keep runs whose column equals this value",
+        help="与 --state-type 搭配：保留该列值等于此值的运行记录",
     )
 
     # --- assign ---
-    p_assign = sub.add_parser("assign", help="Assign or reassign a task")
+    p_assign = sub.add_parser("assign", help="分配或重新分配任务")
     p_assign.add_argument("task_id")
-    p_assign.add_argument("profile", help="Profile name (or 'none' to unassign)")
+    p_assign.add_argument("profile", help="配置名称（或 'none' 取消分配）")
 
     # --- reclaim / reassign (recovery) ---
     p_reclaim = sub.add_parser(
         "reclaim",
-        help="Release an active worker claim on a running task",
+        help="释放对运行中任务的活跃工人认领",
     )
     p_reclaim.add_argument("task_id")
     p_reclaim.add_argument(
         "--reason", default=None,
-        help="Human-readable reason (recorded on the reclaimed event)",
+        help="人类可读的原因（记录在回收事件中）",
     )
 
     p_reassign = sub.add_parser(
         "reassign",
-        help="Reassign a task to a different profile, optionally reclaiming first",
+        help="将任务重新分配给其他配置，可选择先回收",
     )
     p_reassign.add_argument("task_id")
     p_reassign.add_argument(
         "profile",
-        help="New profile name (or 'none' to unassign)",
+        help="新配置名称（或 'none' 取消分配）",
     )
     p_reassign.add_argument(
         "--reclaim", action="store_true",
-        help="Release any active claim before reassigning (required if task is running)",
+        help="重新分配前释放活跃认领（如果任务在运行中则必需）",
     )
     p_reassign.add_argument(
         "--reason", default=None,
-        help="Human-readable reason (recorded on the reclaimed event)",
+        help="人类可读的原因（记录在回收事件中）",
     )
 
     # --- diagnostics (board-wide health) ---
     p_diag = sub.add_parser(
         "diagnostics",
         aliases=["diag"],
-        help="List active diagnostics on the current board",
+        help="列出当前看板的活动诊断",
     )
     p_diag.add_argument(
         "--severity",
         choices=["warning", "error", "critical"],
         default=None,
-        help="Only show diagnostics at or above this severity",
+        help="仅显示此严重级别及以上的诊断",
     )
     p_diag.add_argument(
         "--task",
         default=None,
-        help="Only show diagnostics for one task id",
+        help="仅显示一个任务 ID 的诊断",
     )
     p_diag.add_argument(
         "--json", action="store_true",
-        help="Emit JSON (structured) instead of the default human table",
+        help="输出 JSON（结构化）而非默认的人类可读表格",
     )
 
     # --- link / unlink ---
-    p_link = sub.add_parser("link", help="Add a parent->child dependency")
+    p_link = sub.add_parser("link", help="添加父→子依赖")
     p_link.add_argument("parent_id")
     p_link.add_argument("child_id")
-    p_unlink = sub.add_parser("unlink", help="Remove a parent->child dependency")
+    p_unlink = sub.add_parser("unlink", help="移除父→子依赖")
     p_unlink.add_argument("parent_id")
     p_unlink.add_argument("child_id")
 
     # --- claim ---
     p_claim = sub.add_parser(
         "claim",
-        help="Atomically claim a ready task (prints resolved workspace path)",
+        help="原子化认领一个就绪任务（打印解析后的工作空间路径）",
     )
     p_claim.add_argument("task_id")
     p_claim.add_argument("--ttl", type=int, default=kb.DEFAULT_CLAIM_TTL_SECONDS,
-                         help="Claim TTL in seconds (default: 900)")
+                         help="认领 TTL（秒，默认：900）")
 
     # --- comment / complete / block / unblock / archive ---
-    p_comment = sub.add_parser("comment", help="Append a comment")
+    p_comment = sub.add_parser("comment", help="添加评论")
     p_comment.add_argument("task_id")
-    p_comment.add_argument("text", nargs="+", help="Comment body")
+    p_comment.add_argument("text", nargs="+", help="评论内容")
     p_comment.add_argument("--author", default=None,
-                           help="Author name (default: $HERMES_PROFILE or 'user')")
+                           help="作者名称（默认：$HERMES_PROFILE 或 'user'）")
     p_comment.add_argument("--max-len", type=int, default=None,
-                           help="Trim the stored comment body to this many characters")
+                           help="将存储的评论内容截断至此字符数")
 
-    p_complete = sub.add_parser("complete", help="Mark one or more tasks done")
+    p_complete = sub.add_parser("complete", help="标记一个或多个任务为完成")
     p_complete.add_argument("task_ids", nargs="+",
-                            help="One or more task ids (only --result applies to all of them)")
-    p_complete.add_argument("--result", default=None, help="Result summary")
+                            help="一个或多个任务 ID（仅 --result 适用于所有）")
+    p_complete.add_argument("--result", default=None, help="结果摘要")
     p_complete.add_argument("--summary", default=None,
-                            help="Structured handoff summary for downstream tasks. "
-                                 "Falls back to --result if omitted.")
+                            help="下游任务的结构化交接摘要。"
+                                 "省略时回退到 --result。")
     p_complete.add_argument("--metadata", default=None,
-                            help='JSON dict of structured facts (e.g. \'{"changed_files": [...], '
-                                 '"tests_run": 12}\'). Stored on the closing run.')
+                            help='结构化事实的 JSON 字典（例如 \'{"changed_files": [...], '
+                                 '"tests_run": 12}\'）。存储在关闭的运行记录上。')
 
     p_edit = sub.add_parser(
         "edit",
-        help="Edit recovery fields on an already-completed task",
+        help="编辑已完成任务的恢复字段",
     )
     p_edit.add_argument("task_id")
     p_edit.add_argument(
         "--result",
         required=True,
-        help="Backfilled task result text for a done task",
+        help="已完成任务的回溯结果文本",
     )
     p_edit.add_argument(
         "--summary",
         default=None,
-        help="Structured handoff summary. Falls back to --result if omitted.",
+        help="结构化交接摘要。省略时回退到 --result。",
     )
     p_edit.add_argument(
         "--metadata",
         default=None,
-        help="JSON dict of structured facts to store on the latest completed run.",
+        help="要存储在最近完成的运行记录上的结构化事实 JSON 字典。",
     )
 
-    p_block = sub.add_parser("block", help="Mark one or more tasks blocked")
+    p_block = sub.add_parser("block", help="标记一个或多个任务为阻塞")
     p_block.add_argument("task_id")
-    p_block.add_argument("reason", nargs="*", help="Reason (also appended as a comment)")
+    p_block.add_argument("reason", nargs="*", help="原因（也会作为评论附加）")
     p_block.add_argument("--ids", nargs="+", default=None,
-                         help="Additional task ids to block with the same reason (bulk mode)")
+                         help="使用相同原因阻塞的额外任务 ID（批量模式）")
 
-    p_schedule = sub.add_parser("schedule", help="Park one or more tasks in Scheduled (waiting on time, not human input)")
+    p_schedule = sub.add_parser("schedule", help="将一个或多个任务放入已调度（等待时间而非人工输入）")
     p_schedule.add_argument("task_id")
-    p_schedule.add_argument("reason", nargs="*", help="Reason/timing note (also appended as a comment)")
+    p_schedule.add_argument("reason", nargs="*", help="原因/时间说明（也会作为评论附加）")
     p_schedule.add_argument("--ids", nargs="+", default=None,
-                            help="Additional task ids to schedule with the same reason (bulk mode)")
+                            help="使用相同原因调度的额外任务 ID（批量模式）")
 
-    p_unblock = sub.add_parser("unblock", help="Return one or more blocked/scheduled tasks to ready")
+    p_unblock = sub.add_parser("unblock", help="将一个或多个阻塞/已调度任务返回到就绪")
     p_unblock.add_argument("task_ids", nargs="+")
 
-    p_archive = sub.add_parser("archive", help="Archive one or more tasks")
+    p_archive = sub.add_parser("archive", help="归档一个或多个任务")
     p_archive.add_argument("task_ids", nargs="*",
-                           help="Task ids to archive (default mode)")
+                           help="要归档的任务 ID（默认模式）")
     p_archive.add_argument(
         "--rm",
         dest="purge_ids",
         nargs="+",
         default=None,
-        help="Permanently delete already-archived task ids from the board",
+        help="从看板中永久删除已归档的任务 ID",
     )
 
     # --- tail ---
-    p_tail = sub.add_parser("tail", help="Follow a task's event stream")
+    p_tail = sub.add_parser("tail", help="跟随任务的事件流")
     p_tail.add_argument("task_id")
     p_tail.add_argument("--interval", type=float, default=1.0)
 
     # --- dispatch ---
     p_disp = sub.add_parser(
         "dispatch",
-        help="One dispatcher pass: reclaim stale, promote ready, spawn workers",
+        help="执行一次调度：回收过期、提升就绪、生成工人",
     )
     p_disp.add_argument("--dry-run", action="store_true",
-                        help="Don't actually spawn processes; just print what would happen")
+                        help="不实际生成进程，仅打印将要执行的操作")
     p_disp.add_argument("--max", type=int, default=None,
-                        help="Cap number of spawns this pass")
+                        help="限制本次调度的生成数量")
     p_disp.add_argument("--failure-limit", type=int,
                         default=kb.DEFAULT_SPAWN_FAILURE_LIMIT,
-                        help=f"Auto-block a task after this many consecutive non-success attempts "
-                             f"(spawn_failed, timed_out, or crashed; default: {kb.DEFAULT_SPAWN_FAILURE_LIMIT})")
+                        help=f"在连续非成功尝试（spawn_failed、timed_out 或 crashed）"
+                             f"达到此次数后自动阻塞任务（默认：{kb.DEFAULT_SPAWN_FAILURE_LIMIT}）")
     p_disp.add_argument("--json", action="store_true")
 
     # --- daemon (deprecated) ---
     p_daemon = sub.add_parser(
         "daemon",
-        help="DEPRECATED — dispatcher now runs in the gateway. Use `hermes gateway start`.",
+        help="已弃用 — 调度器现在运行在网关中。请使用 `hermes gateway start`。",
     )
     p_daemon.add_argument("--interval", type=float, default=60.0,
-                          help="Seconds between dispatch ticks (default: 60)")
+                          help="调度间隔秒数（默认：60）")
     p_daemon.add_argument("--max", type=int, default=None,
-                          help="Cap number of spawns per tick")
+                          help="每次调度生成上限")
     p_daemon.add_argument("--failure-limit", type=int,
                           default=kb.DEFAULT_SPAWN_FAILURE_LIMIT)
     p_daemon.add_argument("--pidfile", default=None,
-                          help="Write the daemon's PID to this file on start")
+                          help="启动时将守护进程的 PID 写入此文件")
     p_daemon.add_argument("--verbose", "-v", action="store_true",
-                          help="Log each tick's outcome to stdout")
+                          help="将每次调度的结果记录到标准输出")
     # Undocumented escape hatch for users who truly cannot run the gateway.
     # Intentionally excluded from --help so nobody discovers it casually and
     # keeps the old double-dispatcher pattern alive.
@@ -605,29 +604,29 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
     # --- watch ---
     p_watch = sub.add_parser(
         "watch",
-        help="Live-stream task_events to the terminal (Ctrl+C to exit)",
+        help="实时流式输出任务事件到终端（Ctrl+C 退出）",
     )
     p_watch.add_argument("--assignee", default=None,
-                         help="Only show events for tasks assigned to this profile")
+                         help="仅显示分配给此配置的任务事件")
     p_watch.add_argument("--tenant", default=None,
-                         help="Only show events from tasks in this tenant")
+                         help="仅显示此租户中任务的事件")
     p_watch.add_argument("--kinds", default=None,
-                         help="Comma-separated event kinds to include "
-                              "(e.g. 'completed,blocked,gave_up,crashed,timed_out')")
+                         help="逗号分隔的包含事件类型"
+                              "（例如 'completed,blocked,gave_up,crashed,timed_out'）")
     p_watch.add_argument("--interval", type=float, default=0.5,
-                         help="Poll interval in seconds (default: 0.5)")
+                         help="轮询间隔（秒，默认：0.5）")
 
     # --- stats ---
     p_stats = sub.add_parser(
-        "stats", help="Per-status + per-assignee counts + oldest-ready age",
+        "stats", help="按状态 + 按负责人计数 + 最早就绪任务年龄",
     )
     p_stats.add_argument("--json", action="store_true")
 
     # --- notify subscribe / list / remove ---
     p_nsub = sub.add_parser(
         "notify-subscribe",
-        help="Subscribe a gateway source to a task's terminal events "
-             "(used by /kanban subscribe in the gateway adapter)",
+        help="订阅网关源到任务的终端事件"
+             "（由 /kanban subscribe 在网关适配器中使用）",
     )
     p_nsub.add_argument("task_id")
     p_nsub.add_argument("--platform", required=True)
@@ -636,19 +635,19 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
     p_nsub.add_argument("--user-id", default=None)
     p_nsub.add_argument(
         "--notifier-profile", default=None,
-        help="Profile gateway that owns/delivers this subscription (default: active profile)",
+        help="拥有/投递此订阅的网关配置（默认：活动配置）",
     )
 
     p_nlist = sub.add_parser(
         "notify-list",
-        help="List notification subscriptions (optionally for a single task)",
+        help="列出通知订阅（可选地仅针对单个任务）",
     )
     p_nlist.add_argument("task_id", nargs="?", default=None)
     p_nlist.add_argument("--json", action="store_true")
 
     p_nrm = sub.add_parser(
         "notify-unsubscribe",
-        help="Remove a gateway subscription from a task",
+        help="从任务中移除网关订阅",
     )
     p_nrm.add_argument("task_id")
     p_nrm.add_argument("--platform", required=True)
@@ -658,17 +657,17 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
     # --- log ---
     p_log = sub.add_parser(
         "log",
-        help="Print the worker log for a task (from <kanban-root>/kanban/logs/)",
+        help="打印任务的工人日志（来自 <kanban-root>/kanban/logs/）",
     )
     p_log.add_argument("task_id")
     p_log.add_argument("--tail", type=int, default=None,
-                       help="Only print the last N bytes")
+                       help="仅打印最后 N 字节")
 
     # --- runs (per-attempt history for a task) ---
     p_runs = sub.add_parser(
         "runs",
-        help="Show attempt history for a task (one row per run: profile, "
-             "outcome, elapsed, summary)",
+        help="显示任务的尝试历史（每行一个运行：配置、"
+             "结果、耗时、摘要）",
     )
     p_runs.add_argument("task_id")
     p_runs.add_argument("--json", action="store_true")
@@ -676,121 +675,121 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
         "--state-type",
         choices=("status", "outcome"),
         default=None,
-        help="With --state-name: filter runs by task_runs column",
+        help="与 --state-name 搭配：按 task_runs 列过滤运行",
     )
     p_runs.add_argument(
         "--state-name",
         default=None,
         metavar="VALUE",
-        help="With --state-type: keep runs whose column equals this value",
+        help="与 --state-type 搭配：保留该列值等于此值的运行",
     )
 
     # --- heartbeat (worker liveness signal) ---
     p_hb = sub.add_parser(
         "heartbeat",
-        help="Emit a heartbeat event for a running task (worker liveness signal)",
+        help="为运行中的任务发出心跳事件（工人活跃信号）",
     )
     p_hb.add_argument("task_id")
     p_hb.add_argument("--note", default=None,
-                      help="Optional short note attached to the heartbeat event")
+                      help="附加到心跳事件的可选简短说明")
 
     # --- assignees ---
     p_asg = sub.add_parser(
         "assignees",
-        help="List known profiles + per-profile task counts "
-             "(union of ~/.hermes/profiles/ and current assignees on the board)",
+        help="列出已知配置 + 每个配置的任务计数"
+             "（~/.hermes/profiles/ 和看板上当前负责人的并集）",
     )
     p_asg.add_argument("--json", action="store_true")
 
     # --- context --- (for spawned workers)
     p_ctx = sub.add_parser(
         "context",
-        help="Print the full context a worker sees for a task "
-             "(title + body + parent results + comments).",
+        help="打印工人为任务看到的完整上下文"
+             "（标题 + 内容 + 父任务结果 + 评论）。",
     )
     p_ctx.add_argument("task_id")
 
     # --- specify --- (triage → todo via auxiliary LLM)
     p_specify = sub.add_parser(
         "specify",
-        help="Flesh out a triage-column task into a concrete spec "
-             "(title + body) and promote it to todo. Uses the auxiliary "
-             "LLM configured under auxiliary.triage_specifier.",
+        help="将分类列中的任务完善为具体规格"
+             "（标题 + 内容）并提升为待办。使用在"
+             "auxiliary.triage_specifier 下配置的辅助 LLM。",
     )
     p_specify.add_argument(
         "task_id",
         nargs="?",
         default=None,
-        help="Task id to specify (required unless --all is given)",
+        help="要完善的任务 ID（除非给出 --all，否则必需）",
     )
     p_specify.add_argument(
         "--all",
         dest="all_triage",
         action="store_true",
-        help="Specify every task currently in the triage column",
+        help="完善分类列中的每个任务",
     )
     p_specify.add_argument(
         "--tenant",
         default=None,
-        help="When used with --all, restrict the sweep to this tenant",
+        help="与 --all 搭配时，将扫描范围限制为此租户",
     )
     p_specify.add_argument(
         "--author",
         default=None,
-        help="Author name recorded on the audit comment "
-             "(default: $HERMES_PROFILE or 'specifier')",
+        help="审计评论上记录的作者名称"
+             "（默认：$HERMES_PROFILE 或 'specifier'）",
     )
     p_specify.add_argument(
         "--json",
         action="store_true",
-        help="Emit one JSON object per task on stdout",
+        help="在标准输出上为每个任务输出一个 JSON 对象",
     )
 
     # --- decompose --- (triage → fan-out via auxiliary LLM + orchestrator)
     p_decompose = sub.add_parser(
         "decompose",
-        help="Decompose a triage-column task into a graph of child tasks "
-             "routed to specialist profiles by description. Falls back to "
-             "specify-style single-task promotion when the task doesn't "
-             "benefit from fan-out. Uses auxiliary.kanban_decomposer.",
+        help="将分类列中的任务分解为子任务图，"
+             "按描述路由到专业配置。当任务不需要"
+             "扇出时，回退到 specify 式的单任务提升。"
+             "使用 auxiliary.kanban_decomposer。",
     )
     p_decompose.add_argument(
         "task_id",
         nargs="?",
         default=None,
-        help="Task id to decompose (required unless --all is given)",
+        help="要分解的任务 ID（除非给出 --all，否则必需）",
     )
     p_decompose.add_argument(
         "--all",
         dest="all_triage",
         action="store_true",
-        help="Decompose every task currently in the triage column",
+        help="分解分类列中的每个任务",
     )
     p_decompose.add_argument(
         "--tenant",
         default=None,
-        help="When used with --all, restrict the sweep to this tenant",
+        help="与 --all 搭配时，将扫描范围限制为此租户",
     )
     p_decompose.add_argument(
         "--author",
         default=None,
-        help="Author name recorded on the audit comment "
-             "(default: $HERMES_PROFILE or 'decomposer')",
+        help="审计评论上记录的作者名称"
+             "（默认：$HERMES_PROFILE 或 'decomposer'）",
     )
     p_decompose.add_argument(
         "--json",
         action="store_true",
-        help="Emit one JSON object per task on stdout",
+        help="在标准输出上为每个任务输出一个 JSON 对象",
     )
 
     # --- gc ---
     p_gc = sub.add_parser(
-        "gc", help="Garbage-collect archived-task workspaces, old events, and old logs",
+        "gc", help="垃圾回收已归档任务的工作空间、旧事件和旧日志",
     )
     p_gc.add_argument("--event-retention-days", type=int, default=30,
-                      help="Delete task_events older than N days for terminal tasks (default: 30)")
+                      help="删除终端任务中 N 天前的 task_events（默认：30）")
     p_gc.add_argument("--log-retention-days", type=int, default=30,
-                      help="Delete worker log files older than N days (default: 30)")
+                      help="删除 N 天前的工人日志文件（默认：30）")
 
     kanban_parser.set_defaults(_kanban_parser=kanban_parser)
     return kanban_parser
@@ -813,8 +812,8 @@ def kanban_command(args: argparse.Namespace) -> int:
             parser.print_help()
         else:
             print(
-                "usage: hermes kanban <action> [options]\n"
-                "Run 'hermes kanban --help' for the full list of actions.",
+                "用法：hermes kanban <动作> [选项]\n"
+                "运行 'hermes kanban --help' 查看完整动作列表。",
                 file=sys.stderr,
             )
         return 0
@@ -847,17 +846,17 @@ def kanban_command(args: argparse.Namespace) -> int:
         try:
             normed = kb._normalize_board_slug(board_override)
         except ValueError as exc:
-            print(f"kanban: {exc}", file=sys.stderr)
+            print(f"kanban：{exc}", file=sys.stderr)
             return 2
         if not normed:
-            print("kanban: --board requires a slug", file=sys.stderr)
+            print("kanban：--board 需要一个标识符", file=sys.stderr)
             return 2
         # Boards other than 'default' must already exist — typoed slugs
         # would otherwise silently create an empty board.
         if normed != kb.DEFAULT_BOARD and not kb.board_exists(normed):
             print(
-                f"kanban: board {normed!r} does not exist. "
-                f"Create it with `hermes kanban boards create {normed}`.",
+                f"kanban：看板 {normed!r} 不存在。"
+                f"使用 `hermes kanban boards create {normed}` 创建。",
                 file=sys.stderr,
             )
             return 1
@@ -874,7 +873,7 @@ def kanban_command(args: argparse.Namespace) -> int:
     try:
         kb.init_db()
     except Exception as exc:
-        print(f"kanban: could not initialize database: {exc}", file=sys.stderr)
+        print(f"kanban：无法初始化数据库：{exc}", file=sys.stderr)
         _restore_board_env()
         return 1
 
@@ -919,13 +918,13 @@ def kanban_command(args: argparse.Namespace) -> int:
     }
     handler = handlers.get(action)
     if not handler:
-        print(f"kanban: unknown action {action!r}", file=sys.stderr)
+        print(f"kanban：未知动作 {action!r}", file=sys.stderr)
         _restore_board_env()
         return 2
     try:
         return int(handler(args) or 0)
     except (ValueError, RuntimeError) as exc:
-        print(f"kanban: {exc}", file=sys.stderr)
+        print(f"kanban：{exc}", file=sys.stderr)
         _restore_board_env()
         return 1
     finally:
@@ -977,7 +976,7 @@ def _dispatch_boards(args: argparse.Namespace) -> int:
         return _cmd_boards_rename(args)
     if sub == "set-default-workdir":
         return _cmd_boards_set_default_workdir(args)
-    print(f"kanban boards: unknown action {sub!r}", file=sys.stderr)
+    print(f"kanban boards：未知动作 {sub!r}", file=sys.stderr)
     return 2
 
 
@@ -1010,24 +1009,24 @@ def _cmd_boards_list(args: argparse.Namespace) -> int:
         return 0
     # Human table: marker (•) for current, slug, display name, counts.
     if not boards:
-        print("(no boards — create one with `hermes kanban boards create <slug>`)")
+        print("（没有看板 — 使用 `hermes kanban boards create <标识符>` 创建）")
         return 0
-    print(f"{'':2s}  {'SLUG':24s}  {'NAME':28s}  COUNTS")
+    print(f"{'':2s}  {'标识符':24s}  {'名称':28s}  计数")
     for b in boards:
         marker = "●" if b["is_current"] else " "
         counts = b["counts"] or {}
         counts_str = (
             ", ".join(f"{k}={v}" for k, v in sorted(counts.items()))
-            or "(empty)"
+            or "（空）"
         )
         name = b.get("name") or ""
         if b.get("archived"):
-            name += " [archived]"
+            name += " [已归档]"
         print(f"{marker:2s}  {b['slug']:24s}  {name:28s}  {counts_str}")
     print()
-    print(f"Current board: {current}")
+    print(f"当前看板：{current}")
     if len(boards) > 1:
-        print("Switch boards with `hermes kanban boards switch <slug>`.")
+        print("使用 `hermes kanban boards switch <标识符>` 切换看板。")
     return 0
 
 
@@ -1035,10 +1034,10 @@ def _cmd_boards_create(args: argparse.Namespace) -> int:
     try:
         normed = kb._normalize_board_slug(args.slug)
     except ValueError as exc:
-        print(f"kanban boards create: {exc}", file=sys.stderr)
+        print(f"kanban boards create：{exc}", file=sys.stderr)
         return 2
     if not normed:
-        print("kanban boards create: slug is required", file=sys.stderr)
+        print("kanban boards create：需要标识符", file=sys.stderr)
         return 2
     already = kb.board_exists(normed) and normed != kb.DEFAULT_BOARD
     meta = kb.create_board(
@@ -1049,15 +1048,15 @@ def _cmd_boards_create(args: argparse.Namespace) -> int:
         color=args.color,
         default_workdir=args.default_workdir,
     )
-    verb = "already exists" if already else "created"
-    print(f"Board {meta['slug']!r} {verb}.")
-    print(f"  Display name: {meta.get('name', '')}")
-    print(f"  DB path:      {meta['db_path']}")
+    verb = "已存在" if already else "已创建"
+    print(f"看板 {meta['slug']!r} {verb}。")
+    print(f"  显示名称：{meta.get('name', '')}")
+    print(f"  数据库路径：{meta['db_path']}")
     if getattr(args, "switch", False):
         kb.set_current_board(meta["slug"])
-        print(f"  Switched to {meta['slug']!r}.")
+        print(f"  已切换到 {meta['slug']!r}。")
     else:
-        print(f"  Use `hermes kanban boards switch {meta['slug']}` to make it current.")
+        print(f"  使用 `hermes kanban boards switch {meta['slug']}` 设为当前看板。")
     return 0
 
 
@@ -1070,14 +1069,14 @@ def _cmd_boards_rm(args: argparse.Namespace) -> int:
     try:
         res = kb.remove_board(args.slug, archive=not force_delete)
     except ValueError as exc:
-        print(f"kanban boards rm: {exc}", file=sys.stderr)
+        print(f"kanban boards rm：{exc}", file=sys.stderr)
         return 1
     if res["action"] == "archived":
-        print(f"Board {res['slug']!r} archived → {res['new_path']}")
-        print("Recover by moving the directory back to "
-              "<root>/kanban/boards/<slug>/.")
+        print(f"看板 {res['slug']!r} 已归档 → {res['new_path']}")
+        print("恢复方法：将目录移回 "
+              "<root>/kanban/boards/<标识符>/。")
     else:
-        print(f"Board {res['slug']!r} deleted.")
+        print(f"看板 {res['slug']!r} 已删除。")
     return 0
 
 
@@ -1085,20 +1084,20 @@ def _cmd_boards_switch(args: argparse.Namespace) -> int:
     try:
         normed = kb._normalize_board_slug(args.slug)
     except ValueError as exc:
-        print(f"kanban boards switch: {exc}", file=sys.stderr)
+        print(f"kanban boards switch：{exc}", file=sys.stderr)
         return 2
     if not normed:
-        print("kanban boards switch: slug is required", file=sys.stderr)
+        print("kanban boards switch：需要标识符", file=sys.stderr)
         return 2
     if not kb.board_exists(normed):
         print(
-            f"kanban boards switch: board {normed!r} does not exist. "
-            f"Create it with `hermes kanban boards create {normed}`.",
+            f"kanban boards switch：看板 {normed!r} 不存在。"
+            f"使用 `hermes kanban boards create {normed}` 创建。",
             file=sys.stderr,
         )
         return 1
     kb.set_current_board(normed)
-    print(f"Active board is now {normed!r}.")
+    print(f"活动看板现在是 {normed!r}。")
     return 0
 
 
@@ -1107,12 +1106,12 @@ def _cmd_boards_show(args: argparse.Namespace) -> int:
     meta = kb.read_board_metadata(current)
     counts = _board_task_counts(current)
     total = sum(counts.values())
-    print(f"Current board: {current}")
-    print(f"  Display name: {meta.get('name', '')}")
+    print(f"当前看板：{current}")
+    print(f"  显示名称：{meta.get('name', '')}")
     if meta.get("description"):
-        print(f"  Description:  {meta['description']}")
-    print(f"  DB path:      {meta['db_path']}")
-    print(f"  Tasks:        {total} total"
+        print(f"  描述：{meta['description']}")
+    print(f"  数据库路径：{meta['db_path']}")
+    print(f"  任务：{total} 个"
           + (f" ({', '.join(f'{k}={v}' for k, v in sorted(counts.items()))})"
              if counts else ""))
     return 0
@@ -1122,14 +1121,14 @@ def _cmd_boards_rename(args: argparse.Namespace) -> int:
     try:
         normed = kb._normalize_board_slug(args.slug)
     except ValueError as exc:
-        print(f"kanban boards rename: {exc}", file=sys.stderr)
+        print(f"kanban boards rename：{exc}", file=sys.stderr)
         return 2
     if not normed or not kb.board_exists(normed):
-        print(f"kanban boards rename: board {args.slug!r} does not exist",
+        print(f"kanban boards rename：看板 {args.slug!r} 不存在",
               file=sys.stderr)
         return 1
     meta = kb.write_board_metadata(normed, name=args.name)
-    print(f"Board {normed!r} renamed to {meta['name']!r}.")
+    print(f"看板 {normed!r} 已重命名为 {meta['name']!r}。")
     return 0
 
 
@@ -1137,18 +1136,18 @@ def _cmd_boards_set_default_workdir(args: argparse.Namespace) -> int:
     try:
         normed = kb._normalize_board_slug(args.slug)
     except ValueError as exc:
-        print(f"kanban boards set-default-workdir: {exc}", file=sys.stderr)
+        print(f"kanban boards set-default-workdir：{exc}", file=sys.stderr)
         return 2
     if not normed or not kb.board_exists(normed):
-        print(f"kanban boards set-default-workdir: board {args.slug!r} does not exist",
+        print(f"kanban boards set-default-workdir：看板 {args.slug!r} 不存在",
               file=sys.stderr)
         return 1
     meta = kb.write_board_metadata(normed, default_workdir=args.path)
     new_val = meta.get("default_workdir")
     if new_val:
-        print(f"Board {normed!r} default workdir set to {new_val!r}.")
+        print(f"看板 {normed!r} 的默认工作目录已设为 {new_val!r}。")
     else:
-        print(f"Board {normed!r} default workdir cleared.")
+        print(f"看板 {normed!r} 的默认工作目录已清除。")
     return 0
 
 
@@ -1238,9 +1237,9 @@ def _cmd_heartbeat(args: argparse.Namespace) -> int:
             expected_run_id=_worker_run_id_for(args.task_id),
         )
     if not ok:
-        print(f"cannot heartbeat {args.task_id} (not running?)", file=sys.stderr)
+        print(f"无法心跳 {args.task_id}（未运行？）", file=sys.stderr)
         return 1
-    print(f"Heartbeat recorded for {args.task_id}")
+    print(f"已记录 {args.task_id} 的心跳")
     return 0
 
 
@@ -1251,14 +1250,14 @@ def _cmd_assignees(args: argparse.Namespace) -> int:
         print(json.dumps(data, indent=2, ensure_ascii=False))
         return 0
     if not data:
-        print("(no assignees — create a profile with `hermes -p <name> setup`)")
+        print("（没有负责人 — 使用 `hermes -p <名称> setup` 创建配置）")
         return 0
     # Header
-    print(f"{'NAME':20s}  {'ON DISK':8s}  COUNTS")
+    print(f"{'名称':20s}  {'在磁盘':8s}  计数")
     for entry in data:
-        on_disk = "yes" if entry["on_disk"] else "no"
+        on_disk = "是" if entry["on_disk"] else "否"
         counts = entry["counts"] or {}
-        count_str = ", ".join(f"{k}={v}" for k, v in sorted(counts.items())) or "(idle)"
+        count_str = ", ".join(f"{k}={v}" for k, v in sorted(counts.items())) or "（空闲）"
         print(f"{entry['name']:20s}  {on_disk:8s}  {count_str}")
     return 0
 
@@ -1268,21 +1267,21 @@ def _cmd_create(args: argparse.Namespace) -> int:
         ws_kind, ws_path = _parse_workspace_flag(args.workspace)
         branch_name = _parse_branch_flag(getattr(args, "branch", None))
     except argparse.ArgumentTypeError as exc:
-        print(f"kanban: {exc}", file=sys.stderr)
+        print(f"kanban：{exc}", file=sys.stderr)
         return 2
     if branch_name and ws_kind != "worktree":
-        print("kanban: --branch is only valid with --workspace worktree", file=sys.stderr)
+        print("kanban：--branch 仅在与 --workspace worktree 一起使用时有效", file=sys.stderr)
         return 2
     try:
         max_runtime = _parse_duration(getattr(args, "max_runtime", None))
     except ValueError as exc:
-        print(f"kanban: --max-runtime: {exc}", file=sys.stderr)
+        print(f"kanban：--max-runtime：{exc}", file=sys.stderr)
         return 2
     max_retries = getattr(args, "max_retries", None)
     if max_retries is not None and max_retries < 1:
         print(
-            f"kanban: --max-retries must be >= 1 (got {max_retries}); "
-            "use 1 to trip on the first failure.",
+            f"kanban：--max-retries 必须 >= 1（收到 {max_retries}）；"
+            "使用 1 在第一次失败时触发。",
             file=sys.stderr,
         )
         return 2
@@ -1310,7 +1309,7 @@ def _cmd_create(args: argparse.Namespace) -> int:
     if getattr(args, "json", False):
         print(json.dumps(_task_to_dict(task), indent=2, ensure_ascii=False))
     else:
-        print(f"Created {task_id}  ({task.status}, assignee={task.assignee or '-'})")
+        print(f"已创建 {task_id}  （{task.status}，负责人={task.assignee or '-'}）")
 
         # Warn when the task would sit in `ready` because no dispatcher is
         # present. Only warn on ready+assigned tasks — triage/todo are
@@ -1350,10 +1349,10 @@ def _cmd_swarm(args: argparse.Namespace) -> int:
     if getattr(args, "json", False):
         print(json.dumps(created.as_dict(), indent=2, ensure_ascii=False))
     else:
-        print(f"Swarm root: {created.root_id}")
-        print("Workers: " + ", ".join(created.worker_ids))
-        print(f"Verifier: {created.verifier_id}")
-        print(f"Synthesizer: {created.synthesizer_id}")
+        print(f"Swarm 根：{created.root_id}")
+        print("工人：" + ", ".join(created.worker_ids))
+        print(f"验证者：{created.verifier_id}")
+        print(f"综合者：{created.synthesizer_id}")
     return 0
 
 
@@ -1390,12 +1389,12 @@ def _cmd_list(args: argparse.Namespace) -> int:
         current = kb.get_current_board()
         other_count = len(all_boards) - 1
         print(
-            f"Board: {current} "
-            f"({other_count} other board{'s' if other_count != 1 else ''} — "
-            f"`hermes kanban boards list`)\n"
+            f"看板：{current} "
+            f"（还有 {other_count} 个其他看板 — "
+            f"`hermes kanban boards list`）\n"
         )
     if not tasks:
-        print("(no matching tasks)")
+        print("（没有匹配的任务）")
         return 0
     for t in tasks:
         print(_fmt_task_line(t))
@@ -1406,14 +1405,14 @@ def _cmd_show(args: argparse.Namespace) -> int:
     rsk = _run_state_kwargs(args)
     if rsk is None:
         print(
-            "kanban show: pass both --state-type and --state-name, or omit both",
+            "kanban show：请同时传递 --state-type 和 --state-name，或同时省略",
             file=sys.stderr,
         )
         return 2
     with kb.connect() as conn:
         task = kb.get_task(conn, args.task_id)
         if not task:
-            print(f"no such task: {args.task_id}", file=sys.stderr)
+            print(f"没有此任务：{args.task_id}", file=sys.stderr)
             return 1
         comments = kb.list_comments(conn, args.task_id)
         events = kb.list_events(conn, args.task_id)
@@ -1465,25 +1464,25 @@ def _cmd_show(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
 
-    print(f"Task {task.id}: {task.title}")
-    print(f"  status:    {task.status}")
-    print(f"  assignee:  {task.assignee or '-'}")
+    print(f"任务 {task.id}：{task.title}")
+    print(f"  状态：      {task.status}")
+    print(f"  负责人：    {task.assignee or '-'}")
     if task.tenant:
-        print(f"  tenant:    {task.tenant}")
-    print(f"  workspace: {task.workspace_kind}" +
+        print(f"  租户：      {task.tenant}")
+    print(f"  工作空间：  {task.workspace_kind}" +
           (f" @ {task.workspace_path}" if task.workspace_path else ""))
     if task.branch_name:
-        print(f"  branch:    {task.branch_name}")
+        print(f"  分支：      {task.branch_name}")
     if task.skills:
-        print(f"  skills:    {', '.join(task.skills)}")
+        print(f"  技能：      {', '.join(task.skills)}")
     if task.model_override:
-        print(f"  model:     {task.model_override}")
+        print(f"  模型：      {task.model_override}")
     # Effective retry threshold. Show the per-task override if set,
     # otherwise the dispatcher's resolved value from config (or the
     # default if config doesn't set it either). Helps operators see
     # why a task auto-blocked earlier/later than they expected.
     if task.max_retries is not None:
-        print(f"  max-retries: {task.max_retries} (task)")
+        print(f"  最大重试：  {task.max_retries}（任务级）")
     else:
         try:
             from hermes_cli.config import load_config
@@ -1492,10 +1491,10 @@ def _cmd_show(args: argparse.Namespace) -> int:
         except Exception:
             cfg_val = None
         if cfg_val is not None and int(cfg_val) != kb.DEFAULT_FAILURE_LIMIT:
-            print(f"  max-retries: {int(cfg_val)} (config kanban.failure_limit)")
+            print(f"  最大重试：  {int(cfg_val)}（配置 kanban.failure_limit）")
         else:
-            print(f"  max-retries: {kb.DEFAULT_FAILURE_LIMIT} (default)")
-    print(f"  created:   {_fmt_ts(task.created_at)} by {task.created_by or '-'}")
+            print(f"  最大重试：  {kb.DEFAULT_FAILURE_LIMIT}（默认）")
+    print(f"  创建时间：  {_fmt_ts(task.created_at)} 由 {task.created_by or '-'}")
 
     # Diagnostics section — surface active distress signals at the top
     # of show output so CLI users see them before scrolling through
@@ -1504,7 +1503,7 @@ def _cmd_show(args: argparse.Namespace) -> int:
     diags = kd.compute_task_diagnostics(task, events, runs)
     if diags:
         sev_marker = {"warning": "⚠", "error": "!!", "critical": "!!!"}
-        print(f"\n  Diagnostics ({len(diags)}):")
+        print(f"\n  诊断（{len(diags)} 条）：")
         for d in diags:
             print(f"    {sev_marker.get(d.severity, '?')} [{d.severity}] {d.title}")
             if d.data:
@@ -1515,56 +1514,56 @@ def _cmd_show(args: argparse.Namespace) -> int:
                     else:
                         bits.append(f"{k}={v}")
                 if bits:
-                    print(f"       data: {' | '.join(bits)}")
+                    print(f"       数据：{' | '.join(bits)}")
             # Only show suggested actions in show output to keep it tight;
             # full list is available via `kanban diagnostics --task <id>`.
             for a in d.actions:
                 if a.suggested:
                     print(f"       → {a.label}")
     if task.started_at:
-        print(f"  started:   {_fmt_ts(task.started_at)}")
+        print(f"  开始时间：  {_fmt_ts(task.started_at)}")
     if task.completed_at:
-        print(f"  completed: {_fmt_ts(task.completed_at)}")
+        print(f"  完成时间：  {_fmt_ts(task.completed_at)}")
     if parents:
-        print(f"  parents:   {', '.join(parents)}")
+        print(f"  父任务：    {', '.join(parents)}")
     if children:
-        print(f"  children:  {', '.join(children)}")
+        print(f"  子任务：    {', '.join(children)}")
     if task.body:
         print()
-        print("Body:")
+        print("内容：")
         print(task.body)
     if task.result:
         print()
-        print("Result:")
+        print("结果：")
         print(task.result)
     elif latest_summary:
         # Worker handoff lives on the latest run, not on tasks.result.
         # Surface it at top-level so a glance at ``hermes kanban show <id>``
         # tells you what the worker did even if tasks.result is empty.
         print()
-        print("Latest summary:")
+        print("最新摘要：")
         print(latest_summary)
     if comments:
         print()
-        print(f"Comments ({len(comments)}):")
+        print(f"评论（{len(comments)} 条）：")
         for c in comments:
-            print(f"  [{_fmt_ts(c.created_at)}] {c.author}: {c.body}")
+            print(f"  [{_fmt_ts(c.created_at)}] {c.author}：{c.body}")
     if events:
         print()
-        print(f"Events ({len(events)}):")
+        print(f"事件（{len(events)} 个）：")
         for e in events[-20:]:
             pl = f" {e.payload}" if e.payload else ""
-            run_tag = f" [run {e.run_id}]" if e.run_id else ""
+            run_tag = f" [运行 {e.run_id}]" if e.run_id else ""
             print(f"  [{_fmt_ts(e.created_at)}]{run_tag} {e.kind}{pl}")
     if runs:
         print()
-        print(f"Runs ({len(runs)}):")
+        print(f"运行记录（{len(runs)} 条）：")
         for r in runs:
             # Clamp to 0 so NTP backward-jumps don't print negative seconds.
             elapsed = (max(0, r.ended_at - r.started_at)
                        if r.ended_at else None)
-            el = f"{elapsed}s" if elapsed is not None else "active"
-            outcome = r.outcome or r.status or "active"
+            el = f"{elapsed}s" if elapsed is not None else "活跃中"
+            outcome = r.outcome or r.status or "活跃中"
             print(f"  #{r.id:<3} {outcome:<12} @{r.profile or '-'}  {el}  "
                   f"{_fmt_ts(r.started_at)}")
             if r.summary:
@@ -1579,9 +1578,9 @@ def _cmd_assign(args: argparse.Namespace) -> int:
     with kb.connect() as conn:
         ok = kb.assign_task(conn, args.task_id, profile)
     if not ok:
-        print(f"no such task: {args.task_id}", file=sys.stderr)
+        print(f"没有此任务：{args.task_id}", file=sys.stderr)
         return 1
-    print(f"Assigned {args.task_id} to {profile or '(unassigned)'}")
+    print(f"已将 {args.task_id} 分配给 {profile or '（未分配）'}")
     return 0
 
 
@@ -1593,11 +1592,11 @@ def _cmd_reclaim(args: argparse.Namespace) -> int:
         )
     if not ok:
         print(
-            f"cannot reclaim {args.task_id} (not running or unknown id)",
+            f"无法回收 {args.task_id}（未运行或 ID 未知）",
             file=sys.stderr,
         )
         return 1
-    print(f"Reclaimed {args.task_id}")
+    print(f"已回收 {args.task_id}")
     return 0
 
 
@@ -1611,15 +1610,15 @@ def _cmd_reassign(args: argparse.Namespace) -> int:
         )
     if not ok:
         print(
-            f"cannot reassign {args.task_id} "
-            f"(unknown id, or still running — pass --reclaim to release first)",
+            f"无法重新分配 {args.task_id} "
+            f"（ID 未知，或仍在运行 — 请传递 --reclaim 先释放）",
             file=sys.stderr,
         )
         return 1
     print(
-        f"Reassigned {args.task_id} to "
-        f"{profile or '(unassigned)'}"
-        + (" (claim reclaimed)" if getattr(args, "reclaim", False) else "")
+        f"已将 {args.task_id} 重新分配给 "
+        f"{profile or '（未分配）'}"
+        + ("（认领已回收）" if getattr(args, "reclaim", False) else "")
     )
     return 0
 
@@ -1758,17 +1757,17 @@ def _cmd_diagnostics(args: argparse.Namespace) -> int:
 def _cmd_link(args: argparse.Namespace) -> int:
     with kb.connect() as conn:
         kb.link_tasks(conn, args.parent_id, args.child_id)
-    print(f"Linked {args.parent_id} -> {args.child_id}")
+    print(f"已链接 {args.parent_id} -> {args.child_id}")
     return 0
 
 
 def _cmd_unlink(args: argparse.Namespace) -> int:
     with kb.connect() as conn:
-        ok = kb.unlink_tasks(conn, args.parent_id, args.child_id)
+        ok = kb.remove_link(conn, args.parent_id, args.child_id)
     if not ok:
-        print(f"No such link: {args.parent_id} -> {args.child_id}", file=sys.stderr)
+        print(f"没有此链接：{args.parent_id} -> {args.child_id}", file=sys.stderr)
         return 1
-    print(f"Unlinked {args.parent_id} -> {args.child_id}")
+    print(f"已取消链接 {args.parent_id} -> {args.child_id}")
     return 0
 
 
@@ -1779,18 +1778,18 @@ def _cmd_claim(args: argparse.Namespace) -> int:
             # Report why
             existing = kb.get_task(conn, args.task_id)
             if existing is None:
-                print(f"no such task: {args.task_id}", file=sys.stderr)
+                print(f"没有此任务：{args.task_id}", file=sys.stderr)
                 return 1
             print(
-                f"cannot claim {args.task_id}: status={existing.status} "
-                f"lock={existing.claim_lock or '(none)'}",
+                f"无法认领 {args.task_id}：状态={existing.status} "
+                f"锁={existing.claim_lock or '(无)'}",
                 file=sys.stderr,
             )
             return 1
         workspace = kb.resolve_workspace(task)
         kb.set_workspace_path(conn, task.id, str(workspace))
-    print(f"Claimed {task.id}")
-    print(f"Workspace: {workspace}")
+    print(f"已认领 {task.id}")
+    print(f"工作空间：{workspace}")
     return 0
 
 
@@ -1798,15 +1797,15 @@ def _cmd_comment(args: argparse.Namespace) -> int:
     body = " ".join(args.text).strip()
     if args.max_len is not None:
         if args.max_len < 1:
-            print("kanban: --max-len must be positive", file=sys.stderr)
+            print("kanban：--max-len 必须为正数", file=sys.stderr)
             return 2
         if len(body) > args.max_len:
-            suffix = f"\n\n[trimmed to {args.max_len} chars by --max-len]"
+            suffix = f"\n\n[已由 --max-len 截断至 {args.max_len} 字符]"
             body = body[: max(0, args.max_len - len(suffix))].rstrip() + suffix
     author = args.author or _profile_author()
     with kb.connect() as conn:
         kb.add_comment(conn, args.task_id, author, body)
-    print(f"Comment added to {args.task_id}")
+    print(f"评论已添加到 {args.task_id}")
     return 0
 
 
@@ -1861,9 +1860,9 @@ def _cmd_complete(args: argparse.Namespace) -> int:
                 expected_run_id=_worker_run_id_for(tid),
             ):
                 failed.append(tid)
-                print(f"cannot complete {tid} (unknown id or terminal state)", file=sys.stderr)
+                print(f"无法完成 {tid}（ID 未知或已处于终态）", file=sys.stderr)
             else:
-                print(f"Completed {tid}")
+                print(f"已完成 {tid}")
     return 0 if not failed else 1
 
 
@@ -1874,9 +1873,9 @@ def _cmd_edit(args: argparse.Namespace) -> int:
         try:
             metadata = json.loads(raw_meta)
             if not isinstance(metadata, dict):
-                raise ValueError("must be a JSON object")
+                raise ValueError("必须是 JSON 对象")
         except (ValueError, json.JSONDecodeError) as exc:
-            print(f"kanban: --metadata: {exc}", file=sys.stderr)
+            print(f"kanban：--metadata：{exc}", file=sys.stderr)
             return 2
     with kb.connect() as conn:
         if not kb.edit_completed_task_result(
@@ -1887,11 +1886,11 @@ def _cmd_edit(args: argparse.Namespace) -> int:
             metadata=metadata,
         ):
             print(
-                f"cannot edit {args.task_id} (unknown id or task is not done)",
+                f"无法编辑 {args.task_id}（不存在或未完成）",
                 file=sys.stderr,
             )
             return 1
-    print(f"Edited {args.task_id}")
+    print(f"已编辑 {args.task_id}")
     return 0
 
 
@@ -1942,16 +1941,16 @@ def _cmd_schedule(args: argparse.Namespace) -> int:
 def _cmd_unblock(args: argparse.Namespace) -> int:
     ids = list(args.task_ids or [])
     if not ids:
-        print("at least one task_id is required", file=sys.stderr)
+        print("至少需要一个任务 ID", file=sys.stderr)
         return 1
     failed: list[str] = []
     with kb.connect() as conn:
         for tid in ids:
             if not kb.unblock_task(conn, tid):
                 failed.append(tid)
-                print(f"cannot unblock {tid} (not blocked/scheduled?)", file=sys.stderr)
+                print(f"无法取消阻塞 {tid}（未阻塞/未调度？）", file=sys.stderr)
             else:
-                print(f"Unblocked {tid}")
+                print(f"已取消阻塞 {tid}")
     return 0 if not failed else 1
 
 
@@ -1959,10 +1958,10 @@ def _cmd_archive(args: argparse.Namespace) -> int:
     ids = list(args.task_ids or [])
     purge_ids = list(getattr(args, "purge_ids", None) or [])
     if ids and purge_ids:
-        print("choose either task_ids to archive or --rm archived task_ids", file=sys.stderr)
+        print("请选择归档任务 ID 或 --rm 已归档任务 ID，不能同时使用", file=sys.stderr)
         return 1
     if not ids and not purge_ids:
-        print("at least one task_id is required", file=sys.stderr)
+        print("至少需要一个任务 ID", file=sys.stderr)
         return 1
     failed: list[str] = []
     with kb.connect() as conn:
@@ -1970,22 +1969,22 @@ def _cmd_archive(args: argparse.Namespace) -> int:
             for tid in purge_ids:
                 if not kb.delete_archived_task(conn, tid):
                     failed.append(tid)
-                    print(f"cannot delete {tid} (must already be archived)", file=sys.stderr)
+                    print(f"无法删除 {tid}（必须先已归档）", file=sys.stderr)
                 else:
-                    print(f"Deleted {tid}")
+                    print(f"已删除 {tid}")
             return 0 if not failed else 1
         for tid in ids:
             if not kb.archive_task(conn, tid):
                 failed.append(tid)
-                print(f"cannot archive {tid}", file=sys.stderr)
+                print(f"无法归档 {tid}", file=sys.stderr)
             else:
-                print(f"Archived {tid}")
+                print(f"已归档 {tid}")
     return 0 if not failed else 1
 
 
 def _cmd_tail(args: argparse.Namespace) -> int:
     last_id = 0
-    print(f"Tailing events for {args.task_id}. Ctrl-C to stop.")
+    print(f"正在跟踪 {args.task_id} 的事件。按 Ctrl+C 停止。")
     try:
         while True:
             with kb.connect() as conn:
@@ -1997,7 +1996,7 @@ def _cmd_tail(args: argparse.Namespace) -> int:
                     last_id = e.id
             time.sleep(max(0.1, args.interval))
     except KeyboardInterrupt:
-        print("\n(stopped)")
+        print("\n（已停止）")
         return 0
 
 
@@ -2025,27 +2024,27 @@ def _cmd_dispatch(args: argparse.Namespace) -> int:
             "skipped_nonspawnable": res.skipped_nonspawnable,
         }, indent=2))
         return 0
-    print(f"Reclaimed:    {res.reclaimed}")
-    print(f"Crashed:      {len(res.crashed)}")
+    print(f"已回收：      {res.reclaimed}")
+    print(f"已崩溃：      {len(res.crashed)}")
     if res.crashed:
         print(f"  {', '.join(res.crashed)}")
-    print(f"Timed out:    {len(res.timed_out)}")
+    print(f"已超时：      {len(res.timed_out)}")
     if res.timed_out:
         print(f"  {', '.join(res.timed_out)}")
-    print(f"Stale:        {len(res.stale)}")
+    print(f"已过期：      {len(res.stale)}")
     if res.stale:
         print(f"  {', '.join(res.stale)}")
-    print(f"Auto-blocked: {len(res.auto_blocked)}")
+    print(f"自动阻塞：    {len(res.auto_blocked)}")
     if res.auto_blocked:
         print(f"  {', '.join(res.auto_blocked)}")
-    print(f"Promoted:     {res.promoted}")
-    print(f"Spawned:      {len(res.spawned)}")
+    print(f"已提升：      {res.promoted}")
+    print(f"已生成：      {len(res.spawned)}")
     for tid, who, ws in res.spawned:
-        tag = " (dry)" if args.dry_run else ""
+        tag = f" (dry-run)" if args.dry_run else ""
         print(f"  - {tid}  ->  {who}  @ {ws or '-'}{tag}")
     if res.skipped_unassigned:
-        print(f"Skipped (unassigned): {', '.join(res.skipped_unassigned)}")
-    if res.skipped_nonspawnable:
+        print(f"已跳过（未分配）：{', '.join(res.skipped_unassigned)}")
+    if res.unpromotable_blocked:
         print(
             f"Skipped (non-spawnable assignee — terminal lane, OK): "
             f"{', '.join(res.skipped_nonspawnable)}"
