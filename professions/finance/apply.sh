@@ -1,11 +1,11 @@
 #!/bin/bash
 # Nermes 财务版 — 职业预设应用脚本
-# 将此财务专业人士的 SOUL/USER/MEMORY 应用到 ~/.hermes/
+# 将此财务专业人士的 SOUL/USER/MEMORY 应用到 ~/.nermes/
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+NERMES_HOME="${NERMES_HOME:-${HERMES_HOME:-$HOME/.nermes}}"
 
 echo "============================================"
 echo "  Nermes 财务版 — 职业预设安装"
@@ -18,20 +18,20 @@ echo "  • MEMORY.md — 财务知识库（准则、税率、指标）"
 echo ""
 
 # 检查是否覆盖已有的
-if [ -f "$HERMES_HOME/SOUL.md" ] || [ -f "$HERMES_HOME/USER.md" ] || [ -f "$HERMES_HOME/MEMORY.md" ]; then
+if [ -f "$NERMES_HOME/SOUL.md" ] || [ -f "$NERMES_HOME/USER.md" ] || [ -f "$NERMES_HOME/MEMORY.md" ]; then
     echo "⚠️  检测到已有的配置文件，将被备份为 .bak"
-    [ -f "$HERMES_HOME/SOUL.md" ] && cp "$HERMES_HOME/SOUL.md" "$HERMES_HOME/SOUL.md.bak"
-    [ -f "$HERMES_HOME/USER.md" ] && cp "$HERMES_HOME/USER.md" "$HERMES_HOME/USER.md.bak"
-    [ -f "$HERMES_HOME/MEMORY.md" ] && cp "$HERMES_HOME/MEMORY.md" "$HERMES_HOME/MEMORY.md.bak"
+    [ -f "$NERMES_HOME/SOUL.md" ] && cp "$NERMES_HOME/SOUL.md" "$NERMES_HOME/SOUL.md.bak"
+    [ -f "$NERMES_HOME/USER.md" ] && cp "$NERMES_HOME/USER.md" "$NERMES_HOME/USER.md.bak"
+    [ -f "$NERMES_HOME/MEMORY.md" ] && cp "$NERMES_HOME/MEMORY.md" "$NERMES_HOME/MEMORY.md.bak"
 fi
 
 # 复制预设文件
-cp "$SCRIPT_DIR/SOUL.md" "$HERMES_HOME/SOUL.md"
-cp "$SCRIPT_DIR/USER.md" "$HERMES_HOME/USER.md"
-cp "$SCRIPT_DIR/MEMORY.md" "$HERMES_HOME/MEMORY.md"
+cp "$SCRIPT_DIR/SOUL.md" "$NERMES_HOME/SOUL.md"
+cp "$SCRIPT_DIR/USER.md" "$NERMES_HOME/USER.md"
+cp "$SCRIPT_DIR/MEMORY.md" "$NERMES_HOME/MEMORY.md"
 
 # 创建技能目录（如果不存在）
-mkdir -p "$HERMES_HOME/skills"
+mkdir -p "$NERMES_HOME/skills"
 
 echo "✅ 安装完成！"
 echo ""
