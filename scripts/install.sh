@@ -2064,6 +2064,7 @@ profession_selector() {
             # 中文显示名映射
             case "$name" in
                 finance) display+=("财务（会计核算·税务·报表）") ;;
+                ecommerce) display+=("电商运营（淘宝/京东/拼多多/抖音）") ;;
                 *) display+=("$name") ;;
             esac
         fi
