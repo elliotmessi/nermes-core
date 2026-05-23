@@ -51,13 +51,13 @@ cd nermes-core
 
 ```bash
 # 删除 Nermes 数据目录
-rm -rf ~/.hermes
+rm -rf ~/.nermes
 
 # 删除命令链接
 rm -f ~/.local/bin/nermes
 
 # 删除代码（如果使用默认安装路径）
-rm -rf ~/.hermes/hermes-agent
+rm -rf ~/.nermes/nermes-agent
 ```
 
 ## 常见问题
@@ -77,5 +77,5 @@ A: 推荐使用 WSL2。原生 Windows 支持正在开发中。
 ### Q: 如何安装财务版？
 A: 安装过程中会询问是否安装职业预设，选择「财务」即可。也可稍后运行：
 ```bash
-bash ~/.hermes/hermes-agent/professions/finance/apply.sh
+bash ~/.nermes/nermes-agent/professions/finance/apply.sh
 ```

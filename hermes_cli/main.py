@@ -1,46 +1,46 @@
 #!/usr/bin/env python3
 """
-Hermes CLI - 主入口
+Nermes CLI - 主入口
 
 用法：
-    hermes                     # 交互式聊天（默认）
-    hermes chat                # 交互式聊天
-    hermes gateway             # 在前台运行网关
-    hermes gateway start       # 以服务形式启动网关
-    hermes gateway stop        # 停止网关服务
-    hermes gateway status      # 显示网关状态
-    hermes gateway install     # 安装网关服务
-    hermes gateway uninstall   # 卸载网关服务
-    hermes setup               # 交互式设置向导
-    hermes logout              # 清除已存储的认证信息
-    hermes status              # 显示所有组件的状态
-    hermes cron                # 管理定时任务
-    hermes cron list           # 列出定时任务
-    hermes cron status         # 检查定时调度器是否在运行
-    hermes doctor              # 检查配置和依赖
-    hermes honcho setup                    # 配置 Honcho AI 记忆集成
-    hermes honcho status                   # 显示 Honcho 配置和连接状态
-    hermes honcho sessions                 # 列出目录到会话名称的映射
-    hermes honcho map <名称>               # 将当前目录映射到会话名称
-    hermes honcho peer                     # 显示对等体名称和辩证设置
-    hermes honcho peer --user 名称         # 设置用户对等体名称
-    hermes honcho peer --ai 名称           # 设置 AI 对等体名称
-    hermes honcho peer --reasoning 级别   # 设置辩证推理级别
-    hermes honcho mode                     # 显示当前记忆模式
-    hermes honcho mode [hybrid|honcho|local]  # 设置记忆模式
-    hermes honcho tokens                   # 显示 Token 预算设置
-    hermes honcho tokens --context N       # 设置 session.context() token 上限
-    hermes honcho tokens --dialectic N     # 设置辩证结果字符上限
-    hermes honcho identity                 # 显示 AI 对等体身份表示
-    hermes honcho identity <文件>          # 从文件（SOUL.md 等）播种 AI 对等体身份
-    hermes honcho migrate                  # 逐步迁移指南：OpenClaw 原生 → Hermes + Honcho
-    hermes version             显示版本
-    hermes update              更新到最新版本
-    hermes uninstall           卸载 Hermes Agent
-    hermes acp                 作为 ACP 服务器运行以集成编辑器
-    hermes sessions browse     交互式会话选择器（支持搜索）
+    nermes                     # 交互式聊天（默认）
+    nermes chat                # 交互式聊天
+    nermes gateway             # 在前台运行网关
+    nermes gateway start       # 以服务形式启动网关
+    nermes gateway stop        # 停止网关服务
+    nermes gateway status      # 显示网关状态
+    nermes gateway install     # 安装网关服务
+    nermes gateway uninstall   # 卸载网关服务
+    nermes setup               # 交互式设置向导
+    nermes logout              # 清除已存储的认证信息
+    nermes status              # 显示所有组件的状态
+    nermes cron                # 管理定时任务
+    nermes cron list           # 列出定时任务
+    nermes cron status         # 检查定时调度器是否在运行
+    nermes doctor              # 检查配置和依赖
+    nermes honcho setup                    # 配置 Honcho AI 记忆集成
+    nermes honcho status                   # 显示 Honcho 配置和连接状态
+    nermes honcho sessions                 # 列出目录到会话名称的映射
+    nermes honcho map <名称>               # 将当前目录映射到会话名称
+    nermes honcho peer                     # 显示对等体名称和辩证设置
+    nermes honcho peer --user 名称         # 设置用户对等体名称
+    nermes honcho peer --ai 名称           # 设置 AI 对等体名称
+    nermes honcho peer --reasoning 级别   # 设置辩证推理级别
+    nermes honcho mode                     # 显示当前记忆模式
+    nermes honcho mode [hybrid|honcho|local]  # 设置记忆模式
+    nermes honcho tokens                   # 显示 Token 预算设置
+    nermes honcho tokens --context N       # 设置 session.context() token 上限
+    nermes honcho tokens --dialectic N     # 设置辩证结果字符上限
+    nermes honcho identity                 # 显示 AI 对等体身份表示
+    nermes honcho identity <文件>          # 从文件（SOUL.md 等）播种 AI 对等体身份
+    nermes honcho migrate                  # 逐步迁移指南：OpenClaw 原生 → Nermes + Honcho
+    nermes version             显示版本
+    nermes update              更新到最新版本
+    nermes uninstall           卸载 Nermes Agent
+    nermes acp                 作为 ACP 服务器运行以集成编辑器
+    nermes sessions browse     交互式会话选择器（支持搜索）
 
-    hermes claw migrate --dry-run  # 预览迁移（不进行更改）
+    nermes claw migrate --dry-run  # 预览迁移（不进行更改）
 """
 
 # IMPORTANT: hermes_bootstrap must be the very first import — it sets up
@@ -110,14 +110,14 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # ---------------------------------------------------------------------------
 # Profile override — MUST happen before any hermes module import.
 #
-# Many modules cache HERMES_HOME at import time (module-level constants).
+# Many modules cache NERMES_HOME at import time (module-level constants).
 # We intercept --profile/-p from sys.argv here and set the env var so that
-# every subsequent ``os.getenv("HERMES_HOME", ...)`` resolves correctly.
+# every subsequent ``os.getenv("NERMES_HOME", ...)`` resolves correctly.
 # The flag is stripped from sys.argv so argparse never sees it.
-# Falls back to ~/.hermes/active_profile for sticky default.
+# Falls back to ~/.nermes/active_profile for sticky default.
 # ---------------------------------------------------------------------------
 def _apply_profile_override() -> None:
-    """Pre-parse --profile/-p and set HERMES_HOME before module imports."""
+    """Pre-parse --profile/-p and set NERMES_HOME before module imports."""
     argv = sys.argv[1:]
     profile_name = None
     consume = 0
@@ -144,21 +144,21 @@ def _apply_profile_override() -> None:
             profile_name = None
             consume = 0
 
-    # 1.5 If HERMES_HOME is already set and no explicit flag was given, trust it
+    # 1.5 If NERMES_HOME or HERMES_HOME is already set and no explicit flag was given, trust it
     # only when it already points to a specific profile directory.  The
     # distinguishing heuristic: a profile path has "profiles" as its immediate
-    # parent directory name (e.g. ~/.hermes/profiles/coder or
-    # /opt/data/profiles/coder).  If HERMES_HOME points to the hermes root
-    # instead (e.g. systemd hardcodes HERMES_HOME=/root/.hermes), we must
+    # parent directory name (e.g. ~/.nermes/profiles/coder or
+    # /opt/data/profiles/coder).  If NERMES_HOME points to the nermes root
+    # instead (e.g. systemd hardcodes NERMES_HOME=/root/.nermes), we must
     # still read active_profile — the user may have switched profiles via
-    # `hermes profile use` and the gateway should honour that choice.
+    # `nermes profile use` and the gateway should honour that choice.
     # See issue #22502.
-    hermes_home_env = os.environ.get("HERMES_HOME", "")
+    hermes_home_env = os.environ.get("NERMES_HOME") or os.environ.get("HERMES_HOME", "")
     if profile_name is None and hermes_home_env:
         if Path(hermes_home_env).parent.name == "profiles":
             return
 
-    # 2. If no flag, check active_profile in the hermes root
+    # 2. If no flag, check active_profile in the nermes root
     if profile_name is None:
         try:
             from hermes_constants import get_default_hermes_root
@@ -172,7 +172,7 @@ def _apply_profile_override() -> None:
         except (UnicodeDecodeError, OSError):
             pass  # corrupted file, skip
 
-    # 3. If we found a profile, resolve and set HERMES_HOME
+    # 3. If we found a profile, resolve and set NERMES_HOME
     if profile_name is not None:
         try:
             from hermes_cli.profiles import resolve_profile_env
@@ -182,13 +182,13 @@ def _apply_profile_override() -> None:
             print(f"错误：{exc}", file=sys.stderr)
             sys.exit(1)
         except Exception as exc:
-            # A bug in profiles.py must NEVER prevent hermes from starting
+            # A bug in profiles.py must NEVER prevent nermes from starting
             print(
                 f"警告：配置文件覆盖失败（{exc}），使用默认配置",
                 file=sys.stderr,
             )
             return
-        os.environ["HERMES_HOME"] = hermes_home
+        os.environ["NERMES_HOME"] = hermes_home
         # Strip the flag from argv so argparse doesn't choke
         if consume > 0:
             for i, arg in enumerate(argv):
@@ -204,7 +204,7 @@ def _apply_profile_override() -> None:
 
 _apply_profile_override()
 
-# Load .env from ~/.hermes/.env first, then project root as dev fallback.
+# Load .env from ~/.nermes/.env first, then project root as dev fallback.
 # User-managed env files should override stale shell exports on restart.
 from hermes_cli.config import get_hermes_home
 from hermes_cli.env_loader import load_hermes_dotenv

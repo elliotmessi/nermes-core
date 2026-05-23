@@ -1,4 +1,4 @@
-"""Shared constants for Hermes Agent.
+"""Shared constants for Nermes Agent.
 
 Import-safe module with no dependencies — can be imported from anywhere
 without risk of circular imports.
@@ -18,7 +18,7 @@ _HERMES_HOME_OVERRIDE: ContextVar[str | object] = ContextVar(
 
 
 def set_hermes_home_override(path: str | Path | None) -> Token:
-    """Set a context-local Hermes home override and return its reset token.
+    """Set a context-local Nermes home override and return its reset token.
 
     This is for in-process, per-task scoping.  It deliberately does not mutate
     ``os.environ`` because that is shared by every thread in the process.
@@ -28,12 +28,12 @@ def set_hermes_home_override(path: str | Path | None) -> Token:
 
 
 def reset_hermes_home_override(token: Token) -> None:
-    """Restore the previous context-local Hermes home override."""
+    """Restore the previous context-local Nermes home override."""
     _HERMES_HOME_OVERRIDE.reset(token)
 
 
 def get_hermes_home_override() -> str | None:
-    """Return the active context-local Hermes home override, if any."""
+    """Return the active context-local Nermes home override, if any."""
     override = _HERMES_HOME_OVERRIDE.get()
     if override is _UNSET or not override:
         return None
@@ -41,18 +41,19 @@ def get_hermes_home_override() -> str | None:
 
 
 def get_hermes_home() -> Path:
-    """Return the Hermes home directory (default: ~/.hermes).
+    """Return the Nermes home directory (default: ~/.nermes).
 
-    Reads HERMES_HOME env var, falls back to ~/.hermes.
+    Reads NERMES_HOME env var first, falls back to HERMES_HOME for backward
+    compatibility, then defaults to ~/.nermes.
     This is the single source of truth — all other copies should import this.
 
-    When ``HERMES_HOME`` is unset but an ``active_profile`` file indicates
+    When ``NERMES_HOME`` is unset but an ``active_profile`` file indicates
     a non-default profile is active, logs a loud one-shot warning to
     ``errors.log`` so cross-profile data corruption is diagnosable instead
     of silent.  Behavior is unchanged otherwise — we still return
-    ``~/.hermes`` — because raising here would brick 30+ module-level
+    ``~/.nermes`` — because raising here would brick 30+ module-level
     callers that import this at load time.  Subprocess spawners are
-    expected to propagate ``HERMES_HOME`` explicitly (see the systemd
+    expected to propagate ``NERMES_HOME`` explicitly (see the systemd
     template in ``hermes_cli/gateway.py`` and the kanban dispatcher in
     ``hermes_cli/kanban_db.py``).  See https://github.com/NousResearch/hermes-agent/issues/18594.
     """
@@ -60,7 +61,10 @@ def get_hermes_home() -> Path:
     if override:
         return Path(override)
 
-    val = os.environ.get("HERMES_HOME", "").strip()
+    # Check NERMES_HOME first, then fall back to HERMES_HOME for compatibility
+    val = os.environ.get("NERMES_HOME", "").strip()
+    if not val:
+        val = os.environ.get("HERMES_HOME", "").strip()
     if val:
         return Path(val)
 
@@ -72,7 +76,7 @@ def get_hermes_home() -> Path:
             # Inline the default-root resolution from get_default_hermes_root()
             # to stay import-safe (this function is called from module scope
             # in 30+ files; we cannot afford to trigger logging setup here).
-            active_path = (Path.home() / ".hermes" / "active_profile")
+            active_path = (Path.home() / ".nermes" / "active_profile")
             active = active_path.read_text().strip() if active_path.exists() else ""
         except (UnicodeDecodeError, OSError):
             active = ""
@@ -85,11 +89,11 @@ def get_hermes_home() -> Path:
             # on consoles where a StreamHandler is already attached.
             import sys
             msg = (
-                f"[HERMES_HOME fallback] HERMES_HOME is unset but active "
-                f"profile is {active!r}. Falling back to ~/.hermes, which "
+                f"[NERMES_HOME fallback] NERMES_HOME is unset but active "
+                f"profile is {active!r}. Falling back to ~/.nermes, which "
                 f"is the DEFAULT profile — not {active!r}. Any data this "
                 f"process writes will land in the wrong profile. The "
-                f"subprocess spawner should pass HERMES_HOME explicitly "
+                f"subprocess spawner should pass NERMES_HOME explicitly "
                 f"(see issue #18594)."
             )
             try:
@@ -98,33 +102,35 @@ def get_hermes_home() -> Path:
             except Exception:
                 pass
 
-    return Path.home() / ".hermes"
+    return Path.home() / ".nermes"
 
 
 def get_default_hermes_root() -> Path:
-    """Return the root Hermes directory for profile-level operations.
+    """Return the root Nermes directory for profile-level operations.
 
-    In standard deployments this is ``~/.hermes``.
+    In standard deployments this is ``~/.nermes``.
 
-    In Docker or custom deployments where ``HERMES_HOME`` points outside
-    ``~/.hermes`` (e.g. ``/opt/data``), returns ``HERMES_HOME`` directly
+    In Docker or custom deployments where ``NERMES_HOME`` points outside
+    ``~/.nermes`` (e.g. ``/opt/data``), returns ``NERMES_HOME`` directly
     — that IS the root.
 
-    In profile mode where ``HERMES_HOME`` is ``<root>/profiles/<name>``,
+    In profile mode where ``NERMES_HOME`` is ``<root>/profiles/<name>``,
     returns ``<root>`` so that ``profile list`` can see all profiles.
-    Works both for standard (``~/.hermes/profiles/coder``) and Docker
+    Works both for standard (``~/.nermes/profiles/coder``) and Docker
     (``/opt/data/profiles/coder``) layouts.
 
     Import-safe — no dependencies beyond stdlib.
     """
-    native_home = Path.home() / ".hermes"
-    env_home = os.environ.get("HERMES_HOME", "")
+    native_home = Path.home() / ".nermes"
+    env_home = os.environ.get("NERMES_HOME", "")
+    if not env_home:
+        env_home = os.environ.get("HERMES_HOME", "")
     if not env_home:
         return native_home
     env_path = Path(env_home)
     try:
         env_path.resolve().relative_to(native_home.resolve())
-        # HERMES_HOME is under ~/.hermes (normal or profile mode)
+        # NERMES_HOME is under ~/.nermes (normal or profile mode)
         return native_home
     except ValueError:
         pass
@@ -136,7 +142,7 @@ def get_default_hermes_root() -> Path:
     if env_path.parent.name == "profiles":
         return env_path.parent.parent
 
-    # Not a profile path — HERMES_HOME itself is the root
+    # Not a profile path — NERMES_HOME itself is the root
     return env_path
 
 
@@ -216,16 +222,16 @@ def get_hermes_dir(new_subpath: str, old_name: str) -> Path:
 
 
 def display_hermes_home() -> str:
-    """Return a user-friendly display string for the current HERMES_HOME.
+    """Return a user-friendly display string for the current NERMES_HOME.
 
     Uses ``~/`` shorthand for readability::
 
-        default:  ``~/.hermes``
-        profile:  ``~/.hermes/profiles/coder``
-        custom:   ``/opt/hermes-custom``
+        default:  ``~/.nermes``
+        profile:  ``~/.nermes/profiles/coder``
+        custom:   ``/opt/nermes-custom``
 
     Use this in **user-facing** print/log messages instead of hardcoding
-    ``~/.hermes``.  For code that needs a real ``Path``, use
+    ``~/.nermes``.  For code that needs a real ``Path``, use
     :func:`get_hermes_home` instead.
     """
     home = get_hermes_home()
@@ -258,9 +264,9 @@ def secure_parent_dir(path: Path) -> None:
 def get_subprocess_home() -> str | None:
     """Return a per-profile HOME directory for subprocesses, or None.
 
-    When ``{HERMES_HOME}/home/`` exists on disk, subprocesses should use it
-    as ``HOME`` so system tools (git, ssh, gh, npm …) write their configs
-    inside the Hermes data directory instead of the OS-level ``/root`` or
+    When ``{NERMES_HOME}/home/`` exists on disk, subprocesses should use it
+    as ``HOME`` so system tools (git, ssh, gh, npm ...) write their configs
+    inside the Nermes data directory instead of the OS-level ``/root`` or
     ``~/``.  This provides:
 
     * **Docker persistence** — tool configs land inside the persistent volume.
@@ -272,7 +278,7 @@ def get_subprocess_home() -> str | None:
     Activation is directory-based: if the ``home/`` subdirectory doesn't
     exist, returns ``None`` and behavior is unchanged.
     """
-    hermes_home = get_hermes_home_override() or os.getenv("HERMES_HOME")
+    hermes_home = get_hermes_home_override() or os.getenv("NERMES_HOME") or os.getenv("HERMES_HOME")
     if not hermes_home:
         return None
     profile_home = os.path.join(hermes_home, "home")
@@ -368,7 +374,7 @@ def is_container() -> bool:
 
 
 def get_config_path() -> Path:
-    """Return the path to ``config.yaml`` under HERMES_HOME.
+    """Return the path to ``config.yaml`` under NERMES_HOME.
 
     Replaces the ``get_hermes_home() / "config.yaml"`` pattern repeated
     in 7+ files (skill_utils.py, hermes_logging.py, hermes_time.py, etc.).
@@ -377,13 +383,13 @@ def get_config_path() -> Path:
 
 
 def get_skills_dir() -> Path:
-    """Return the path to the skills directory under HERMES_HOME."""
+    """Return the path to the skills directory under NERMES_HOME."""
     return get_hermes_home() / "skills"
 
 
 
 def get_env_path() -> Path:
-    """Return the path to the ``.env`` file under HERMES_HOME."""
+    """Return the path to the ``.env`` file under NERMES_HOME."""
     return get_hermes_home() / ".env"
 
 

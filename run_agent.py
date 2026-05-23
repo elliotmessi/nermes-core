@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AI Agent Runner with Tool Calling
+Nermes Agent Runner with Tool Calling
 
 This module provides a clean, standalone agent that can execute AI models
 with tool calling capabilities. It handles the conversation loop, tool execution,

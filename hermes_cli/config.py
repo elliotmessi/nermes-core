@@ -1,9 +1,9 @@
 """
-Configuration management for Hermes Agent.
+Configuration management for Nermes Agent.
 
-Config files are stored in ~/.hermes/ for easy access:
-- ~/.hermes/config.yaml  - All settings (model, toolsets, terminal, etc.)
-- ~/.hermes/.env         - API keys and secrets
+Config files are stored in ~/.nermes/ for easy access:
+- ~/.nermes/config.yaml  - All settings (model, toolsets, terminal, etc.)
+- ~/.nermes/.env         - API keys and secrets
 
 This module provides:
 - hermes config          - Show current configuration
@@ -37,7 +37,7 @@ _CONFIG_PARSE_WARNED: set = set()
 def _warn_config_parse_failure(config_path: Path, exc: Exception) -> None:
     """Surface a config.yaml parse failure to user, log, and stderr.
 
-    A YAML parse error in ``~/.hermes/config.yaml`` causes ``load_config()``
+    A YAML parse error in ``~/.nermes/config.yaml`` causes ``load_config()``
     to silently fall back to ``DEFAULT_CONFIG``, which means every user
     override (auxiliary providers, fallback chain, model overrides, etc.)
     is dropped. Before this helper that was a one-line ``print(...)`` that
@@ -439,7 +439,7 @@ def _secure_file(path):
 
 
 def _ensure_default_soul_md(home: Path) -> None:
-    """Seed a default SOUL.md into HERMES_HOME if the user doesn't have one yet."""
+    """Seed a default SOUL.md into NERMES_HOME if the user doesn't have one yet."""
     soul_path = home / "SOUL.md"
     if soul_path.exists():
         return
@@ -448,7 +448,7 @@ def _ensure_default_soul_md(home: Path) -> None:
 
 
 def ensure_hermes_home():
-    """Ensure ~/.hermes directory structure exists with secure permissions.
+    """Ensure ~/.nermes directory structure exists with secure permissions.
 
     In managed mode (NixOS), dirs are created by the activation script with
     setgid + group-writable (2770). We skip mkdir and set umask(0o007) so
@@ -478,7 +478,7 @@ def _ensure_hermes_home_managed(home: Path):
     """Managed-mode variant: verify dirs exist (activation creates them), seed SOUL.md."""
     if not home.is_dir():
         raise RuntimeError(
-            f"HERMES_HOME {home} 不存在。"
+            f"NERMES_HOME {home} 不存在。"
             "请先运行 'sudo nixos-rebuild switch'。"
         )
     for subdir in ("cron", "sessions", "logs", "memories"):
@@ -3525,7 +3525,7 @@ def warn_deprecated_cwd_env_vars(config: Optional[Dict[str, Any]] = None) -> Non
             f"this is deprecated."
         )
     if lines:
-        hint_path = os.environ.get("HERMES_HOME", "~/.hermes")
+        hint_path = os.environ.get("HERMES_HOME", "~/.nermes")
         lines.insert(0, "\033[33m⚠ Deprecated .env settings detected:\033[0m")
         lines.append(
             f"  \033[2mMove to config.yaml instead:  "

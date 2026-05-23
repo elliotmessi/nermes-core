@@ -54,12 +54,12 @@ export NPM_REGISTRY
 
 REPO_URL_SSH="git@github.com:elliotmessi/nermes-core.git"
 REPO_URL_HTTPS="https://github.com/elliotmessi/nermes-core.git"
-HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+NERMES_HOME="${NERMES_HOME:-$HOME/.nermes}"
 # INSTALL_DIR is resolved AFTER arg parsing and OS detection so we can pick an
 # FHS-style layout for root installs.  Track whether the user gave us an
 # explicit directory — if so we never override it.
-if [ -n "${HERMES_INSTALL_DIR:-}" ]; then
-    INSTALL_DIR="$HERMES_INSTALL_DIR"
+if [ -n "${NERMES_INSTALL_DIR:-}" ]; then
+    INSTALL_DIR="$NERMES_INSTALL_DIR"
     INSTALL_DIR_EXPLICIT=true
 else
     INSTALL_DIR=""
@@ -69,8 +69,8 @@ PYTHON_VERSION="3.11"
 NODE_VERSION="22"
 
 # FHS-style root install layout (set by resolve_install_layout when applicable):
-#   code at /usr/local/lib/hermes-agent, command at /usr/local/bin/hermes,
-#   data still at /root/.hermes (HERMES_HOME).  Matches Claude Code / Codex CLI
+#   code at /usr/local/lib/nermes-agent, command at /usr/local/bin/nermes,
+#   data still at /root/.nermes (NERMES_HOME).  Matches Claude Code / Codex CLI
 #   and keeps Docker bind-mounted /root/ volumes lean.
 ROOT_FHS_LAYOUT=false
 DETECTED_BROWSER_EXECUTABLE=""
@@ -116,8 +116,8 @@ while [[ $# -gt 0 ]]; do
             INSTALL_DIR_EXPLICIT=true
             shift 2
             ;;
-        --hermes-home)
-            HERMES_HOME="$2"
+        --nermes-home)
+            NERMES_HOME="$2"
             shift 2
             ;;
         --ensure)
@@ -139,24 +139,24 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-browser 跳过 Playwright/Chromium 安装（浏览器工具将不可用）"
             echo "  --branch NAME  要安装的 Git 分支（默认：main）"
             echo "  --dir PATH     安装目录"
-            echo "                   默认（非 root）：    ~/.hermes/hermes-agent"
-            echo "                   默认（root, Linux）：/usr/local/lib/hermes-agent"
-            echo "  --hermes-home PATH  数据目录（默认：~/.hermes，或 \$HERMES_HOME）"
+            echo "                   默认（非 root）：    ~/.nermes/nermes-agent"
+            echo "                   默认（root, Linux）：/usr/local/lib/nermes-agent"
+            echo "  --nermes-home PATH  数据目录（默认：~/.nermes，或 \$NERMES_HOME）"
             echo "  -h, --help     显示此帮助"
             echo ""
             echo "说明："
-            echo "  以 root 身份在 Linux 上运行时，Hermes 将代码安装到"
-            echo "  /usr/local/lib/hermes-agent，并将命令链接到"
-            echo "  /usr/local/bin/hermes（FHS 布局 — 与 Claude Code / Codex CLI 一致）。"
-            echo "  数据、配置、会话和日志仍位于 \$HERMES_HOME"
-            echo "  （默认 /root/.hermes）。这有助于保持 Docker 挂载卷"
+            echo "  以 root 身份在 Linux 上运行时，Nermes 将代码安装到"
+            echo "  /usr/local/lib/nermes-agent，并将命令链接到"
+            echo "  /usr/local/bin/nermes（FHS 布局 — 与 Claude Code / Codex CLI 一致）。"
+            echo "  数据、配置、会话和日志仍位于 \$NERMES_HOME"
+            echo "  （默认 /root/.nermes）。这有助于保持 Docker 挂载卷"
             echo "  简洁，并确保命令在所有 shell 的 PATH 中。"
-            echo "  已安装在 \$HERMES_HOME/hermes-agent 的现有安装将原地保留。"
+            echo "  已安装在 \$NERMES_HOME/nermes-agent 的现有安装将原地保留。"
             echo "  --ensure DEPS  仅安装指定依赖（逗号分隔）"
             echo "                  支持：node, browser, ripgrep, ffmpeg"
             echo "                  不克隆仓库或创建虚拟环境"
             echo "  --postinstall  仅运行安装后设置（适用于 pip 用户）"
-            echo "                  安装可选依赖 + 运行 hermes setup"
+            echo "                  安装可选依赖 + 运行 nermes setup"
             echo "                  不克隆仓库或创建虚拟环境"
             exit 0
             ;;
@@ -239,29 +239,29 @@ is_termux() {
     [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux/files/usr"* ]]
 }
 
-# Decide where the repo checkout + venv live, and where the `hermes` command
+# Decide where the repo checkout + venv live, and where the `nermes` command
 # symlink goes.  Called after detect_os so $OS/$DISTRO are known.
 #
 # Defaults:
-#   - Non-root, any OS:       INSTALL_DIR = $HERMES_HOME/hermes-agent
+#   - Non-root, any OS:       INSTALL_DIR = $NERMES_HOME/nermes-agent
 #                             command link in $HOME/.local/bin
-#   - Termux (any uid):       INSTALL_DIR = $HERMES_HOME/hermes-agent
+#   - Termux (any uid):       INSTALL_DIR = $NERMES_HOME/nermes-agent
 #                             command link in $PREFIX/bin (already on PATH)
-#   - Root on Linux (new):    INSTALL_DIR = /usr/local/lib/hermes-agent
+#   - Root on Linux (new):    INSTALL_DIR = /usr/local/lib/nermes-agent
 #                             command link in /usr/local/bin
 #                             (unless a legacy install already exists at
-#                              $HERMES_HOME/hermes-agent — then preserve it)
+#                              $NERMES_HOME/nermes-agent — then preserve it)
 #
-# Always no-op when the user set --dir or $HERMES_INSTALL_DIR.
+# Always no-op when the user set --dir or $NERMES_INSTALL_DIR.
 resolve_install_layout() {
     if [ "$INSTALL_DIR_EXPLICIT" = true ]; then
         log_info "安装目录：$INSTALL_DIR（用户指定）"
         return 0
     fi
 
-    # Termux: package manager manages /data/data/..., keep code in HERMES_HOME.
+    # Termux: package manager manages /data/data/..., keep code in NERMES_HOME.
     if is_termux; then
-        INSTALL_DIR="$HERMES_HOME/hermes-agent"
+        INSTALL_DIR="$NERMES_HOME/nermes-agent"
         return 0
     fi
 
@@ -269,23 +269,23 @@ resolve_install_layout() {
     # macOS root installs keep the legacy layout because /usr/local/ on macOS
     # is Homebrew territory and we don't want to fight that.
     if [ "$OS" = "linux" ] && [ "$(id -u)" -eq 0 ]; then
-        if [ -d "$HERMES_HOME/hermes-agent/.git" ]; then
-            INSTALL_DIR="$HERMES_HOME/hermes-agent"
+        if [ -d "$NERMES_HOME/nermes-agent/.git" ]; then
+            INSTALL_DIR="$NERMES_HOME/nermes-agent"
             log_info "检测到已有安装位于 $INSTALL_DIR — 保留旧版布局"
-            log_info "  （新的 root 安装将使用 /usr/local/lib/hermes-agent）"
+            log_info "  （新的 root 安装将使用 /usr/local/lib/nermes-agent）"
             return 0
         fi
-        INSTALL_DIR="/usr/local/lib/hermes-agent"
+        INSTALL_DIR="/usr/local/lib/nermes-agent"
         ROOT_FHS_LAYOUT=true
         log_info "Linux 上以 root 安装 — 使用 FHS 布局"
         log_info "  代码：    $INSTALL_DIR"
-        log_info "  命令：    /usr/local/bin/hermes"
-        log_info "  数据：    $HERMES_HOME（不变）"
+        log_info "  命令：    /usr/local/bin/nermes"
+        log_info "  数据：    $NERMES_HOME（不变）"
         return 0
     fi
 
     # Default: non-root, non-Termux → legacy user-scoped layout.
-    INSTALL_DIR="$HERMES_HOME/hermes-agent"
+    INSTALL_DIR="$NERMES_HOME/nermes-agent"
 }
 
 get_command_link_dir() {
@@ -311,10 +311,10 @@ get_command_link_display_dir() {
 get_hermes_command_path() {
     local link_dir
     link_dir="$(get_command_link_dir)"
-    if [ -x "$link_dir/hermes" ]; then
-        echo "$link_dir/hermes"
+    if [ -x "$link_dir/nermes" ]; then
+        echo "$link_dir/nermes"
     else
-        echo "hermes"
+        echo "nermes"
     fi
 }
 
@@ -553,10 +553,10 @@ check_node() {
     fi
 
     # Check our own managed install from a previous run
-    if [ -x "$HERMES_HOME/node/bin/node" ]; then
-        export PATH="$HERMES_HOME/node/bin:$PATH"
-        local found_ver=$("$HERMES_HOME/node/bin/node" --version)
-        log_success "找到 Node.js $found_ver（Hermes 管理）"
+    if [ -x "$NERMES_HOME/node/bin/node" ]; then
+        export PATH="$NERMES_HOME/node/bin:$PATH"
+        local found_ver=$("$NERMES_HOME/node/bin/node" --version)
+        log_success "找到 Node.js $found_ver（Nermes 管理）"
         HAS_NODE=true
         return 0
     fi
@@ -642,7 +642,7 @@ install_node() {
         return 0
     fi
 
-    log_info "解压到 ~/.hermes/node/..."
+    log_info "解压到 ~/.nermes/node/..."
     if [[ "$tarball_name" == *.tar.xz ]]; then
         tar xf "$tmp_dir/$tarball_name" -C "$tmp_dir"
     else
@@ -659,22 +659,22 @@ install_node() {
         return 0
     fi
 
-    # Place into ~/.hermes/node/ and symlink binaries to ~/.local/bin/
-    rm -rf "$HERMES_HOME/node"
-    mkdir -p "$HERMES_HOME"
-    mv "$extracted_dir" "$HERMES_HOME/node"
+    # Place into ~/.nermes/node/ and symlink binaries to ~/.local/bin/
+    rm -rf "$NERMES_HOME/node"
+    mkdir -p "$NERMES_HOME"
+    mv "$extracted_dir" "$NERMES_HOME/node"
     rm -rf "$tmp_dir"
 
     mkdir -p "$HOME/.local/bin"
-    ln -sf "$HERMES_HOME/node/bin/node" "$HOME/.local/bin/node"
-    ln -sf "$HERMES_HOME/node/bin/npm"  "$HOME/.local/bin/npm"
-    ln -sf "$HERMES_HOME/node/bin/npx"  "$HOME/.local/bin/npx"
+    ln -sf "$NERMES_HOME/node/bin/node" "$HOME/.local/bin/node"
+    ln -sf "$NERMES_HOME/node/bin/npm"  "$HOME/.local/bin/npm"
+    ln -sf "$NERMES_HOME/node/bin/npx"  "$HOME/.local/bin/npx"
 
-    export PATH="$HERMES_HOME/node/bin:$PATH"
+    export PATH="$NERMES_HOME/node/bin:$PATH"
 
     local installed_ver
-    installed_ver=$("$HERMES_HOME/node/bin/node" --version 2>/dev/null)
-    log_success "Node.js $installed_ver 已安装到 ~/.hermes/node/"
+    installed_ver=$("$NERMES_HOME/node/bin/node" --version 2>/dev/null)
+    log_success "Node.js $installed_ver 已安装到 ~/.nermes/node/"
     HAS_NODE=true
 }
 
@@ -1267,21 +1267,21 @@ PY
 }
 
 setup_path() {
-    log_info "正在设置 hermes 命令..."
+    log_info "正在设置 nermes 命令..."
 
     if [ "$USE_VENV" = true ]; then
-        HERMES_BIN="$INSTALL_DIR/venv/bin/hermes"
+        HERMES_BIN="$INSTALL_DIR/venv/bin/nermes"
     else
-        HERMES_BIN="$(which hermes 2>/dev/null || echo "")"
+        HERMES_BIN="$(which nermes 2>/dev/null || echo "")"
         if [ -z "$HERMES_BIN" ]; then
-            log_warn "安装后未在 PATH 中找到 hermes"
+            log_warn "安装后未在 PATH 中找到 nermes"
             return 0
         fi
     fi
 
     # Verify the entry point script was actually generated
     if [ ! -x "$HERMES_BIN" ]; then
-        log_warn "在 $HERMES_BIN 未找到 hermes 入口点"
+        log_warn "在 $HERMES_BIN 未找到 nermes 入口点"
         log_info "这通常意味着 pip 安装未成功完成。"
         if [ "$DISTRO" = "termux" ]; then
             log_info "尝试：cd $INSTALL_DIR && python -m pip install -e '.[termux-all]' -c constraints-termux.txt"
@@ -1296,27 +1296,27 @@ setup_path() {
     command_link_dir="$(get_command_link_dir)"
     command_link_display_dir="$(get_command_link_display_dir)"
 
-    # Create a user-facing shim for the hermes command.
+    # Create a user-facing shim for the nermes command.
     # We intentionally clear PYTHONPATH/PYTHONHOME here so inherited env vars
     # can't make this launcher import modules from another checkout.
     mkdir -p "$command_link_dir"
     # Older installs created this path as a symlink to $HERMES_BIN. Without
     # the rm, `cat >` follows the symlink and overwrites the venv pip entry
     # point with this shim — making `exec "$HERMES_BIN"` self-recurse. (#21454)
-    rm -f "$command_link_dir/hermes"
-    cat > "$command_link_dir/hermes" <<EOF
+    rm -f "$command_link_dir/nermes"
+    cat > "$command_link_dir/nermes" <<EOF
 #!/usr/bin/env bash
 unset PYTHONPATH
 unset PYTHONHOME
 exec "$HERMES_BIN" "\$@"
 EOF
-    chmod +x "$command_link_dir/hermes"
-    log_success "hermes 启动器已安装 → $command_link_display_dir/hermes"
+    chmod +x "$command_link_dir/nermes"
+    log_success "nermes 启动器已安装 → $command_link_display_dir/nermes"
 
     if [ "$DISTRO" = "termux" ]; then
         export PATH="$command_link_dir:$PATH"
         log_info "$command_link_display_dir 是原生的 Termux 命令路径"
-        log_success "hermes 命令已就绪"
+        log_success "nermes 命令已就绪"
         return 0
     fi
 
@@ -1331,16 +1331,16 @@ EOF
         # Probe a fresh non-login interactive bash the way the user will use it.
         # `bash -i -c` sources ~/.bashrc but NOT ~/.bash_profile or /etc/profile,
         # which is the exact scenario where RHEL root loses /usr/local/bin.
-        if env -i HOME="$HOME" TERM="${TERM:-dumb}" bash -i -c 'command -v hermes' \
+        if env -i HOME="$HOME" TERM="${TERM:-dumb}" bash -i -c 'command -v nermes' \
                 >/dev/null 2>&1; then
             log_info "/usr/local/bin 已经在所有 shell 的 PATH 中"
-            log_success "hermes 命令已就绪"
+            log_success "nermes 命令已就绪"
             return 0
         fi
 
-        log_info "hermes 在非登录 shell 中不在 PATH 上（RHEL 系列常见）"
+        log_info "nermes 在非登录 shell 中不在 PATH 上（RHEL 系列常见）"
         PATH_LINE='export PATH="/usr/local/bin:$PATH"'
-        PATH_COMMENT='# Hermes Agent — 确保 /usr/local/bin 在 PATH 中（RHEL 非登录 shell）'
+        PATH_COMMENT='# Nermes Agent — 确保 /usr/local/bin 在 PATH 中（RHEL 非登录 shell）'
         for SHELL_CONFIG in "$HOME/.bashrc" "$HOME/.bash_profile"; do
             [ -f "$SHELL_CONFIG" ] || continue
             if ! grep -v '^[[:space:]]*#' "$SHELL_CONFIG" 2>/dev/null \
@@ -1351,7 +1351,7 @@ EOF
                 log_success "已将 /usr/local/bin 添加到 $SHELL_CONFIG 的 PATH 中"
             fi
         done
-        log_success "hermes 命令已就绪"
+        log_success "nermes 命令已就绪"
         return 0
     fi
 
@@ -1397,7 +1397,7 @@ EOF
         for SHELL_CONFIG in "${SHELL_CONFIGS[@]}"; do
             if ! grep -v '^[[:space:]]*#' "$SHELL_CONFIG" 2>/dev/null | grep -qE 'PATH=.*\.local/bin'; then
                 echo "" >> "$SHELL_CONFIG"
-                echo "# Hermes Agent — 确保 ~/.local/bin 在 PATH 中" >> "$SHELL_CONFIG"
+                echo "# Nermes Agent — 确保 ~/.local/bin 在 PATH 中" >> "$SHELL_CONFIG"
                 echo "$PATH_LINE" >> "$SHELL_CONFIG"
                 log_success "已将 ~/.local/bin 添加到 $SHELL_CONFIG 的 PATH 中"
             fi
@@ -1407,7 +1407,7 @@ EOF
         if [ "$IS_FISH" = "true" ]; then
             if ! grep -q 'fish_add_path.*\.local/bin' "$FISH_CONFIG" 2>/dev/null; then
                 echo "" >> "$FISH_CONFIG"
-                echo "# Hermes Agent — 确保 ~/.local/bin 在 PATH 中" >> "$FISH_CONFIG"
+                echo "# Nermes Agent — 确保 ~/.local/bin 在 PATH 中" >> "$FISH_CONFIG"
                 echo 'fish_add_path "$HOME/.local/bin"' >> "$FISH_CONFIG"
                 log_success "已将 ~/.local/bin 添加到 $FISH_CONFIG 的 PATH 中"
             fi
@@ -1421,55 +1421,55 @@ EOF
         log_info "~/.local/bin 已在 PATH 中"
     fi
 
-    # Export for current session so hermes works immediately
+    # Export for current session so nermes works immediately
     export PATH="$command_link_dir:$PATH"
 
-    log_success "hermes 命令已就绪"
+    log_success "nermes 命令已就绪"
 }
 
 copy_config_templates() {
     log_info "正在设置配置文件..."
 
-    # Create ~/.hermes directory structure (config at top level, code in subdir)
-    mkdir -p "$HERMES_HOME"/{cron,sessions,logs,pairing,hooks,image_cache,audio_cache,memories,skills}
+    # Create ~/.nermes directory structure (config at top level, code in subdir)
+    mkdir -p "$NERMES_HOME"/{cron,sessions,logs,pairing,hooks,image_cache,audio_cache,memories,skills}
 
-    # Create .env at ~/.hermes/.env (top level, easy to find)
-    if [ ! -f "$HERMES_HOME/.env" ]; then
+    # Create .env at ~/.nermes/.env (top level, easy to find)
+    if [ ! -f "$NERMES_HOME/.env" ]; then
         if [ -f "$INSTALL_DIR/.env.example" ]; then
-            cp "$INSTALL_DIR/.env.example" "$HERMES_HOME/.env"
-            log_success "已从模板创建 ~/.hermes/.env"
+            cp "$INSTALL_DIR/.env.example" "$NERMES_HOME/.env"
+            log_success "已从模板创建 ~/.nermes/.env"
         else
-            touch "$HERMES_HOME/.env"
-            log_success "已创建 ~/.hermes/.env"
+            touch "$NERMES_HOME/.env"
+            log_success "已创建 ~/.nermes/.env"
         fi
     else
-        log_info "~/.hermes/.env 已存在，保持不变"
+        log_info "~/.nermes/.env 已存在，保持不变"
     fi
     # Restrict .env permissions — this file holds API keys and tokens.
     # 0600 ensures only the file owner can read/write, matching standard
     # practice for credential files (.netrc, .aws/credentials, .ssh/config).
-    chmod 600 "$HERMES_HOME/.env"
+    chmod 600 "$NERMES_HOME/.env"
     configure_browser_env_from_system_browser
 
-    # Create config.yaml at ~/.hermes/config.yaml (top level, easy to find)
-    if [ ! -f "$HERMES_HOME/config.yaml" ]; then
+    # Create config.yaml at ~/.nermes/config.yaml (top level, easy to find)
+    if [ ! -f "$NERMES_HOME/config.yaml" ]; then
         if [ -f "$INSTALL_DIR/cli-config.yaml.example" ]; then
-            cp "$INSTALL_DIR/cli-config.yaml.example" "$HERMES_HOME/config.yaml"
-            log_success "已从模板创建 ~/.hermes/config.yaml"
+            cp "$INSTALL_DIR/cli-config.yaml.example" "$NERMES_HOME/config.yaml"
+            log_success "已从模板创建 ~/.nermes/config.yaml"
         fi
     else
-        log_info "~/.hermes/config.yaml 已存在，保持不变"
+        log_info "~/.nermes/config.yaml 已存在，保持不变"
     fi
 
     # Create SOUL.md if it doesn't exist (global persona file)
-    if [ ! -f "$HERMES_HOME/SOUL.md" ]; then
-        cat > "$HERMES_HOME/SOUL.md" << 'SOUL_EOF'
-# Hermes Agent Persona
+    if [ ! -f "$NERMES_HOME/SOUL.md" ]; then
+        cat > "$NERMES_HOME/SOUL.md" << 'SOUL_EOF'
+# Nermes Agent Persona
 
 <!--
 This file defines the agent's personality and tone.
 The agent will embody whatever you write here.
-Edit this to customize how Hermes communicates with you.
+Edit this to customize how Nermes communicates with you.
 
 Examples:
   - "You are a warm, playful assistant who uses kaomoji occasionally."
@@ -1480,20 +1480,20 @@ This file is loaded fresh each message -- no restart needed.
 Delete the contents (or this file) to use the default personality.
 -->
 SOUL_EOF
-        log_success "已创建 ~/.hermes/SOUL.md（编辑以自定义个性）"
+        log_success "已创建 ~/.nermes/SOUL.md（编辑以自定义个性）"
     fi
 
-    log_success "配置目录已就绪：~/.hermes/"
+    log_success "配置目录已就绪：~/.nermes/"
 
-    # Seed bundled skills into ~/.hermes/skills/ (manifest-based, one-time per skill)
-    log_info "正在同步内置技能到 ~/.hermes/skills/ ..."
+    # Seed bundled skills into ~/.nermes/skills/ (manifest-based, one-time per skill)
+    log_info "正在同步内置技能到 ~/.nermes/skills/ ..."
     if "$INSTALL_DIR/venv/bin/python" "$INSTALL_DIR/tools/skills_sync.py" 2>/dev/null; then
-        log_success "技能已同步到 ~/.hermes/skills/"
+        log_success "技能已同步到 ~/.nermes/skills/"
     else
         # Fallback: simple directory copy if Python sync fails
-        if [ -d "$INSTALL_DIR/skills" ] && [ ! "$(ls -A "$HERMES_HOME/skills/" 2>/dev/null | grep -v '.bundled_manifest')" ]; then
-            cp -r "$INSTALL_DIR/skills/"* "$HERMES_HOME/skills/" 2>/dev/null || true
-            log_success "技能已复制到 ~/.hermes/skills/"
+        if [ -d "$INSTALL_DIR/skills" ] && [ ! "$(ls -A "$NERMES_HOME/skills/" 2>/dev/null | grep -v '.bundled_manifest')" ]; then
+            cp -r "$INSTALL_DIR/skills/"* "$NERMES_HOME/skills/" 2>/dev/null || true
+            log_success "技能已复制到 ~/.nermes/skills/"
         fi
     fi
 }
@@ -1547,7 +1547,7 @@ run_browser_install_with_timeout() {
 }
 
 configure_browser_env_from_system_browser() {
-    local env_file="$HERMES_HOME/.env"
+    local env_file="$NERMES_HOME/.env"
     local browser_path="${DETECTED_BROWSER_EXECUTABLE:-}"
 
     if [ -z "$browser_path" ]; then
@@ -1558,7 +1558,7 @@ configure_browser_env_from_system_browser() {
         return 0
     fi
 
-    mkdir -p "$HERMES_HOME"
+    mkdir -p "$NERMES_HOME"
     if [ ! -f "$env_file" ]; then
         touch "$env_file"
     fi
@@ -1570,7 +1570,7 @@ configure_browser_env_from_system_browser() {
 
     {
         echo ""
-        echo "# Hermes Agent browser tools — use the system Chrome/Chromium binary."
+        echo "# Nermes Agent browser tools — use the system Chrome/Chromium binary."
         echo "AGENT_BROWSER_EXECUTABLE_PATH=$browser_path"
     } >> "$env_file"
     log_success "已将浏览器工具配置为使用 $browser_path"
@@ -1693,7 +1693,7 @@ install_node_deps() {
         log_info "正在安装 TUI 依赖..."
         cd "$INSTALL_DIR/ui-tui"
         npm install --silent 2>/dev/null || {
-            log_warn "TUI npm install 失败（hermes --tui 可能无法工作）"
+            log_warn "TUI npm install 失败（nermes --tui 可能无法工作）"
         }
         log_success "TUI 依赖已安装"
     fi
@@ -1716,7 +1716,7 @@ run_setup_wizard() {
     # but opening fails with ENXIO, so the wizard would proceed and
     # then crash on `< /dev/tty` below.
     if ! (: </dev/tty) 2>/dev/null; then
-        log_info "跳过设置向导（无可用终端）。安装后运行 'hermes setup'。"
+        log_info "跳过设置向导（无可用终端）。安装后运行 'nermes setup'。"
         return 0
     fi
 
@@ -1726,7 +1726,7 @@ run_setup_wizard() {
 
     cd "$INSTALL_DIR"
 
-    # Run hermes setup using the venv Python directly (no activation needed).
+    # Run nermes setup using the venv Python directly (no activation needed).
     # Redirect stdin from /dev/tty so interactive prompts work when piped from curl.
     if [ "$USE_VENV" = true ]; then
         "$INSTALL_DIR/venv/bin/python" -m hermes_cli.main setup < /dev/tty
@@ -1737,7 +1737,7 @@ run_setup_wizard() {
 
 maybe_start_gateway() {
     # Check if any messaging platform tokens were configured
-    ENV_FILE="$HERMES_HOME/.env"
+    ENV_FILE="$NERMES_HOME/.env"
     if [ ! -f "$ENV_FILE" ]; then
         return 0
     fi
@@ -1761,19 +1761,19 @@ maybe_start_gateway() {
 
     # If WhatsApp is enabled and no session exists yet, run foreground first for QR scan
     WHATSAPP_VAL=$(grep "^WHATSAPP_ENABLED=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
-    WHATSAPP_SESSION="$HERMES_HOME/whatsapp/session/creds.json"
+    WHATSAPP_SESSION="$NERMES_HOME/whatsapp/session/creds.json"
     if [ "$WHATSAPP_VAL" = "true" ] && [ ! -f "$WHATSAPP_SESSION" ]; then
         if [ "$IS_INTERACTIVE" = true ]; then
             echo ""
             log_info "WhatsApp 已启用但尚未配对。"
-            log_info "运行 'hermes whatsapp' 通过二维码配对..."
+            log_info "运行 'nermes whatsapp' 通过二维码配对..."
             echo ""
             if prompt_yes_no "立即配对 WhatsApp？" "yes"; then
                 HERMES_CMD="$(get_hermes_command_path)"
                 $HERMES_CMD whatsapp || true
             fi
         else
-            log_info "跳过 WhatsApp 配对（非交互模式）。运行 'hermes whatsapp' 进行配对。"
+            log_info "跳过 WhatsApp 配对（非交互模式）。运行 'nermes whatsapp' 进行配对。"
         fi
     fi
 
@@ -1781,7 +1781,7 @@ maybe_start_gateway() {
     # in Docker builds where the device node is in the mount namespace
     # but opening fails with ENXIO. See #16746.
     if ! (: </dev/tty) 2>/dev/null; then
-        log_info "跳过网关设置（无可用终端）。稍后运行 'hermes gateway install'。"
+        log_info "跳过网关设置（无可用终端）。稍后运行 'nermes gateway install'。"
         return 0
     fi
 
@@ -1807,10 +1807,10 @@ maybe_start_gateway() {
                 if $HERMES_CMD gateway start 2>/dev/null; then
                     log_success "网关已启动！您的机器人现已在线。"
                 else
-                    log_warn "服务已安装但启动失败。尝试：hermes gateway start"
+                    log_warn "服务已安装但启动失败。尝试：nermes gateway start"
                 fi
             else
-                log_warn "Systemd 安装失败。您可以手动启动：hermes gateway"
+                log_warn "Systemd 安装失败。您可以手动启动：nermes gateway"
             fi
         else
             if [ "$DISTRO" = "termux" ]; then
@@ -1818,17 +1818,17 @@ maybe_start_gateway() {
             else
                 log_info "systemd 不可用 — 在后台启动网关..."
             fi
-            nohup $HERMES_CMD gateway > "$HERMES_HOME/logs/gateway.log" 2>&1 &
+            nohup $HERMES_CMD gateway > "$NERMES_HOME/logs/gateway.log" 2>&1 &
             GATEWAY_PID=$!
-            log_success "网关已启动（PID $GATEWAY_PID）。日志：~/.hermes/logs/gateway.log"
+            log_success "网关已启动（PID $GATEWAY_PID）。日志：~/.nermes/logs/gateway.log"
             log_info "停止：kill $GATEWAY_PID"
-            log_info "稍后重新启动：hermes gateway"
+            log_info "稍后重新启动：nermes gateway"
             if [ "$DISTRO" = "termux" ]; then
                 log_warn "当 Termux 被挂起或系统回收资源时，Android 可能会停止后台进程。"
             fi
         fi
     else
-        log_info "已跳过。稍后启动网关：hermes gateway"
+        log_info "已跳过。稍后启动网关：nermes gateway"
     fi
 }
 
@@ -1844,9 +1844,9 @@ print_success() {
     # Show file locations
     echo -e "${CYAN}${BOLD}📁 文件位置：${NC}"
     echo ""
-    echo -e "   ${YELLOW}配置：${NC}    $HERMES_HOME/config.yaml"
-    echo -e "   ${YELLOW}API 密钥：${NC}  $HERMES_HOME/.env"
-    echo -e "   ${YELLOW}数据：${NC}      $HERMES_HOME/cron/, sessions/, logs/"
+    echo -e "   ${YELLOW}配置：${NC}    $NERMES_HOME/config.yaml"
+    echo -e "   ${YELLOW}API 密钥：${NC}  $NERMES_HOME/.env"
+    echo -e "   ${YELLOW}数据：${NC}      $NERMES_HOME/cron/, sessions/, logs/"
     echo -e "   ${YELLOW}代码：${NC}      $INSTALL_DIR"
     echo ""
 
@@ -1854,24 +1854,24 @@ print_success() {
     echo ""
     echo -e "${CYAN}${BOLD}🚀 命令：${NC}"
     echo ""
-    echo -e "   ${GREEN}hermes${NC}              开始对话"
-    echo -e "   ${GREEN}hermes setup${NC}        配置 API 密钥和设置"
-    echo -e "   ${GREEN}hermes config${NC}       查看/编辑配置"
-    echo -e "   ${GREEN}hermes config edit${NC}  在编辑器中打开配置"
-    echo -e "   ${GREEN}hermes gateway install${NC} 安装网关服务（消息 + 定时任务）"
-    echo -e "   ${GREEN}hermes update${NC}       更新到最新版本"
+    echo -e "   ${GREEN}nermes${NC}              开始对话"
+    echo -e "   ${GREEN}nermes setup${NC}        配置 API 密钥和设置"
+    echo -e "   ${GREEN}nermes config${NC}       查看/编辑配置"
+    echo -e "   ${GREEN}nermes config edit${NC}  在编辑器中打开配置"
+    echo -e "   ${GREEN}nermes gateway install${NC} 安装网关服务（消息 + 定时任务）"
+    echo -e "   ${GREEN}nermes update${NC}       更新到最新版本"
     echo ""
 
     echo -e "${CYAN}─────────────────────────────────────────────────────────${NC}"
     echo ""
     if [ "$DISTRO" = "termux" ]; then
-        echo -e "${YELLOW}⚡ 'hermes' 已链接到 $(get_command_link_display_dir)，该目录在 Termux 的 PATH 中。${NC}"
+        echo -e "${YELLOW}⚡ 'nermes' 已链接到 $(get_command_link_display_dir)，该目录在 Termux 的 PATH 中。${NC}"
         echo ""
     elif [ "$ROOT_FHS_LAYOUT" = true ]; then
-        echo -e "${YELLOW}⚡ 'hermes' 已链接到 /usr/local/bin，可直接使用 — 无需重新加载 shell。${NC}"
+        echo -e "${YELLOW}⚡ 'nermes' 已链接到 /usr/local/bin，可直接使用 — 无需重新加载 shell。${NC}"
         echo ""
     else
-        echo -e "${YELLOW}⚡ 请重新加载 shell 以使用 'hermes' 命令：${NC}"
+        echo -e "${YELLOW}⚡ 请重新加载 shell 以使用 'nermes' 命令：${NC}"
         echo ""
         LOGIN_SHELL="$(basename "${SHELL:-/bin/bash}")"
         if [ "$LOGIN_SHELL" = "zsh" ]; then
@@ -1915,9 +1915,9 @@ print_success() {
 
 ensure_browser() {
     if ! command -v node >/dev/null 2>&1; then
-        local node_bin="$HERMES_HOME/node/bin/node"
+        local node_bin="$NERMES_HOME/node/bin/node"
         if [ -x "$node_bin" ]; then
-            export PATH="$HERMES_HOME/node/bin:$PATH"
+            export PATH="$NERMES_HOME/node/bin:$PATH"
         else
             log_error "未找到 Node.js。请先使用 --ensure node。"
             return 1
@@ -1925,7 +1925,7 @@ ensure_browser() {
     fi
 
     local npm_bin
-    npm_bin="$(command -v npm 2>/dev/null || echo "$HERMES_HOME/node/bin/npm")"
+    npm_bin="$(command -v npm 2>/dev/null || echo "$NERMES_HOME/node/bin/npm")"
     if [ ! -x "$npm_bin" ]; then
         log_error "未找到 npm"
         return 1
@@ -1934,7 +1934,7 @@ ensure_browser() {
     log_info "正在安装 agent-browser..."
     local log_file
     log_file="$(mktemp)"
-    if ! "$npm_bin" install -g --prefix "$HERMES_HOME/node" --silent --ignore-scripts \
+    if ! "$npm_bin" install -g --prefix "$NERMES_HOME/node" --silent --ignore-scripts \
         "agent-browser@^0.26.0" \
         "@askjo/camofox-browser@^1.5.2" \
         >"$log_file" 2>&1; then
@@ -1944,7 +1944,7 @@ ensure_browser() {
         return 1
     fi
     rm -f "$log_file"
-    export PATH="$HERMES_HOME/node/bin:$PATH"
+    export PATH="$NERMES_HOME/node/bin:$PATH"
 
     local sys_browser
     sys_browser="$(find_system_browser 2>/dev/null || true)"
@@ -1955,7 +1955,7 @@ ensure_browser() {
     fi
 
     log_info "正在通过 agent-browser install 安装 Chromium..."
-    local ab_bin="$HERMES_HOME/node/bin/agent-browser"
+    local ab_bin="$NERMES_HOME/node/bin/agent-browser"
     if [ -x "$ab_bin" ]; then
         "$ab_bin" install 2>/dev/null || {
             log_warn "Chromium 安装失败。如果没有系统浏览器，浏览器工具可能无法工作。"
@@ -2021,7 +2021,7 @@ postinstall_mode() {
     print_banner
     detect_os
 
-    log_info "安装后模式：为 pip 安装设置 Hermes"
+    log_info "安装后模式：为 pip 安装设置 Nermes"
 
     check_node
     check_network_prerequisites
@@ -2031,12 +2031,12 @@ postinstall_mode() {
         ensure_browser
     fi
 
-    HERMES_CMD="$(command -v hermes 2>/dev/null || echo "")"
+    HERMES_CMD="$(command -v nermes 2>/dev/null || echo "")"
     if [ -n "$HERMES_CMD" ]; then
-        log_info "正在运行 hermes setup..."
+        log_info "正在运行 nermes setup..."
         "$HERMES_CMD" setup
     else
-        log_warn "在 PATH 中未找到 hermes 命令"
+        log_warn "在 PATH 中未找到 nermes 命令"
         log_info "尝试：python -m hermes_cli.main setup"
     fi
 }
@@ -2105,7 +2105,7 @@ profession_selector() {
             log_success "职业预设安装完成！"
             echo ""
             echo "📚 后续可安装更多专属技能包，运行："
-            echo "   hermes skills install <技能名>"
+            echo "   nermes skills install <技能名>"
         else
             log_warn "职业预设安装失败，可稍后手动安装："
             log_info "  bash $professions_dir/$selected/apply.sh"
@@ -2140,7 +2140,7 @@ main() {
 
     print_success
 
-    echo "git" > "$HERMES_HOME/.install_method"
+    echo "git" > "$NERMES_HOME/.install_method"
 
     profession_selector
 }

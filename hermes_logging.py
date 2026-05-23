@@ -1,8 +1,8 @@
-"""Centralized logging setup for Hermes Agent.
+"""Centralized logging setup for Nermes Agent.
 
 Provides a single ``setup_logging()`` entry point that both the CLI and
 gateway call early in their startup path.  All log files live under
-``~/.hermes/logs/`` (profile-aware via ``get_hermes_home()``).
+``~/.nermes/logs/`` (profile-aware via ``get_hermes_home()``).
 
 Log files produced:
     agent.log   — INFO+, all agent/tool/session activity (the main log)
