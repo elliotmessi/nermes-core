@@ -21,10 +21,42 @@ from typing import List, Dict
 
 # ── 路径配置 ────────────────────────────────────────────────────
 
-# 工具所在目录的上级（professions/finance/）
-_TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
-_FINANCE_DIR = os.path.dirname(_TOOL_DIR)
-_KNOWLEDGE_DIR = os.path.join(_FINANCE_DIR, "knowledge")
+def _resolve_knowledge_dir() -> str:
+    """解析知识库目录，优先使用用户数据目录 ~/.nermes/ 中有内容的版本。"""
+    nermes_home = os.environ.get(
+        "NERMES_HOME",
+        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+    )
+
+    # 候选路径列表（按优先级）
+    candidates = [
+        os.path.join(nermes_home, "professions", "finance", "knowledge"),
+    ]
+
+    # 工具所在目录的上级（professions/finance/）
+    tool_dir = os.path.dirname(os.path.abspath(__file__))
+    finance_dir = os.path.dirname(tool_dir)
+    candidates.append(os.path.join(finance_dir, "knowledge"))
+
+    # 项目根目录下的 professions/finance/knowledge/
+    if finance_dir.endswith("professions"):
+        project_root = os.path.dirname(finance_dir)
+        candidates.append(os.path.join(
+            os.path.dirname(project_root), "professions", "finance", "knowledge"
+        ))
+
+    # 返回第一个包含 .md 文件的目录
+    for candidate in candidates:
+        if os.path.isdir(candidate):
+            has_md = any(f.endswith(".md") for f in os.listdir(candidate))
+            if has_md:
+                return candidate
+
+    # 都为空时返回用户目录（用于后续写入）
+    return candidates[0]
+
+
+_KNOWLEDGE_DIR = _resolve_knowledge_dir()
 
 # ── 预处理 ──────────────────────────────────────────────────────
 
@@ -211,6 +243,88 @@ def _get_index() -> _TfIdfIndex:
     return _INDEX
 
 
+# ── 搜索日志（知识缺口发现） ───────────────────────────────────
+
+def _log_search(query: str, result_count: int, top_score: float):
+    """记录搜索日志，用于发现知识缺口。"""
+    import json as _json
+    from datetime import datetime as _dt
+
+    nermes_home = os.environ.get(
+        "NERMES_HOME",
+        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+    )
+    log_dir = os.path.join(nermes_home, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+
+    entry = {
+        "timestamp": _dt.now().isoformat(),
+        "query": query,
+        "results": result_count,
+        "top_score": round(top_score, 4) if top_score else 0,
+        "found": result_count > 0 and top_score > 0.5,
+    }
+
+    log_path = os.path.join(log_dir, "knowledge_search_log.jsonl")
+    try:
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(_json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception:
+        pass  # 日志写入失败不影响搜索功能
+
+
+def get_search_gaps(min_queries: int = 3) -> list:
+    """分析搜索日志，返回可能的知识缺口（频繁搜索但无结果或低相关度的查询）。
+
+    Returns:
+        list[dict]: [{"query": ..., "count": N, "avg_score": ...}, ...]
+    """
+    import json as _json
+    from collections import defaultdict as _dd
+
+    nermes_home = os.environ.get(
+        "NERMES_HOME",
+        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+    )
+    log_path = os.path.join(nermes_home, "logs", "knowledge_search_log.jsonl")
+    if not os.path.exists(log_path):
+        return []
+
+    # 按查询关键词聚合
+    query_stats = _dd(lambda: {"count": 0, "scores": [], "found_count": 0})
+
+    with open(log_path, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                entry = _json.loads(line)
+                q = entry.get("query", "")
+                # 用前20字符作为聚合键（去重近似查询）
+                key = q[:30]
+                query_stats[key]["count"] += 1
+                query_stats[key]["scores"].append(entry.get("top_score", 0))
+                if entry.get("found"):
+                    query_stats[key]["found_count"] += 1
+            except (ValueError, KeyError):
+                continue
+
+    gaps = []
+    for query, stats in query_stats.items():
+        if stats["count"] >= min_queries:
+            avg_score = sum(stats["scores"]) / len(stats["scores"]) if stats["scores"] else 0
+            found_ratio = stats["found_count"] / stats["count"]
+            # 找到率低于50%的视为缺口
+            if found_ratio < 0.5 or avg_score < 0.3:
+                gaps.append({
+                    "query": query,
+                    "count": stats["count"],
+                    "avg_score": round(avg_score, 3),
+                    "found_ratio": round(found_ratio, 2),
+                })
+
+    gaps.sort(key=lambda g: g["count"], reverse=True)
+    return gaps[:10]
+
+
 # ── 公开接口 ─────────────────────────────────────────────────────
 
 def search_knowledge(query: str, top_k: int = 3) -> List[Dict]:
@@ -228,7 +342,10 @@ def search_knowledge(query: str, top_k: int = 3) -> List[Dict]:
             - relevance(float): 相关度分数（0~1，越高越相关）
     """
     index = _get_index()
-    return index.search(query, top_k=top_k)
+    results = index.search(query, top_k=top_k)
+    top_score = results[0]["relevance"] if results else 0
+    _log_search(query, len(results), top_score)
+    return results
 
 
 def reload_knowledge():

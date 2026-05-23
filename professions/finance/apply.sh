@@ -33,6 +33,21 @@ cp "$SCRIPT_DIR/MEMORY.md" "$NERMES_HOME/MEMORY.md"
 # 创建技能目录（如果不存在）
 mkdir -p "$NERMES_HOME/skills"
 
+# 复制知识库文件
+KNOWLEDGE_SRC="$SCRIPT_DIR/knowledge"
+KNOWLEDGE_DST="$NERMES_HOME/professions/finance/knowledge"
+if [ -d "$KNOWLEDGE_SRC" ]; then
+    if [ -d "$KNOWLEDGE_DST" ]; then
+        echo "  知识库目录已存在，将合并更新..."
+        cp "$KNOWLEDGE_SRC"/*.md "$KNOWLEDGE_DST/" 2>/dev/null || true
+    else
+        mkdir -p "$KNOWLEDGE_DST"
+        cp "$KNOWLEDGE_SRC"/*.md "$KNOWLEDGE_DST/"
+    fi
+    KB_COUNT=$(ls "$KNOWLEDGE_DST"/*.md 2>/dev/null | wc -l)
+    echo "  ✅ 知识库已安装：$KB_COUNT 个文件"
+fi
+
 echo "✅ 安装完成！"
 echo ""
 echo "已配置为【财务专业人士】模式。"
