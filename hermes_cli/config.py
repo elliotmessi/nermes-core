@@ -501,8 +501,8 @@ def _ensure_hermes_home_managed(home: Path):
 # =============================================================================
 
 DEFAULT_CONFIG = {
-    "model": "",
-    "providers": {},
+    "model": "deepseek-v4-pro",
+    "providers": {"deepseek": {"api_key": "", "base_url": "https://api.deepseek.com/v1"}},
     "fallback_providers": [],
     "credential_pool_strategies": {},
     "toolsets": ["hermes-cli"],
@@ -1039,7 +1039,7 @@ DEFAULT_CONFIG = {
         # handful of gateway slash-command replies).  Does NOT affect agent
         # responses, log lines, tool outputs, or slash-command descriptions.
         # Supported: en, zh, ja, de, es, fr, tr, uk.  Unknown values fall back to en.
-        "language": "en",
+        "language": "zh",
         # TUI busy indicator style: kaomoji (default), emoji, unicode (braille
         # spinner), or ascii.  Live-swappable via `/indicator <style>`.
         "tui_status_indicator": "kaomoji",
@@ -1118,7 +1118,7 @@ DEFAULT_CONFIG = {
         },
         "xai": {
             "voice_id": "eve",  # or custom voice ID — see https://docs.x.ai/developers/model-capabilities/audio/custom-voices
-            "language": "en",
+            "language": "zh",
             "sample_rate": 24000,
             "bit_rate": 128000,
         },
