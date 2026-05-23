@@ -749,22 +749,22 @@ def format_auth_error(error: Exception) -> str:
         return str(error)
 
     if error.relogin_required:
-        return f"{error} Run `hermes model` to re-authenticate."
+        return f"{error} 请运行 `hermes model` 重新认证。"
 
     if error.code == "subscription_required":
         return (
-            "No active paid subscription found on Nous Portal. "
-            "Please purchase/activate a subscription, then retry."
+            "Nous Portal 上未找到有效的付费订阅。"
+            "请购买/激活订阅后重试。"
         )
 
     if error.code == "insufficient_credits":
         return (
-            "Subscription credits are exhausted. "
-            "Top up/renew credits in Nous Portal, then retry."
+            "订阅点数已用尽。"
+            "请在 Nous Portal 中充值/续费后重试。"
         )
 
     if error.code == "temporarily_unavailable":
-        return f"{error} Please retry in a few seconds."
+        return f"{error} 请几秒后重试。"
 
     return str(error)
 
@@ -2740,25 +2740,25 @@ def _spotify_interactive_setup(redirect_uri_hint: str) -> str:
 
     print()
     print("=" * 70)
-    print("Spotify first-time setup")
+    print("Spotify 首次设置")
     print("=" * 70)
     print()
-    print("Spotify requires every user to register their own lightweight")
-    print("developer app. This takes about two minutes and only has to be")
-    print("done once per machine.")
+    print("Spotify 要求每个用户注册自己的轻量级")
+    print("开发者应用。大约需要两分钟，且每台机器")
+    print("只需执行一次。")
     print()
-    print(f"Full guide: {SPOTIFY_DOCS_URL}")
+    print(f"完整指南：{SPOTIFY_DOCS_URL}")
     print()
-    print("Steps:")
-    print(f"  1. Opening {SPOTIFY_DASHBOARD_URL} in your browser...")
-    print("  2. Click 'Create app' and fill in:")
-    print("       App name:     anything (e.g. hermes-agent)")
-    print("       Description:  anything")
-    print(f"       Redirect URI: {redirect_uri_hint}")
-    print("       API/SDK:      Web API")
-    print("  3. Agree to the terms, click Save.")
-    print("  4. Open the app's Settings page and copy the Client ID.")
-    print("  5. Paste it below.")
+    print("步骤：")
+    print(f"  1. 正在打开 {SPOTIFY_DASHBOARD_URL}...")
+    print("  2. 点击「创建应用」并填写：")
+    print("       应用名称：     任意（例如 hermes-agent）")
+    print("       描述：         任意")
+    print(f"       回调 URI：     {redirect_uri_hint}")
+    print("       API/SDK：      Web API")
+    print("  3. 同意条款，点击保存。")
+    print("  4. 打开应用的设置页面，复制 Client ID。")
+    print("  5. 粘贴到下方。")
     print()
 
     if not _is_remote_session():
@@ -2768,15 +2768,15 @@ def _spotify_interactive_setup(redirect_uri_hint: str) -> str:
             pass
 
     try:
-        raw = input("Spotify Client ID: ").strip()
+        raw = input("Spotify Client ID：").strip()
     except (EOFError, KeyboardInterrupt):
         print()
-        raise SystemExit("Spotify setup cancelled.")
+        raise SystemExit("Spotify 设置已取消。")
 
     if not raw:
         print()
-        print(f"No Client ID entered. See {SPOTIFY_DOCS_URL} for the full guide.")
-        raise SystemExit("Spotify setup cancelled: empty Client ID.")
+        print(f"未输入 Client ID。完整指南请参考 {SPOTIFY_DOCS_URL}")
+        raise SystemExit("Spotify 设置已取消：Client ID 为空。")
 
     # Persist so subsequent `hermes auth spotify` runs skip the wizard.
     save_env_value("HERMES_SPOTIFY_CLIENT_ID", raw)
@@ -2786,7 +2786,7 @@ def _spotify_interactive_setup(redirect_uri_hint: str) -> str:
         save_env_value("HERMES_SPOTIFY_REDIRECT_URI", redirect_uri_hint)
 
     print()
-    print("Saved HERMES_SPOTIFY_CLIENT_ID to ~/.hermes/.env")
+    print("已保存 HERMES_SPOTIFY_CLIENT_ID 到 ~/.hermes/.env")
     print()
     return raw
 
@@ -2825,15 +2825,15 @@ def login_spotify_command(args) -> None:
         accounts_base_url=accounts_base_url,
     )
 
-    print("Starting Spotify PKCE login...")
-    print(f"Client ID: {client_id}")
-    print(f"Redirect URI: {redirect_uri}")
-    print("Make sure this redirect URI is allow-listed in your Spotify app settings.")
+    print("正在启动 Spotify PKCE 登录...")
+    print(f"Client ID：{client_id}")
+    print(f"回调 URI：{redirect_uri}")
+    print("请确保此回调 URI 已在 Spotify 应用设置中列入白名单。")
     print()
-    print("Open this URL to authorize Hermes:")
+    print("打开以下网址以授权 Hermes：")
     print(authorize_url)
     print()
-    print(f"Full setup guide: {SPOTIFY_DOCS_URL}")
+    print(f"完整设置指南：{SPOTIFY_DOCS_URL}")
     print()
 
     _print_loopback_ssh_hint(redirect_uri, docs_url=SPOTIFY_DOCS_URL)
@@ -2844,9 +2844,9 @@ def login_spotify_command(args) -> None:
         except Exception:
             opened = False
         if opened:
-            print("Browser opened for Spotify authorization.")
+            print("已打开浏览器进行 Spotify 授权。")
         else:
-            print("Could not open the browser automatically; use the URL above.")
+            print("无法自动打开浏览器，请使用上面的链接。")
 
     callback = _spotify_wait_for_callback(
         redirect_uri,
@@ -2854,9 +2854,9 @@ def login_spotify_command(args) -> None:
     )
     if callback.get("error"):
         detail = callback.get("error_description") or callback["error"]
-        raise SystemExit(f"Spotify authorization failed: {detail}")
+        raise SystemExit(f"Spotify 授权失败：{detail}")
     if callback.get("state") != state_nonce:
-        raise SystemExit("Spotify authorization failed: state mismatch.")
+        raise SystemExit("Spotify 授权失败：状态不匹配。")
 
     token_payload = _spotify_exchange_code_for_tokens(
         client_id=client_id,
@@ -2880,10 +2880,10 @@ def login_spotify_command(args) -> None:
         _store_provider_state(auth_store, "spotify", spotify_state, set_active=False)
         saved_to = _save_auth_store(auth_store)
 
-    print("Spotify login successful!")
-    print(f"  Auth state: {saved_to}")
-    print("  Provider state saved under providers.spotify")
-    print(f"  Docs: {SPOTIFY_DOCS_URL}")
+    print("Spotify 登录成功！")
+    print(f"  认证状态：{saved_to}")
+    print("  提供商状态已保存至 providers.spotify")
+    print(f"  文档：{SPOTIFY_DOCS_URL}")
 
 # =============================================================================
 # SSH / remote session detection
@@ -2978,16 +2978,16 @@ def _prompt_manual_callback_paste(redirect_uri: str) -> dict:
     the caller works unchanged.  See #26923.
     """
     print()
-    print("─── Manual callback paste ─────────────────────────────────────")
-    print("After approving in your browser, your browser will try to load")
+    print("─── 手动粘贴回调 URL ─────────────────────────────────────")
+    print("在浏览器中授权后，浏览器将尝试加载")
     print(f"  {redirect_uri}")
-    print("which fails (the loopback listener is on this remote machine,")
-    print("not on your laptop) — that is expected.  Copy the FULL URL")
-    print("from your browser's address bar of that failed page and paste")
-    print("it below.  A bare '?code=...&state=...' fragment also works.")
+    print("这会失败（循环监听器在远程机器上，")
+    print("不在你的电脑上）——这是正常的。请复制")
+    print("浏览器地址栏中失败页面的完整 URL 并粘贴")
+    print("到下方。仅粘贴 '?code=...&state=...' 片段也可以。")
     print("───────────────────────────────────────────────────────────────")
     try:
-        raw = input("Callback URL: ")
+        raw = input("回调 URL：")
     except (EOFError, KeyboardInterrupt):
         raw = ""
     return _parse_pasted_callback(raw)
@@ -3034,22 +3034,22 @@ def _print_loopback_ssh_hint(redirect_uri: str, *, docs_url: str | None = None) 
     divider = "-" * 60
     print()
     print(divider)
-    print("Remote session detected — SSH tunnel required")
+    print("检测到远程会话 — 需要 SSH 隧道")
     print(divider)
-    print(f"Hermes is waiting for the OAuth callback on {redirect_uri}")
-    print("but your browser is on a different machine. Run this command")
-    print("in a NEW terminal on your local machine BEFORE opening the URL:")
+    print(f"Hermes 正在等待 {redirect_uri} 上的 OAuth 回调")
+    print("但你的浏览器在不同机器上。在打开 URL 之前，")
+    print("请在本地机器的**新终端**中运行此命令：")
     print()
     print(f"  ssh -N -L {port}:127.0.0.1:{port} {_ssh_user_at_host()}")
     print()
-    print("Then open the authorize URL above in your local browser.")
+    print("然后在本地浏览器中打开上面的授权 URL。")
     print()
-    print("No SSH client (Cloud Shell / Codespaces / web IDE)?  Re-run with")
-    print("`--manual-paste` to skip the loopback listener and paste the failed")
-    print("callback URL directly.")
+    print("没有 SSH 客户端（Cloud Shell / Codespaces / web IDE）？")
+    print("请使用 `--manual-paste` 重新运行，跳过循环监听器，")
+    print("直接粘贴失败的回调 URL。")
     if docs_url:
-        print(f"Provider docs:      {docs_url}")
-    print(f"SSH/jump-box guide: {OAUTH_OVER_SSH_DOCS_URL}")
+        print(f"提供商文档：      {docs_url}")
+    print(f"SSH/跳板机指南：{OAUTH_OVER_SSH_DOCS_URL}")
     print(divider)
     print()
 
@@ -6034,14 +6034,14 @@ def _prompt_model_selection(
         else:
             base = mid
         if mid == current_model:
-            base += "  ← currently in use"
+            base += "  ← 当前使用中"
         return base
 
     # Default cursor on the current model (index 0 if it was reordered to top)
     default_idx = 0
 
     # Build a pricing header hint for the menu title
-    menu_title = "Select default model:"
+    menu_title = "选择默认模型："
     if has_pricing:
         # Align the header with the model column.
         # Each choice is "  {label}" (2 spaces) and simple_term_menu prepends
@@ -6061,8 +6061,8 @@ def _prompt_model_selection(
         from simple_term_menu import TerminalMenu
 
         choices = [f"  {_label(mid)}" for mid in ordered]
-        choices.append("  Enter custom model name")
-        choices.append("  Skip (keep current)")
+        choices.append("  输入自定义模型名称")
+        choices.append("  跳过（保持当前设置）")
 
         # Print the unavailable block BEFORE the menu via regular print().
         # simple_term_menu pads title lines to terminal width (causes wrapping),
@@ -6075,9 +6075,9 @@ def _prompt_model_selection(
             for mid in _unavailable:
                 print(f"{_DIM}     {_label(mid)}{_RESET}")
             print()
-            print(f"{_DIM}  ── Upgrade at {_upgrade_url} for paid models ──{_RESET}")
+            print(f"{_DIM}  ── 升级至 {_upgrade_url} 以使用付费模型 ──{_RESET}")
             print()
-            effective_title = "Available free models:"
+            effective_title = "可用的免费模型："
         else:
             effective_title = menu_title
 
@@ -6100,7 +6100,7 @@ def _prompt_model_selection(
         if idx < len(ordered):
             return ordered[idx]
         elif idx == len(ordered):
-            custom = input("Enter model name: ").strip()
+            custom = input("输入模型名称：").strip()
             return custom if custom else None
         return None
     except (ImportError, NotImplementedError, OSError, subprocess.SubprocessError):
@@ -6112,33 +6112,33 @@ def _prompt_model_selection(
     for i, mid in enumerate(ordered, 1):
         print(f"  {i:>{num_width}}. {_label(mid)}")
     n = len(ordered)
-    print(f"  {n + 1:>{num_width}}. Enter custom model name")
-    print(f"  {n + 2:>{num_width}}. Skip (keep current)")
+    print(f"  {n + 1:>{num_width}}. 输入自定义模型名称")
+    print(f"  {n + 2:>{num_width}}. 跳过（保持当前设置）")
 
     if _unavailable:
         _upgrade_url = (portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
         print()
-        print(f"  {_DIM}── Unavailable models (requires paid tier — upgrade at {_upgrade_url}) ──{_RESET}")
+        print(f"  {_DIM}── 不可用的模型（需要付费套餐——升级至 {_upgrade_url}）──{_RESET}")
         for mid in _unavailable:
             print(f"  {'':>{num_width}}  {_DIM}{_label(mid)}{_RESET}")
     print()
 
     while True:
         try:
-            choice = input(f"Choice [1-{n + 2}] (default: skip): ").strip()
+            choice = input(f"选择 [1-{n + 2}]（默认：跳过）：").strip()
             if not choice:
                 return None
             idx = int(choice)
             if 1 <= idx <= n:
                 return ordered[idx - 1]
             elif idx == n + 1:
-                custom = input("Enter model name: ").strip()
+                custom = input("输入模型名称：").strip()
                 return custom if custom else None
             elif idx == n + 2:
                 return None
-            print(f"Please enter 1-{n + 2}")
+            print(f"请输入 1-{n + 2}")
         except ValueError:
-            print("Please enter a number")
+            print("请输入数字")
         except (KeyboardInterrupt, EOFError):
             return None
 
@@ -6161,10 +6161,10 @@ def _save_model_choice(model_id: str) -> None:
 
 
 def login_command(args) -> None:
-    """Deprecated: use 'hermes model' or 'hermes setup' instead."""
-    print("The 'hermes login' command has been removed.")
-    print("Use 'hermes auth' to manage credentials,")
-    print("'hermes model' to select a provider, or 'hermes setup' for full setup.")
+    """已废弃：请改用 'hermes model' 或 'hermes setup'。"""
+    print("'hermes login' 命令已被移除。")
+    print("请使用 'hermes auth' 管理凭据，")
+    print("'hermes model' 选择提供商，或 'hermes setup' 进行完整设置。")
     raise SystemExit(0)
 
 
@@ -6188,19 +6188,19 @@ def _login_openai_codex(
             # the user "Login successful!".
             _resolved_key = existing.get("api_key", "")
             if isinstance(_resolved_key, str) and _resolved_key and not _codex_access_token_is_expiring(_resolved_key, 60):
-                print("Existing Codex credentials found in Hermes auth store.")
+                print("在 Hermes 认证存储中发现现有的 Codex 凭据。")
                 try:
-                    reuse = input("Use existing credentials? [Y/n]: ").strip().lower()
+                    reuse = input("使用现有凭据？[Y/n]：").strip().lower()
                 except (EOFError, KeyboardInterrupt):
                     reuse = "y"
                 if reuse in {"", "y", "yes"}:
                     config_path = _update_config_for_provider("openai-codex", existing.get("base_url", DEFAULT_CODEX_BASE_URL))
                     print()
-                    print("Login successful!")
-                    print(f"  Config updated: {config_path} (model.provider=openai-codex)")
+                    print("登录成功！")
+                    print(f"  配置已更新：{config_path} (model.provider=openai-codex)")
                     return
             else:
-                print("Existing Codex credentials are expired. Starting fresh login...")
+                print("现有 Codex 凭据已过期。开始全新登录...")
         except AuthError:
             pass
 
@@ -6208,10 +6208,10 @@ def _login_openai_codex(
     if not force_new_login:
         cli_tokens = _import_codex_cli_tokens()
         if cli_tokens:
-            print("Found existing Codex CLI credentials at ~/.codex/auth.json")
-            print("Hermes will create its own session to avoid conflicts with Codex CLI / VS Code.")
+            print("在 ~/.codex/auth.json 中发现现有的 Codex CLI 凭据")
+            print("Hermes 将创建自己的会话，以避免与 Codex CLI / VS Code 冲突。")
             try:
-                do_import = input("Import these credentials? (a separate login is recommended) [y/N]: ").strip().lower()
+                do_import = input("导入这些凭据？（建议单独登录）[y/N]：").strip().lower()
             except (EOFError, KeyboardInterrupt):
                 do_import = "n"
             if do_import in {"y", "yes"}:
@@ -6219,15 +6219,15 @@ def _login_openai_codex(
                 base_url = os.getenv("HERMES_CODEX_BASE_URL", "").strip().rstrip("/") or DEFAULT_CODEX_BASE_URL
                 config_path = _update_config_for_provider("openai-codex", base_url)
                 print()
-                print("Credentials imported. Note: if Codex CLI refreshes its token,")
-                print("Hermes will keep working independently with its own session.")
-                print(f"  Config updated: {config_path} (model.provider=openai-codex)")
+                print("凭据已导入。注意：如果 Codex CLI 刷新了其令牌，")
+                print("Hermes 将继续使用自己的会话独立工作。")
+                print(f"  配置已更新：{config_path} (model.provider=openai-codex)")
                 return
 
     # Run a fresh device code flow — Hermes gets its own OAuth session
     print()
-    print("Signing in to OpenAI Codex...")
-    print("(Hermes creates its own session — won't affect Codex CLI or VS Code)")
+    print("登录 OpenAI Codex...")
+    print("（Hermes 创建自己的会话——不会影响 Codex CLI 或 VS Code）")
     print()
 
     creds = _codex_device_code_login()
@@ -6236,10 +6236,10 @@ def _login_openai_codex(
     _save_codex_tokens(creds["tokens"], creds.get("last_refresh"))
     config_path = _update_config_for_provider("openai-codex", creds.get("base_url", DEFAULT_CODEX_BASE_URL))
     print()
-    print("Login successful!")
+    print("登录成功！")
     from hermes_constants import display_hermes_home as _dhh
-    print(f"  Auth state: {_dhh()}/auth.json")
-    print(f"  Config updated: {config_path} (model.provider=openai-codex)")
+    print(f"  认证状态：{_dhh()}/auth.json")
+    print(f"  配置已更新：{config_path} (model.provider=openai-codex)")
 
 
 def _login_xai_oauth(
@@ -6255,9 +6255,9 @@ def _login_xai_oauth(
             existing = resolve_xai_oauth_runtime_credentials()
             api_key = existing.get("api_key", "")
             if isinstance(api_key, str) and api_key and not _xai_access_token_is_expiring(api_key, 60):
-                print("Existing xAI OAuth credentials found in Hermes auth store.")
+                print("在 Hermes 认证存储中发现现有的 xAI OAuth 凭据。")
                 try:
-                    reuse = input("Use existing credentials? [Y/n]: ").strip().lower()
+                    reuse = input("使用现有凭据？[Y/n]：").strip().lower()
                 except (EOFError, KeyboardInterrupt):
                     reuse = "y"
                 if reuse in {"", "y", "yes"}:
@@ -6266,15 +6266,15 @@ def _login_xai_oauth(
                         existing.get("base_url", DEFAULT_XAI_OAUTH_BASE_URL),
                     )
                     print()
-                    print("Login successful!")
-                    print(f"  Config updated: {config_path} (model.provider=xai-oauth)")
+                    print("登录成功！")
+                    print(f"  配置已更新：{config_path} (model.provider=xai-oauth)")
                     return
         except AuthError:
             pass
 
     print()
-    print("Signing in to xAI Grok OAuth (SuperGrok Subscription)...")
-    print("(Hermes creates its own local OAuth session)")
+    print("登录 xAI Grok OAuth（SuperGrok 订阅）...")
+    print("（Hermes 创建自己的本地 OAuth 会话）")
     print()
 
     timeout_seconds = float(getattr(args, "timeout", None) or 20.0)
@@ -6296,10 +6296,10 @@ def _login_xai_oauth(
     )
     config_path = _update_config_for_provider("xai-oauth", creds.get("base_url", DEFAULT_XAI_OAUTH_BASE_URL))
     print()
-    print("Login successful!")
+    print("登录成功！")
     from hermes_constants import display_hermes_home as _dhh
-    print(f"  Auth state: {_dhh()}/auth.json")
-    print(f"  Config updated: {config_path} (model.provider=xai-oauth)")
+    print(f"  认证状态：{_dhh()}/auth.json")
+    print(f"  配置已更新：{config_path} (model.provider=xai-oauth)")
 
 
 def _xai_oauth_build_authorize_url(
@@ -6494,7 +6494,7 @@ def _xai_oauth_loopback_login(
             nonce=nonce,
         )
 
-        print("Open this URL to authorize Hermes with xAI:")
+        print("打开此 URL 以使用 xAI 授权 Hermes：")
         print(authorize_url)
         callback = _prompt_manual_callback_paste(redirect_uri)
     else:
@@ -6513,10 +6513,10 @@ def _xai_oauth_loopback_login(
                 nonce=nonce,
             )
 
-            print("Open this URL to authorize Hermes with xAI:")
+            print("打开此 URL 以使用 xAI 授权 Hermes：")
             print(authorize_url)
             print()
-            print(f"Waiting for callback on {redirect_uri}")
+            print(f"正在等待 {redirect_uri} 上的回调")
 
             _print_loopback_ssh_hint(redirect_uri, docs_url=XAI_OAUTH_DOCS_URL)
 
@@ -6526,9 +6526,9 @@ def _xai_oauth_loopback_login(
                 except Exception:
                     opened = False
                 if opened:
-                    print("Browser opened for xAI authorization.")
+                    print("已打开浏览器进行 xAI 授权。")
                 else:
-                    print("Could not open the browser automatically; use the URL above.")
+                    print("无法自动打开浏览器，请使用上面的链接。")
 
             callback = _xai_wait_for_callback(
                 server,
@@ -6652,12 +6652,12 @@ def _codex_device_code_login() -> Dict[str, Any]:
         )
 
     # Step 2: Show user the code
-    print("To continue, follow these steps:\n")
-    print("  1. Open this URL in your browser:")
+    print("请按以下步骤操作：\n")
+    print("  1. 在浏览器中打开此链接：")
     print(f"     \033[94m{issuer}/codex/device\033[0m\n")
-    print("  2. Enter this code:")
+    print("  2. 输入此代码：")
     print(f"     \033[94m{user_code}\033[0m\n")
-    print("Waiting for sign-in... (press Ctrl+C to cancel)")
+    print("正在等待登录...（按 Ctrl+C 取消）")
 
     # Step 3: Poll for authorization code
     max_wait = 15 * 60  # 15 minutes
@@ -6685,7 +6685,7 @@ def _codex_device_code_login() -> Dict[str, Any]:
                         provider="openai-codex", code="device_code_poll_error",
                     )
     except KeyboardInterrupt:
-        print("\nLogin cancelled.")
+        print("\n登录已取消。")
         raise SystemExit(130)
 
     if code_resp is None:
@@ -6914,8 +6914,8 @@ def _minimax_oauth_login(
     if _is_remote_session():
         open_browser = False
 
-    print(f"Starting Hermes login via MiniMax ({region}) OAuth...")
-    print(f"Portal: {portal_base_url}")
+    print(f"正在通过 MiniMax ({region}) OAuth 登录 Hermes...")
+    print(f"门户：{portal_base_url}")
 
     with httpx.Client(timeout=httpx.Timeout(timeout_seconds),
                       headers={"Accept": "application/json"},
@@ -6929,18 +6929,18 @@ def _minimax_oauth_login(
         user_code = str(code_data["user_code"])
 
         print()
-        print("To continue:")
-        print(f"  1. Open: {verification_url}")
-        print(f"  2. If prompted, enter code: {user_code}")
+        print("请继续：")
+        print(f"  1. 打开：{verification_url}")
+        print(f"  2. 如提示，输入代码：{user_code}")
         if open_browser:
             if webbrowser.open(verification_url):
-                print("  (Opened browser for verification)")
+                print("  （已打开浏览器进行验证）")
             else:
-                print("  Could not open browser automatically -- use the URL above.")
+                print("  无法自动打开浏览器——请使用上面的链接。")
 
         interval_raw = code_data.get("interval")
         interval_ms = int(interval_raw) if interval_raw is not None else None
-        print("Waiting for approval...")
+        print("正在等待授权...")
 
         token_data = _minimax_poll_token(
             client, portal_base_url=portal_base_url,
@@ -6973,9 +6973,9 @@ def _minimax_oauth_login(
     }
 
     _minimax_save_auth_state(auth_state)
-    print("\u2713 MiniMax OAuth login successful.")
+    print("✓ MiniMax OAuth 登录成功。")
     if msg := token_data.get("notification_message"):
-        print(f"Note from MiniMax: {msg}")
+        print(f"MiniMax 消息：{msg}")
     return auth_state
 
 
@@ -7154,12 +7154,12 @@ def _nous_device_code_login(
     if _is_remote_session():
         open_browser = False
 
-    print(f"Starting Hermes login via {pconfig.name}...")
-    print(f"Portal: {portal_base_url}")
+    print(f"正在通过 {pconfig.name} 登录 Hermes...")
+    print(f"门户：{portal_base_url}")
     if insecure:
-        print("TLS verification: disabled (--insecure)")
+        print("TLS 验证：已禁用（--insecure）")
     elif ca_bundle:
-        print(f"TLS verification: custom CA bundle ({ca_bundle})")
+        print(f"TLS 验证：自定义 CA 证书（{ca_bundle}）")
 
     with httpx.Client(timeout=timeout, headers={"Accept": "application/json"}, verify=verify) as client:
         device_data, scope = _request_nous_device_code_with_scope_fallback(
@@ -7176,19 +7176,19 @@ def _nous_device_code_login(
         interval = int(device_data["interval"])
 
         print()
-        print("To continue:")
-        print(f"  1. Open: {verification_url}")
-        print(f"  2. If prompted, enter code: {user_code}")
+        print("请继续：")
+        print(f"  1. 打开：{verification_url}")
+        print(f"  2. 如提示，输入代码：{user_code}")
 
         if open_browser:
             opened = webbrowser.open(verification_url)
             if opened:
-                print("  (Opened browser for verification)")
+                print("  （已打开浏览器进行验证）")
             else:
-                print("  Could not open browser automatically — use the URL above.")
+                print("  无法自动打开浏览器——请使用上面的链接。")
 
         effective_interval = max(1, min(interval, DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS))
-        print(f"Waiting for approval (polling every {effective_interval}s)...")
+        print(f"正在等待授权（每 {effective_interval} 秒轮询一次）...")
 
         token_data = _poll_for_token(
             client=client,
@@ -7207,7 +7207,7 @@ def _nous_device_code_login(
         or requested_inference_url
     )
     if resolved_inference_url != requested_inference_url:
-        print(f"Using portal-provided inference URL: {resolved_inference_url}")
+        print(f"使用门户提供的推理 URL：{resolved_inference_url}")
 
     auth_state = {
         "portal_base_url": portal_base_url,
@@ -7245,10 +7245,10 @@ def _nous_device_code_login(
                 "portal_base_url", DEFAULT_NOUS_PORTAL_URL
             ).rstrip("/")
             print()
-            print("Your Nous Portal account does not have an active subscription.")
-            print(f"  Subscribe here: {portal_url}/billing")
+            print("你的 Nous Portal 账户没有有效的订阅。")
+            print(f"  在此订阅：{portal_url}/billing")
             print()
-            print("After subscribing, run `hermes model` again to finish setup.")
+            print("订阅后，重新运行 `hermes model` 完成设置。")
             raise SystemExit(1)
         raise
 
@@ -7277,21 +7277,21 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                 shared_path = None
             print()
             if shared_path:
-                print(f"Found existing Nous OAuth credentials at {shared_path}")
+                print(f"在 {shared_path} 中发现现有的 Nous OAuth 凭据")
             else:
-                print("Found existing shared Nous OAuth credentials")
+                print("发现现有的共享 Nous OAuth 凭据")
             try:
-                do_import = input("Import these credentials? [Y/n]: ").strip().lower()
+                do_import = input("导入这些凭据？[Y/n]：").strip().lower()
             except (EOFError, KeyboardInterrupt):
                 do_import = "y"
             if do_import in {"", "y", "yes"}:
-                print("Rehydrating Nous session from shared credentials...")
+                print("正在从共享凭据恢复 Nous 会话...")
                 auth_state = _try_import_shared_nous_state(
                     timeout_seconds=timeout_seconds,
                     min_key_ttl_seconds=5 * 60,
                 )
                 if auth_state is None:
-                    print("Could not refresh shared credentials — falling back to device-code login.")
+                    print("无法刷新共享凭据——回退到设备码登录。")
 
         if auth_state is None:
             auth_state = _nous_device_code_login(
@@ -7328,8 +7328,8 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
         _sync_nous_pool_from_auth_store()
 
         print()
-        print("Login successful!")
-        print(f"  Auth state: {saved_to}")
+        print("登录成功！")
+        print(f"  认证状态：{saved_to}")
 
         # Resolve model BEFORE writing provider to config.yaml so we never
         # leave the config in a half-updated state (provider=nous but model
@@ -7381,7 +7381,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                     )
             _portal = auth_state.get("portal_base_url", "")
             if model_ids:
-                print(f"Showing {len(model_ids)} curated models — use \"Enter custom model name\" for others.")
+                print(f"显示 {len(model_ids)} 个精选模型——如需其他模型请选择「输入自定义模型名称」。")
                 selected_model = _prompt_model_selection(
                     model_ids, pricing=pricing,
                     unavailable_models=unavailable_models,
@@ -7389,14 +7389,14 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                 )
             elif unavailable_models:
                 _url = (_portal or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
-                print("No free models currently available.")
-                print(f"Upgrade at {_url} to access paid models.")
+                print("当前没有可用的免费模型。")
+                print(f"升级至 {_url} 以使用付费模型。")
             else:
-                print("No curated models available for Nous Portal.")
+                print("Nous Portal 没有可用的精选模型。")
         except Exception as exc:
             message = format_auth_error(exc) if isinstance(exc, AuthError) else str(exc)
             print()
-            print(f"Login succeeded, but could not fetch available models. Reason: {message}")
+            print(f"登录成功，但无法获取可用模型。原因：{message}")
 
         # Write provider + model atomically so config is never mismatched.
         # If no model was selected (user picked "Skip (keep current)",
@@ -7416,8 +7416,8 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                     auth_store.pop("active_provider", None)
                 _save_auth_store(auth_store)
             print()
-            print("No provider change. Nous credentials saved for future use.")
-            print("  Run `hermes model` again to switch to Nous Portal.")
+            print("未更改提供商。Nous 凭据已保存供以后使用。")
+            print("  重新运行 `hermes model` 以切换到 Nous Portal。")
             return
 
         config_path = _update_config_for_provider(
@@ -7425,14 +7425,14 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
         )
         if selected_model:
             _save_model_choice(selected_model)
-            print(f"Default model set to: {selected_model}")
-        print(f"  Config updated: {config_path} (model.provider=nous)")
+            print(f"默认模型已设置为：{selected_model}")
+        print(f"  配置已更新：{config_path} (model.provider=nous)")
 
     except KeyboardInterrupt:
-        print("\nLogin cancelled.")
+        print("\n登录已取消。")
         raise SystemExit(130)
     except Exception as exc:
-        print(f"Login failed: {exc}")
+        print(f"登录失败：{exc}")
         raise SystemExit(1)
 
 
@@ -7441,14 +7441,14 @@ def logout_command(args) -> None:
     provider_id = getattr(args, "provider", None)
 
     if provider_id and not is_known_auth_provider(provider_id):
-        print(f"Unknown provider: {provider_id}")
+        print(f"未知提供商：{provider_id}")
         raise SystemExit(1)
 
     active = get_active_provider()
     target = provider_id or active or _logout_default_provider_from_config()
 
     if not target:
-        print("No provider is currently logged in.")
+        print("当前没有提供商已登录。")
         return
 
     should_reset_config = _should_reset_config_provider_on_logout(target)
@@ -7457,12 +7457,12 @@ def logout_command(args) -> None:
     if clear_provider_auth(target) or should_reset_config:
         if should_reset_config:
             _reset_config_provider()
-        print(f"Logged out of {provider_name}.")
+        print(f"已从 {provider_name} 注销。")
         if should_reset_config and os.getenv("OPENROUTER_API_KEY"):
-            print("Hermes will use OpenRouter for inference.")
+            print("Hermes 将使用 OpenRouter 进行推理。")
         elif should_reset_config:
-            print("Run `hermes model` or configure an API key to use Hermes.")
+            print("请运行 `hermes model` 或配置 API 密钥以使用 Hermes。")
         else:
-            print("Model provider configuration was unchanged.")
+            print("模型提供商配置未更改。")
     else:
-        print(f"No auth state found for {provider_name}.")
+        print(f"未找到 {provider_name} 的认证状态。")

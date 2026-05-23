@@ -249,8 +249,8 @@ def _prompt_plugin_env_vars(manifest: dict, console) -> None:
     if not missing:
         return
 
-    plugin_name = manifest.get("name", "this plugin")
-    console.print(f"\n[bold]{plugin_name}[/bold] requires the following environment variables:\n")
+    plugin_name = manifest.get("name", "此插件")
+    console.print(f"\n[bold]{plugin_name}[/bold] 需要以下环境变量:\n")
 
     for spec in missing:
         name = spec["name"]
@@ -263,7 +263,7 @@ def _prompt_plugin_env_vars(manifest: dict, console) -> None:
             label += f" — {desc}"
         console.print(label)
         if url:
-            console.print(f"  [dim]Get yours at: {url}[/dim]")
+            console.print(f"  [dim]在此获取: {url}[/dim]")
 
         try:
             if secret:
@@ -272,15 +272,15 @@ def _prompt_plugin_env_vars(manifest: dict, console) -> None:
             else:
                 value = input(f"  {name}: ").strip()
         except (EOFError, KeyboardInterrupt):
-            console.print(f"\n[dim]  Skipped (you can set these later in {display_hermes_home()}/.env)[/dim]")
+            console.print(f"\n[dim]  已跳过（稍后可在 {display_hermes_home()}/.env 中设置）[/dim]")
             return
 
         if value:
             save_env_value(name, value)
             os.environ[name] = value
-            console.print(f"  [green]✓[/green] Saved to {display_hermes_home()}/.env")
+            console.print(f"  [green]✓[/green] 已保存到 {display_hermes_home()}/.env")
         else:
-            console.print(f"  [dim]  Skipped (set {name} in {display_hermes_home()}/.env later)[/dim]")
+            console.print(f"  [dim]  已跳过（稍后设置 {name} 在 {display_hermes_home()}/.env 中）[/dim]")
 
     console.print()
 
@@ -304,10 +304,10 @@ def _display_after_install(plugin_dir: Path, identifier: str) -> None:
         console.print()
         console.print(
             Panel(
-                f"[green bold]Plugin installed:[/] {identifier}\n"
-                f"[dim]Location:[/] {plugin_dir}",
+                f"[green bold]插件已安装:[/] {identifier}\n"
+                f"[dim]位置:[/] {plugin_dir}",
                 border_style="green",
-                title="✓ Installed",
+                title="✓ 已安装",
                 expand=False,
             )
         )
@@ -320,7 +320,7 @@ def _display_removed(name: str, plugins_dir: Path) -> None:
 
     console = Console()
     console.print()
-    console.print(f"[red]✗[/red] Plugin [bold]{name}[/bold] removed from {plugins_dir}")
+    console.print(f"[red]✗[/red] 插件 [bold]{name}[/bold] 已从 {plugins_dir} 移除")
     console.print()
 
 
@@ -328,10 +328,10 @@ def _require_installed_plugin(name: str, plugins_dir: Path, console) -> Path:
     """Return the plugin path if it exists, or exit with an error listing installed plugins."""
     target = _sanitize_plugin_name(name, plugins_dir)
     if not target.exists():
-        installed = ", ".join(d.name for d in plugins_dir.iterdir() if d.is_dir()) or "(none)"
+        installed = ", ".join(d.name for d in plugins_dir.iterdir() if d.is_dir()) or "(无)"
         console.print(
             f"[red]Error:[/red] Plugin '{name}' not found in {plugins_dir}.\n"
-            f"Installed plugins: {installed}"
+            f"已安装的插件: {installed}"
         )
         sys.exit(1)
     return target
@@ -457,11 +457,11 @@ def cmd_install(
 
     if git_url.startswith(("http://", "file://")):
         console.print(
-            "[yellow]Warning:[/yellow] Using insecure/local URL scheme. "
-            "Consider using https:// or git@ for production installs.",
+            "[yellow]Warning:[/yellow] 使用了不安全的/本地 URL 方案。"
+            "生产环境安装建议使用 https:// 或 git@。",
         )
 
-    console.print(f"[dim]Cloning {git_url}...[/dim]")
+    console.print(f"[dim]正在克隆 {git_url}...[/dim]")
 
     try:
         target, installed_manifest, installed_name = _install_plugin_core(
@@ -476,8 +476,8 @@ def cmd_install(
         target / "__init__.py"
     ).exists():
         console.print(
-            f"[yellow]Warning:[/yellow] {installed_name} doesn't contain plugin.yaml "
-            f"or __init__.py. It may not be a valid Hermes plugin.",
+            f"[yellow]Warning:[/yellow] {installed_name} 不包含 plugin.yaml "
+            f"或 __init__.py。可能不是有效的 Hermes 插件。",
         )
 
     _prompt_plugin_env_vars(installed_manifest, console)
@@ -509,11 +509,11 @@ def cmd_install(
         )
     else:
         console.print(
-            f"[dim]Plugin installed but not enabled. "
-            f"Run `hermes plugins enable {installed_name}` to activate.[/dim]",
+            f"[dim]插件已安装但未启用。"
+            f"运行 `hermes plugins enable {installed_name}` 以激活。[/dim]",
         )
 
-    console.print("[dim]Restart the gateway for the plugin to take effect:[/dim]")
+    console.print("[dim]重启 gateway 以使插件生效:[/dim]")
     console.print("[dim]  hermes gateway restart[/dim]")
     console.print()
 
@@ -533,12 +533,12 @@ def cmd_update(name: str) -> None:
 
     if not (target / ".git").exists():
         console.print(
-            f"[red]Error:[/red] Plugin '{name}' was not installed from git "
-            f"(no .git directory). Cannot update."
+            f"[red]Error:[/red] 插件 '{name}' 不是从 git 安装的 "
+            f"(没有 .git 目录)。无法更新。"
         )
         sys.exit(1)
 
-    console.print(f"[dim]Updating {name}...[/dim]")
+    console.print(f"[dim]正在更新 {name}...[/dim]")
 
     ok, output = _git_pull_plugin_dir(target)
     if not ok:
@@ -551,10 +551,10 @@ def cmd_update(name: str) -> None:
     out = output.strip()
     if "Already up to date" in out:
         console.print(
-            f"[green]✓[/green] Plugin [bold]{name}[/bold] is already up to date."
+            f"[green]✓[/green] Plugin [bold]{name}[/bold] 已是最新。"
         )
     else:
-        console.print(f"[green]✓[/green] Plugin [bold]{name}[/bold] updated.")
+        console.print(f"[green]✓[/green] Plugin [bold]{name}[/bold] 已更新。")
         console.print(f"[dim]{out}[/dim]")
 
 
@@ -635,14 +635,14 @@ def cmd_enable(name: str) -> None:
     console = Console()
     # Discover the plugin — check installed (user) AND bundled.
     if not _plugin_exists(name):
-        console.print(f"[red]Plugin '{name}' is not installed or bundled.[/red]")
+        console.print(f"[red]插件 '{name}' 未安装或未捆绑。[/red]")
         sys.exit(1)
 
     enabled = _get_enabled_set()
     disabled = _get_disabled_set()
 
     if name in enabled and name not in disabled:
-        console.print(f"[dim]Plugin '{name}' is already enabled.[/dim]")
+        console.print(f"[dim]插件 '{name}' 已启用。[/dim]")
         return
 
     enabled.add(name)
@@ -651,7 +651,7 @@ def cmd_enable(name: str) -> None:
     _save_disabled_set(disabled)
     console.print(
         f"[green]✓[/green] Plugin [bold]{name}[/bold] enabled. "
-        "Takes effect on next session."
+        "下一会话生效。"
     )
 
 
@@ -661,14 +661,14 @@ def cmd_disable(name: str) -> None:
 
     console = Console()
     if not _plugin_exists(name):
-        console.print(f"[red]Plugin '{name}' is not installed or bundled.[/red]")
+        console.print(f"[red]插件 '{name}' 未安装或未捆绑。[/red]")
         sys.exit(1)
 
     enabled = _get_enabled_set()
     disabled = _get_disabled_set()
 
     if name not in enabled and name in disabled:
-        console.print(f"[dim]Plugin '{name}' is already disabled.[/dim]")
+        console.print(f"[dim]插件 '{name}' 已禁用。[/dim]")
         return
 
     enabled.discard(name)
@@ -676,8 +676,8 @@ def cmd_disable(name: str) -> None:
     _save_enabled_set(enabled)
     _save_disabled_set(disabled)
     console.print(
-        f"[yellow]\u2298[/yellow] Plugin [bold]{name}[/bold] disabled. "
-        "Takes effect on next session."
+        f"[yellow]⊗[/yellow] Plugin [bold]{name}[/bold] disabled. "
+        "下一会话生效。"
     )
 
 
@@ -798,8 +798,8 @@ def cmd_list() -> None:
     console = Console()
     entries = _discover_all_plugins()
     if not entries:
-        console.print("[dim]No plugins installed.[/dim]")
-        console.print("[dim]Install with:[/dim] hermes plugins install owner/repo")
+        console.print("[dim]未安装插件。[/dim]")
+        console.print("[dim]安装命令:[/dim] hermes plugins install owner/repo")
         return
 
     enabled = _get_enabled_set()
@@ -824,9 +824,9 @@ def cmd_list() -> None:
     console.print()
     console.print(table)
     console.print()
-    console.print("[dim]Interactive toggle:[/dim] hermes plugins")
-    console.print("[dim]Enable/disable:[/dim] hermes plugins enable/disable <name>")
-    console.print("[dim]Plugins are opt-in by default — only 'enabled' plugins load.[/dim]")
+    console.print("[dim]交互式切换:[/dim] hermes plugins")
+    console.print("[dim]启用/禁用:[/dim] hermes plugins enable/disable <name>")
+    console.print("[dim]插件默认需手动启用 — 只有 'enabled' 列表中的插件会加载。[/dim]")
 
 
 # ---------------------------------------------------------------------------
@@ -1010,13 +1010,13 @@ def cmd_toggle() -> None:
     has_categories = bool(categories)
 
     if not has_plugins and not has_categories:
-        console.print("[dim]No plugins installed and no provider categories available.[/dim]")
-        console.print("[dim]Install with:[/dim] hermes plugins install owner/repo")
+        console.print("[dim]未安装插件，也没有可用的提供者类别。[/dim]")
+        console.print("[dim]安装命令:[/dim] hermes plugins install owner/repo")
         return
 
     # Non-TTY fallback
     if not sys.stdin.isatty():
-        console.print("[dim]Interactive mode requires a terminal.[/dim]")
+        console.print("[dim]交互模式需要终端。[/dim]")
         return
 
     # Launch the composite curses UI
@@ -1263,7 +1263,7 @@ def _run_composite_ui(curses, plugin_names, plugin_labels, plugin_selected,
             f"{len(plugin_names) - len(new_enabled)} disabled."
         )
     elif n_plugins > 0:
-        console.print("\n[dim]General plugins unchanged.[/dim]")
+        console.print("\n[dim]常规插件不变。[/dim]")
 
     if result_holder["providers_changed"]:
         new_memory = _get_current_memory_provider() or "built-in"
@@ -1274,7 +1274,7 @@ def _run_composite_ui(curses, plugin_names, plugin_labels, plugin_selected,
         )
 
     if n_plugins > 0 or result_holder["providers_changed"]:
-        console.print("[dim]Changes take effect on next session.[/dim]")
+        console.print("[dim]变更将在下一会话生效。[/dim]")
     console.print()
 
 
@@ -1283,13 +1283,13 @@ def _run_composite_fallback(plugin_names, plugin_labels, plugin_selected,
     """Text-based fallback for the composite plugins UI."""
     from hermes_cli.colors import Colors, color
 
-    print(color("\n  Plugins", Colors.YELLOW))
+    print(color("\n  插件", Colors.YELLOW))
 
     # General plugins
     if plugin_names:
         chosen = set(plugin_selected)
-        print(color("\n  General Plugins", Colors.YELLOW))
-        print(color("  Toggle by number, Enter to confirm.\n", Colors.DIM))
+        print(color("\n  常规插件", Colors.YELLOW))
+        print(color("  按编号切换，按 Enter 确认。\n", Colors.DIM))
 
         while True:
             for i, label in enumerate(plugin_labels):
@@ -1322,7 +1322,7 @@ def _run_composite_fallback(plugin_names, plugin_labels, plugin_selected,
 
     # Provider categories
     if categories:
-        print(color("\n  Provider Plugins", Colors.YELLOW))
+        print(color("\n  提供者插件", Colors.YELLOW))
         for ci, (cat_name, cat_current, cat_fn) in enumerate(categories):
             print(f"  {ci + 1}. {cat_name} [{cat_current}]")
         print()
@@ -1612,5 +1612,5 @@ def plugins_command(args) -> None:
     else:
         from rich.console import Console
 
-        Console().print(f"[red]Unknown plugins action: {action}[/red]")
+        Console().print(f"[red]未知的 plugins 操作: {action}[/red]")
         sys.exit(1)

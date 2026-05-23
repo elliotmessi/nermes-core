@@ -58,10 +58,10 @@ def _warn_config_parse_failure(config_path: Path, exc: Exception) -> None:
     _CONFIG_PARSE_WARNED.add(key)
 
     msg = (
-        f"Failed to parse {config_path}: {exc}. "
-        f"Falling back to default config — every user override "
-        f"(auxiliary providers, fallback chain, model settings) is being IGNORED. "
-        f"Fix the YAML and restart."
+        f"无法解析 {config_path}：{exc}。"
+        f"回退到默认配置 — 所有用户覆盖"
+        f"（辅助提供商、备用链、模型设置）将被忽略。"
+        f"请修复 YAML 后重新启动。"
     )
     logger.warning(msg)
     try:
@@ -267,35 +267,35 @@ def recommended_update_command() -> str:
     return recommended_update_command_for_method(method)
 
 
-def format_managed_message(action: str = "modify this Hermes installation") -> str:
+def format_managed_message(action: str = "修改此 Hermes 安装") -> str:
     """Build a user-facing error for managed installs."""
-    managed_system = get_managed_system() or "a package manager"
+    managed_system = get_managed_system() or "包管理器"
     raw = os.getenv("HERMES_MANAGED", "").strip().lower()
 
     if managed_system == "NixOS":
         env_hint = "true" if raw in _MANAGED_TRUE_VALUES else raw or "true"
         return (
-            f"Cannot {action}: this Hermes installation is managed by NixOS "
-            f"(HERMES_MANAGED={env_hint}).\n"
-            "Edit services.hermes-agent.settings in your configuration.nix and run:\n"
+            f"无法 {action}：此 Hermes 安装由 NixOS 管理"
+            f"（HERMES_MANAGED={env_hint}）。\n"
+            "请在 configuration.nix 中编辑 services.hermes-agent.settings 然后运行：\n"
             "  sudo nixos-rebuild switch"
         )
 
     if managed_system == "Homebrew":
         env_hint = raw or "homebrew"
         return (
-            f"Cannot {action}: this Hermes installation is managed by Homebrew "
-            f"(HERMES_MANAGED={env_hint}).\n"
-            "Use:\n"
+            f"无法 {action}：此 Hermes 安装由 Homebrew 管理"
+            f"（HERMES_MANAGED={env_hint}）。\n"
+            "请使用：\n"
             "  brew upgrade hermes-agent"
         )
 
     return (
-        f"Cannot {action}: this Hermes installation is managed by {managed_system}.\n"
-        "Use your package manager to upgrade or reinstall Hermes."
+        f"无法 {action}：此 Hermes 安装由 {managed_system} 管理。\n"
+        "请使用您的包管理器升级或重新安装 Hermes。"
     )
 
-def managed_error(action: str = "modify configuration"):
+def managed_error(action: str = "修改配置"):
     """Print user-friendly error for managed mode."""
     print(format_managed_message(action), file=sys.stderr)
 
@@ -478,15 +478,15 @@ def _ensure_hermes_home_managed(home: Path):
     """Managed-mode variant: verify dirs exist (activation creates them), seed SOUL.md."""
     if not home.is_dir():
         raise RuntimeError(
-            f"HERMES_HOME {home} does not exist. "
-            "Run 'sudo nixos-rebuild switch' first."
+            f"HERMES_HOME {home} 不存在。"
+            "请先运行 'sudo nixos-rebuild switch'。"
         )
     for subdir in ("cron", "sessions", "logs", "memories"):
         d = home / subdir
         if not d.is_dir():
             raise RuntimeError(
-                f"{d} does not exist. "
-                "Run 'sudo nixos-rebuild switch' first."
+                f"{d} 不存在。"
+                "请先运行 'sudo nixos-rebuild switch'。"
             )
     # Curator reports dir is a sub-path of logs/; create it if missing.
     # In managed mode the activation script may not know about this subdir,
@@ -3554,7 +3554,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
     try:
         fixes = sanitize_env_file()
         if fixes and not quiet:
-            print(f"  ✓ Repaired .env file ({fixes} corrupted entries fixed)")
+            print(f"  ✓ 修复了 .env 文件（修复了 {fixes} 个损坏条目）")
     except Exception:
         pass  # best-effort; don't block migration on sanitize failure
 
@@ -3582,7 +3582,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
             config["display"] = display
             save_config(config)
             if not quiet:
-                print(f"  ✓ Migrated tool progress to config.yaml: {display['tool_progress']}")
+                print(f"  ✓ 已将工具进度迁移到 config.yaml：{display['tool_progress']}")
     
     # ── Version 4 → 5: add timezone field ──
     if current_ver < 5:
@@ -3598,7 +3598,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
             save_config(config)
             if not quiet:
                 tz_display = config["timezone"] or "(server-local)"
-                print(f"  ✓ Added timezone to config.yaml: {tz_display}")
+                print(f"  ✓ 已向 config.yaml 添加时区：{tz_display}")
 
     # ── Version 8 → 9: clear ANTHROPIC_TOKEN from .env ──
     # The new Anthropic auth flow no longer uses this env var.
@@ -3608,7 +3608,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
             if old_token:
                 save_env_value("ANTHROPIC_TOKEN", "")
                 if not quiet:
-                    print("  ✓ Cleared ANTHROPIC_TOKEN from .env (no longer used)")
+                    print("  ✓ 已从 .env 清除 ANTHROPIC_TOKEN（不再使用）")
         except Exception:
             pass
 
@@ -4044,7 +4044,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
                         print(f"  ✓ Saved {name}")
                     print()
             else:
-                print("  Set later with: hermes config set <key> <value>")
+                print("  稍后用以下命令设置：hermes config set <键> <值>")
     
     # Check for missing config fields
     missing_config = get_missing_config_fields()
@@ -5019,17 +5019,17 @@ def show_config():
     
     print()
     print(color("┌─────────────────────────────────────────────────────────┐", Colors.CYAN))
-    print(color("│              ⚕ Hermes Configuration                    │", Colors.CYAN))
+    print(color("│              ⚕ Hermes 配置                             │", Colors.CYAN))
     print(color("└─────────────────────────────────────────────────────────┘", Colors.CYAN))
     
     # Paths
     print()
-    print(color("◆ Paths", Colors.CYAN, Colors.BOLD))
-    print(f"  Config:       {get_config_path()}")
-    print(f"  Secrets:      {get_env_path()}")
-    print(f"  Install:      {get_project_root()}")
-    
-    # API Keys
+    print(color("◆ 路径", Colors.CYAN, Colors.BOLD))
+    print(f"  配置文件：    {get_config_path()}")
+    print(f"  密钥文件：    {get_env_path()}")
+    print(f"  安装目录：    {get_project_root()}")
+    print()
+    print(color("◆ API 密钥", Colors.CYAN, Colors.BOLD))
     print()
     print(color("◆ API Keys", Colors.CYAN, Colors.BOLD))
     
@@ -5054,17 +5054,17 @@ def show_config():
     
     # Model settings
     print()
-    print(color("◆ Model", Colors.CYAN, Colors.BOLD))
-    print(f"  Model:        {config.get('model', 'not set')}")
-    print(f"  Max turns:    {config.get('agent', {}).get('max_turns', DEFAULT_CONFIG['agent']['max_turns'])}")
-    
-    # Display
+    print(color("◆ 模型", Colors.CYAN, Colors.BOLD))
+    print(f"  模型：        {config.get('model', '未设置')}")
+    print(f"  最大轮次：    {config.get('agent', {}).get('max_turns', DEFAULT_CONFIG['agent']['max_turns'])}")
+    print()
+    print(color("◆ 显示", Colors.CYAN, Colors.BOLD))
     print()
     print(color("◆ Display", Colors.CYAN, Colors.BOLD))
     display = config.get('display', {})
-    print(f"  Personality:  {display.get('personality', 'kawaii')}")
-    print(f"  Reasoning:    {'on' if display.get('show_reasoning', False) else 'off'}")
-    print(f"  Bell:         {'on' if display.get('bell_on_complete', False) else 'off'}")
+    print(f"  个性：  {display.get('personality', 'kawaii')}")
+    print(f"  推理：  {'开' if display.get('show_reasoning', False) else '关'}")
+    print(f"  提示音：{'开' if display.get('bell_on_complete', False) else '关'}")
     ump = display.get('user_message_preview', {}) if isinstance(display.get('user_message_preview', {}), dict) else {}
     ump_first = ump.get('first_lines', 2)
     ump_last = ump.get('last_lines', 2)
@@ -5072,7 +5072,7 @@ def show_config():
 
     # Terminal
     print()
-    print(color("◆ Terminal", Colors.CYAN, Colors.BOLD))
+    print(color("◆ 终端", Colors.CYAN, Colors.BOLD))
     terminal = config.get('terminal', {})
     print(f"  Backend:      {terminal.get('backend', 'local')}")
     print(f"  Working dir:  {terminal.get('cwd', '.')}")
@@ -5097,18 +5097,18 @@ def show_config():
         ssh_host = get_env_value('TERMINAL_SSH_HOST')
         ssh_user = get_env_value('TERMINAL_SSH_USER')
         print(f"  SSH host:     {ssh_host or '(not set)'}")
-        print(f"  SSH user:     {ssh_user or '(not set)'}")
-    
-    # Timezone
+    print(f"  后端：        {terminal.get('backend', 'local')}")
+    print(f"  工作目录：    {terminal.get('cwd', '.')}")
+    print(f"  超时时间：    {terminal.get('timeout', 60)}秒")
     print()
-    print(color("◆ Timezone", Colors.CYAN, Colors.BOLD))
+    print(color("◆ 时区", Colors.CYAN, Colors.BOLD))
     tz = config.get('timezone', '')
     if tz:
-        print(f"  Timezone:     {tz}")
+        print(f"  时区：        {tz}")
     else:
-        print(f"  Timezone:     {color('(server-local)', Colors.DIM)}")
-
-    # Compression
+        print(f"  时区：        {color('（服务器本地）', Colors.DIM)}")
+    print()
+    print(color("◆ 上下文压缩", Colors.CYAN, Colors.BOLD))
     print()
     print(color("◆ Context Compression", Colors.CYAN, Colors.BOLD))
     compression = config.get('compression', {})

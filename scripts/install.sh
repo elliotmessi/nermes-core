@@ -43,8 +43,17 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # Configuration
-REPO_URL_SSH="git@github.com:NousResearch/hermes-agent.git"
-REPO_URL_HTTPS="https://github.com/NousResearch/hermes-agent.git"
+# --- 中国镜像（可通过环境变量覆盖） ---
+PIP_INDEX_URL="${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}"
+export PIP_INDEX_URL
+# uv 自动读取 PIP_INDEX_URL；显式设置 UV_INDEX_URL 以防万一
+export UV_INDEX_URL="${UV_INDEX_URL:-$PIP_INDEX_URL}"
+# npm
+NPM_REGISTRY="${NPM_REGISTRY:-https://registry.npmmirror.com}"
+export NPM_REGISTRY
+
+REPO_URL_SSH="git@github.com:elliotmessi/nermes-core.git"
+REPO_URL_HTTPS="https://github.com/elliotmessi/nermes-core.git"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 # INSTALL_DIR is resolved AFTER arg parsing and OS detection so we can pick an
 # FHS-style layout for root installs.  Track whether the user gave us an

@@ -1,7 +1,7 @@
 """
-Doctor command for hermes CLI.
+Doctor 命令 —— Hermes 系统诊断。
 
-Diagnoses issues with Hermes Agent setup.
+检查 Hermes Agent 的各项配置与运行状态。
 """
 
 import os
@@ -216,7 +216,7 @@ def _check_gateway_service_linger(issues: list[str]) -> None:
             is_linux,
         )
     except Exception as e:
-        check_warn("Gateway service linger", f"(could not import gateway helpers: {e})")
+        check_warn("网关服务驻留", f"（无法导入网关辅助函数：{e}）")
         return
 
     if not is_linux():
@@ -226,16 +226,16 @@ def _check_gateway_service_linger(issues: list[str]) -> None:
     if not unit_path.exists():
         return
 
-    _section("Gateway Service")
+    _section("网关服务")
     linger_enabled, linger_detail = get_systemd_linger_status()
     if linger_enabled is True:
-        check_ok("Systemd linger enabled", "(gateway service survives logout)")
+        check_ok("Systemd 驻留已启用", "（网关服务在退出登录后仍可运行）")
     elif linger_enabled is False:
-        check_warn("Systemd linger disabled", "(gateway may stop after logout)")
-        check_info("Run: sudo loginctl enable-linger $USER")
-        issues.append("Enable linger for the gateway user service: sudo loginctl enable-linger $USER")
+        check_warn("Systemd 驻留未启用", "（网关可能在退出登录后停止）")
+        check_info("运行：sudo loginctl enable-linger $USER")
+        issues.append("为网关用户服务启用驻留：sudo loginctl enable-linger $USER")
     else:
-        check_warn("Could not verify systemd linger", f"({linger_detail})")
+        check_warn("无法验证 systemd 驻留", f"（{linger_detail}）")
 
 
 _APIKEY_PROVIDERS_CACHE: list | None = None
@@ -380,10 +380,10 @@ def run_doctor(args):
 
     print()
     print(color("┌─────────────────────────────────────────────────────────┐", Colors.CYAN))
-    print(color("│                 🩺 Hermes Doctor                        │", Colors.CYAN))
+    print(color("│                 🩺 Hermes 诊断                          │", Colors.CYAN))
     print(color("└─────────────────────────────────────────────────────────┘", Colors.CYAN))
 
-    _section("Security Advisories")
+    _section("安全公告")
     try:
         from hermes_cli.security_advisories import (
             detect_compromised,
@@ -429,64 +429,64 @@ def run_doctor(args):
         # Never let a bug in the advisory check block the rest of doctor.
         check_warn(f"Security advisory check failed: {e}")
     
-    _section("Python Environment")
+    _section("Python 环境")
     py_version = sys.version_info
     if py_version >= (3, 11):
         check_ok(f"Python {py_version.major}.{py_version.minor}.{py_version.micro}")
     elif py_version >= (3, 10):
         check_ok(f"Python {py_version.major}.{py_version.minor}.{py_version.micro}")
-        check_warn("Python 3.11+ recommended for RL Training tools (tinker requires >= 3.11)")
+        check_warn("Python 3.11 以上推荐用于强化学习训练工具 (tinker 需要 >= 3.11)")
     elif py_version >= (3, 8):
-        check_warn(f"Python {py_version.major}.{py_version.minor}.{py_version.micro}", "(3.10+ recommended)")
+        check_warn(f"Python {py_version.major}.{py_version.minor}.{py_version.micro}", "（推荐 3.10+）")
     else:
         _fail_and_issue(
             f"Python {py_version.major}.{py_version.minor}.{py_version.micro}",
-            "(3.10+ required)",
-            "Upgrade Python to 3.10+",
+            "（需要 3.10+）",
+            "请升级 Python 到 3.10+",
             issues,
         )
     
     # Check if in virtual environment
     in_venv = sys.prefix != sys.base_prefix
     if in_venv:
-        check_ok("Virtual environment active")
+        check_ok("虚拟环境已激活")
     else:
-        check_warn("Not in virtual environment", "(recommended)")
-    
-    _section("Required Packages")
+        check_warn("未使用虚拟环境", "（推荐）")
+
+    _section("必需依赖")
     required_packages = [
         ("openai", "OpenAI SDK"),
-        ("rich", "Rich (terminal UI)"),
+        ("rich", "Rich（终端 UI）"),
         ("dotenv", "python-dotenv"),
         ("yaml", "PyYAML"),
         ("httpx", "HTTPX"),
     ]
-    
+
     optional_packages = [
-        ("croniter", "Croniter (cron expressions)"),
+        ("croniter", "Croniter（cron 表达式）"),
         ("telegram", "python-telegram-bot"),
         ("discord", "discord.py"),
     ]
-    
+
     for module, name in required_packages:
         try:
             __import__(module)
             check_ok(name)
         except ImportError:
-            _fail_and_issue(name, "(missing)", f"Install {name}: {_python_install_cmd()} {module}", issues)
-    
+            _fail_and_issue(name, "（缺失）", f"安装 {name}：{_python_install_cmd()} {module}", issues)
+
     for module, name in optional_packages:
         try:
             __import__(module)
-            check_ok(name, "(optional)")
+            check_ok(name, "（可选）")
         except ImportError:
-            check_warn(name, "(optional, not installed)")
+            check_warn(name, "（可选，未安装）")
     
-    _section("Configuration Files")
+    _section("配置文件")
     # Check ~/.hermes/.env (primary location for user config)
     env_path = HERMES_HOME / '.env'
     if env_path.exists():
-        check_ok(f"{_DHH}/.env file exists")
+        check_ok(f"{_DHH}/.env 文件存在")
         
         # Check for common issues. Pin encoding to UTF-8 because .env files are
         # written as UTF-8 everywhere in the codebase, while Path.read_text()
@@ -494,31 +494,31 @@ def run_doctor(args):
         # locales (e.g. GBK) as soon as the file contains any non-ASCII byte.
         content = env_path.read_text(encoding="utf-8")
         if _has_provider_env_config(content):
-            check_ok("API key or custom endpoint configured")
+            check_ok("已配置 API 密钥或自定义端点")
         else:
-            check_warn(f"No API key found in {_DHH}/.env")
-            issues.append("Run 'hermes setup' to configure API keys")
+            check_warn(f"{_DHH}/.env 中未找到 API 密钥")
+            issues.append("运行 'hermes setup' 配置 API 密钥")
     else:
         # Also check project root as fallback
         fallback_env = PROJECT_ROOT / '.env'
         if fallback_env.exists():
-            check_ok(".env file exists (in project directory)")
+            check_ok(".env 文件存在（项目目录中）")
         else:
-            check_fail(f"{_DHH}/.env file missing")
+            check_fail(f"{_DHH}/.env 文件缺失")
             if should_fix:
                 env_path.parent.mkdir(parents=True, exist_ok=True)
                 env_path.touch()
-                check_ok(f"Created empty {_DHH}/.env")
-                check_info("Run 'hermes setup' to configure API keys")
+                check_ok(f"已创建空的 {_DHH}/.env")
+                check_info("运行 'hermes setup' 配置 API 密钥")
                 fixed_count += 1
             else:
-                check_info("Run 'hermes setup' to create one")
-                issues.append("Run 'hermes setup' to create .env")
+                check_info("运行 'hermes setup' 创建 .env 文件")
+                issues.append("运行 'hermes setup' 创建 .env 文件")
     
     # Check ~/.hermes/config.yaml (primary) or project cli-config.yaml (fallback)
     config_path = HERMES_HOME / 'config.yaml'
     if config_path.exists():
-        check_ok(f"{_DHH}/config.yaml exists")
+        check_ok(f"{_DHH}/config.yaml 存在")
 
         # Validate model.provider and model.default values
         try:
@@ -606,12 +606,12 @@ def run_doctor(args):
                 ):
                     known_list = ", ".join(sorted(known_providers)) if known_providers else "(unavailable)"
                     _fail_and_issue(
-                        f"model.provider '{provider_raw}' is not a recognised provider",
-                        f"(known: {known_list})",
+                        f"model.provider 设置 '{provider_raw}' 不是已知的提供者",
+                        f"（已知：{known_list}）",
                         (
-                            f"model.provider '{provider_raw}' is unknown. "
-                            f"Valid providers: {known_list}. "
-                            f"Fix: run 'hermes config set model.provider <valid_provider>'"
+                            f"model.provider '{provider_raw}' 未知。"
+                            f"有效的提供者：{known_list}。"
+                            f"修复：运行 'hermes config set model.provider <有效提供者>'"
                         ),
                         issues,
                     )
@@ -636,12 +636,12 @@ def run_doctor(args):
                 and provider_for_policy not in providers_accepting_vendor_slugs
             ):
                 check_warn(
-                    f"model.default '{default_model}' uses a vendor/model slug but provider is '{provider_raw}'",
-                    "(vendor-prefixed slugs belong to aggregators like openrouter)",
+                    f"model.default '{default_model}' 使用了供应商/模型分段标识，但提供者是 '{provider_raw}'",
+                    "（供应商前缀分段标识属于 openrouter 等聚合器）",
                 )
                 issues.append(
-                    f"model.default '{default_model}' is vendor-prefixed but model.provider is '{provider_raw}'. "
-                    "Either set model.provider to 'openrouter', or drop the vendor prefix."
+                    f"model.default '{default_model}' 带有供应商前缀，但 model.provider 设置为 '{provider_raw}'。"
+                    "请将 model.provider 设为 'openrouter'，或去掉供应商前缀。"
                 )
 
             # Check credentials for the configured provider.
@@ -673,12 +673,12 @@ def run_doctor(args):
                             )
                     if not configured:
                         _fail_and_issue(
-                            f"model.provider '{runtime_provider}' is set but no API key is configured",
-                            "(check ~/.hermes/.env or run 'hermes setup')",
+                            f"model.provider '{runtime_provider}' 已设置但未配置 API 密钥",
+                            "（检查 ~/.hermes/.env 或运行 'hermes setup'）",
                             (
-                                f"No credentials found for provider '{runtime_provider}'. "
-                                f"Run 'hermes setup' or set the provider's API key in {_DHH}/.env, "
-                                f"or switch providers with 'hermes config set model.provider <name>'"
+                                f"未找到提供者 '{runtime_provider}' 的凭据。"
+                                f"运行 'hermes setup' 或在该提供者的 API 密钥添加到 {_DHH}/.env，"
+                                f"或通过 'hermes config set model.provider <名称>' 切换提供者"
                             ),
                             issues,
                         )
@@ -686,25 +686,25 @@ def run_doctor(args):
                     pass
 
         except Exception as e:
-            check_warn("Could not validate model/provider config", f"({e})")
+            check_warn("无法验证 model/provider 配置", f"({e})")
     else:
         fallback_config = PROJECT_ROOT / 'cli-config.yaml'
         if fallback_config.exists():
-            check_ok("cli-config.yaml exists (in project directory)")
+            check_ok("cli-config.yaml 存在（项目目录中）")
         else:
             if should_fix:
                 config_path.parent.mkdir(parents=True, exist_ok=True)
                 example_config = PROJECT_ROOT / 'cli-config.yaml.example'
                 if example_config.exists():
                     shutil.copy2(str(example_config), str(config_path))
-                    check_ok(f"Created {_DHH}/config.yaml from cli-config.yaml.example")
+                    check_ok(f"已从 cli-config.yaml.example 创建 {_DHH}/config.yaml")
                 else:
                     from hermes_cli.config import DEFAULT_CONFIG, save_config
                     save_config(DEFAULT_CONFIG)
-                    check_ok(f"Created {_DHH}/config.yaml from defaults")
+                    check_ok(f"已从默认模板创建 {_DHH}/config.yaml")
                 fixed_count += 1
             else:
-                check_warn("config.yaml not found", "(using defaults)")
+                check_warn("未找到 config.yaml", "（使用默认配置）")
 
     # Check config version and stale keys
     config_path = HERMES_HOME / 'config.yaml'
@@ -714,21 +714,21 @@ def run_doctor(args):
             current_ver, latest_ver = check_config_version()
             if current_ver < latest_ver:
                 check_warn(
-                    f"Config version outdated (v{current_ver} → v{latest_ver})",
-                    "(new settings available)"
+                    f"配置文件版本过旧 (v{current_ver} → v{latest_ver})",
+                    "（有新设置可用）"
                 )
                 if should_fix:
                     try:
                         migrate_config(interactive=False, quiet=False)
-                        check_ok("Config migrated to latest version")
+                        check_ok("配置文件已迁移至最新版本")
                         fixed_count += 1
                     except Exception as mig_err:
-                        check_warn(f"Auto-migration failed: {mig_err}")
-                        issues.append("Run 'hermes setup' to migrate config")
+                        check_warn(f"自动迁移失败：{mig_err}")
+                        issues.append("运行 'hermes setup' 迁移配置文件")
                 else:
-                    issues.append("Run 'hermes doctor --fix' or 'hermes setup' to migrate config")
+                    issues.append("运行 'hermes doctor --fix' 或 'hermes setup' 迁移配置文件")
             else:
-                check_ok(f"Config version up to date (v{current_ver})")
+                check_ok(f"配置文件版本已是最新 (v{current_ver})")
         except Exception:
             pass
 
@@ -740,8 +740,8 @@ def run_doctor(args):
             stale_root_keys = [k for k in ("provider", "base_url") if k in raw_config and isinstance(raw_config[k], str)]
             if stale_root_keys:
                 check_warn(
-                    f"Stale root-level config keys: {', '.join(stale_root_keys)}",
-                    "(should be under 'model:' section)"
+                    f"配置文件顶层存在过时键：{', '.join(stale_root_keys)}",
+                    "（应放在 'model:' 下）"
                 )
                 if should_fix:
                     model_section = raw_config.setdefault("model", {})
@@ -752,10 +752,10 @@ def run_doctor(args):
                             raw_config.pop(k)
                     from utils import atomic_yaml_write
                     atomic_yaml_write(config_path, raw_config)
-                    check_ok("Migrated stale root-level keys into model section")
+                    check_ok("已将顶层过时键迁移至 model 节")
                     fixed_count += 1
                 else:
-                    issues.append("Stale root-level provider/base_url in config.yaml — run 'hermes doctor --fix'")
+                    issues.append("config.yaml 中存在过时的顶层 provider/base_url — 运行 'hermes doctor --fix'")
         except Exception:
             pass
 
@@ -764,7 +764,7 @@ def run_doctor(args):
             from hermes_cli.config import validate_config_structure
             config_issues = validate_config_structure()
             if config_issues:
-                _section("Config Structure")
+                _section("配置结构")
                 for ci in config_issues:
                     if ci.severity == "error":
                         check_fail(ci.message)
@@ -777,7 +777,7 @@ def run_doctor(args):
         except Exception:
             pass
 
-    _section("xAI Model Retirement (May 15, 2026)")
+    _section("xAI 模型退役（2026 年 5 月 15 日）")
 
     try:
         from hermes_cli.config import load_config
@@ -790,19 +790,19 @@ def run_doctor(args):
         _xai_cfg = load_config()
         retired_refs = find_retired_xai_refs(_xai_cfg)
         if not retired_refs:
-            check_ok("No retired xAI models in config")
+            check_ok("配置中未发现已退役的 xAI 模型")
         else:
             for ref in retired_refs:
                 check_warn(format_issue(ref))
-            check_info(f"Migration guide: {MIGRATION_GUIDE_URL}")
+            check_info(f"迁移指南：{MIGRATION_GUIDE_URL}")
             manual_issues.append(
-                f"Update {len(retired_refs)} retired xAI model reference(s) "
-                f"in config.yaml — see {MIGRATION_GUIDE_URL}"
+                f"更新 config.yaml 中的 {len(retired_refs)} 个已退役 xAI 模型引用——"
+                f"参见 {MIGRATION_GUIDE_URL}"
             )
     except Exception as _xai_check_err:
-        check_warn("xAI retirement check skipped", f"({_xai_check_err})")
+        check_warn("xAI 退役检查已跳过", f"({_xai_check_err})")
 
-    _section("Auth Providers")
+    _section("认证提供者")
 
     try:
         from hermes_cli.auth import (
@@ -814,15 +814,15 @@ def run_doctor(args):
 
         nous_status = get_nous_auth_status()
         if nous_status.get("logged_in"):
-            check_ok("Nous Portal auth", "(logged in)")
+            check_ok("Nous Portal 认证", "（已登录）")
         else:
-            check_warn("Nous Portal auth", "(not logged in)")
+            check_warn("Nous Portal 认证", "（未登录）")
 
         codex_status = get_codex_auth_status()
         if codex_status.get("logged_in"):
-            check_ok("OpenAI Codex auth", "(logged in)")
+            check_ok("OpenAI Codex 认证", "（已登录）")
         else:
-            check_warn("OpenAI Codex auth", "(not logged in)")
+            check_warn("OpenAI Codex 认证", "（未登录）")
             if codex_status.get("error"):
                 check_info(codex_status["error"])
             # Native OAuth uses Hermes' own device-code flow — the Codex CLI is
@@ -831,9 +831,8 @@ def run_doctor(args):
             # remediation for whichever provider happens to print next (#27975).
             if not _safe_which("codex"):
                 check_info(
-                    "codex CLI not installed "
-                    "(optional — only required to import tokens "
-                    "from an existing Codex CLI login)"
+                    "codex CLI 未安装 "
+                    "（可选——仅用于从现有 Codex CLI 登录导入令牌）"
                 )
 
         gemini_status = get_gemini_oauth_auth_status()
@@ -846,18 +845,18 @@ def run_doctor(args):
             if project:
                 pieces.append(f"project={project}")
             suffix = f" ({', '.join(pieces)})" if pieces else ""
-            check_ok("Google Gemini OAuth", f"(logged in{suffix})")
+            check_ok("Google Gemini OAuth", f"（已登录{suffix}）")
         else:
-            check_warn("Google Gemini OAuth", "(not logged in)")
+            check_warn("Google Gemini OAuth", "（未登录）")
 
         minimax_status = get_minimax_oauth_auth_status()
         if minimax_status.get("logged_in"):
             region = minimax_status.get("region", "global")
-            check_ok("MiniMax OAuth", f"(logged in, region={region})")
+            check_ok("MiniMax OAuth", f"（已登录，区域={region}）")
         else:
-            check_warn("MiniMax OAuth", "(not logged in)")
+            check_warn("MiniMax OAuth", "（未登录）")
     except Exception as e:
-        check_warn("Auth provider status", f"(could not check: {e})")
+        check_warn("认证提供者状态", f"（无法检查：{e}）")
 
     # xAI OAuth — separate try/except so an import failure here cannot
     # disrupt the already-printed Nous/Codex/Gemini/MiniMax rows above.
@@ -865,37 +864,37 @@ def run_doctor(args):
         from hermes_cli.auth import get_xai_oauth_auth_status
         xai_oauth_status = get_xai_oauth_auth_status() or {}
         if xai_oauth_status.get("logged_in"):
-            check_ok("xAI OAuth", "(logged in)")
+            check_ok("xAI OAuth", "（已登录）")
         else:
-            check_warn("xAI OAuth", "(not logged in)")
+            check_warn("xAI OAuth", "（未登录）")
             if xai_oauth_status.get("error"):
                 check_info(xai_oauth_status["error"])
     except Exception:
         pass
 
-    _section("Directory Structure")
+    _section("目录结构")
     hermes_home = HERMES_HOME
     if hermes_home.exists():
-        check_ok(f"{_DHH} directory exists")
+        check_ok(f"{_DHH} 目录存在")
     elif should_fix:
         hermes_home.mkdir(parents=True, exist_ok=True)
-        check_ok(f"Created {_DHH} directory")
+        check_ok(f"已创建 {_DHH} 目录")
         fixed_count += 1
     else:
-        check_warn(f"{_DHH} not found", "(will be created on first use)")
+        check_warn(f"未找到 {_DHH}", "（首次使用时会自动创建）")
     
     # Check expected subdirectories
     expected_subdirs = ["cron", "sessions", "logs", "skills", "memories"]
     for subdir_name in expected_subdirs:
         subdir_path = hermes_home / subdir_name
         if subdir_path.exists():
-            check_ok(f"{_DHH}/{subdir_name}/ exists")
+            check_ok(f"{_DHH}/{subdir_name}/ 存在")
         elif should_fix:
             subdir_path.mkdir(parents=True, exist_ok=True)
-            check_ok(f"Created {_DHH}/{subdir_name}/")
+            check_ok(f"已创建 {_DHH}/{subdir_name}/")
             fixed_count += 1
         else:
-            check_warn(f"{_DHH}/{subdir_name}/ not found", "(will be created on first use)")
+            check_warn(f"未找到 {_DHH}/{subdir_name}/", "（首次使用时会自动创建）")
     
     # Check for SOUL.md persona file
     soul_path = hermes_home / "SOUL.md"
@@ -904,11 +903,11 @@ def run_doctor(args):
         # Check if it's just the template comments (no real content)
         lines = [l for l in content.splitlines() if l.strip() and not l.strip().startswith(("<!--", "-->", "#"))]
         if lines:
-            check_ok(f"{_DHH}/SOUL.md exists (persona configured)")
+            check_ok(f"{_DHH}/SOUL.md 存在（已配置角色）")
         else:
-            check_info(f"{_DHH}/SOUL.md exists but is empty — edit it to customize personality")
+            check_info(f"{_DHH}/SOUL.md 存在但为空——编辑它以自定义个性")
     else:
-        check_warn(f"{_DHH}/SOUL.md not found", "(create it to give Hermes a custom personality)")
+        check_warn(f"未找到 {_DHH}/SOUL.md", "（创建它可为 Hermes 赋予自定义个性）")
         if should_fix:
             soul_path.parent.mkdir(parents=True, exist_ok=True)
             soul_path.write_text(
@@ -917,30 +916,30 @@ def run_doctor(args):
                 "You are Hermes, a helpful AI assistant.\n",
                 encoding="utf-8",
             )
-            check_ok(f"Created {_DHH}/SOUL.md with basic template")
+            check_ok(f"已创建 {_DHH}/SOUL.md 基本模板")
             fixed_count += 1
     
     # Check memory directory
     memories_dir = hermes_home / "memories"
     if memories_dir.exists():
-        check_ok(f"{_DHH}/memories/ directory exists")
+        check_ok(f"{_DHH}/memories/ 目录存在")
         memory_file = memories_dir / "MEMORY.md"
         user_file = memories_dir / "USER.md"
         if memory_file.exists():
             size = len(memory_file.read_text(encoding="utf-8").strip())
-            check_ok(f"MEMORY.md exists ({size} chars)")
+            check_ok(f"MEMORY.md 存在（{size} 字符）")
         else:
-            check_info("MEMORY.md not created yet (will be created when the agent first writes a memory)")
+            check_info("MEMORY.md 尚未创建（将在 Agent 首次写入记忆时创建）")
         if user_file.exists():
             size = len(user_file.read_text(encoding="utf-8").strip())
-            check_ok(f"USER.md exists ({size} chars)")
+            check_ok(f"USER.md 存在（{size} 字符）")
         else:
-            check_info("USER.md not created yet (will be created when the agent first writes a memory)")
+            check_info("USER.md 尚未创建（将在 Agent 首次写入记忆时创建）")
     else:
-        check_warn(f"{_DHH}/memories/ not found", "(will be created on first use)")
+        check_warn(f"未找到 {_DHH}/memories/", "（首次使用时会自动创建）")
         if should_fix:
             memories_dir.mkdir(parents=True, exist_ok=True)
-            check_ok(f"Created {_DHH}/memories/")
+            check_ok(f"已创建 {_DHH}/memories/")
             fixed_count += 1
     
     # Check SQLite session store
@@ -952,11 +951,11 @@ def run_doctor(args):
             cursor = conn.execute("SELECT COUNT(*) FROM sessions")
             count = cursor.fetchone()[0]
             conn.close()
-            check_ok(f"{_DHH}/state.db exists ({count} sessions)")
+            check_ok(f"{_DHH}/state.db 存在（{count} 个会话）")
         except Exception as e:
-            check_warn(f"{_DHH}/state.db exists but has issues: {e}")
+            check_warn(f"{_DHH}/state.db 存在但存在问题：{e}")
     else:
-        check_info(f"{_DHH}/state.db not created yet (will be created on first session)")
+        check_info(f"{_DHH}/state.db 尚未创建（将在首次会话时创建）")
 
     # Check WAL file size (unbounded growth indicates missed checkpoints)
     wal_path = hermes_home / "state.db-wal"
@@ -965,8 +964,8 @@ def run_doctor(args):
             wal_size = wal_path.stat().st_size
             if wal_size > 50 * 1024 * 1024:  # 50 MB
                 check_warn(
-                    f"WAL file is large ({wal_size // (1024*1024)} MB)",
-                    "(may indicate missed checkpoints)"
+                    f"WAL 文件过大（{wal_size // (1024*1024)} MB）",
+                    "（可能表明存在遗漏的检查点）"
                 )
                 if should_fix:
                     import sqlite3
@@ -974,19 +973,19 @@ def run_doctor(args):
                     conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
                     conn.close()
                     new_size = wal_path.stat().st_size if wal_path.exists() else 0
-                    check_ok(f"WAL checkpoint performed ({wal_size // 1024}K → {new_size // 1024}K)")
+                    check_ok(f"WAL 检查点已执行（{wal_size // 1024}K → {new_size // 1024}K）")
                     fixed_count += 1
                 else:
-                    issues.append("Large WAL file — run 'hermes doctor --fix' to checkpoint")
+                    issues.append("WAL 文件过大——运行 'hermes doctor --fix' 执行检查点")
             elif wal_size > 10 * 1024 * 1024:  # 10 MB
-                check_info(f"WAL file is {wal_size // (1024*1024)} MB (normal for active sessions)")
+                check_info(f"WAL 文件 {wal_size // (1024*1024)} MB（活跃会话时属正常）")
         except Exception:
             pass
 
     _check_gateway_service_linger(issues)
 
     if sys.platform != "win32":
-        _section("Command Installation")
+        _section("命令安装")
         # Determine the venv entry point location
         _venv_bin = None
         for _venv_name in ("venv", ".venv"):
@@ -1008,71 +1007,71 @@ def run_doctor(args):
 
         if _venv_bin is None:
             check_warn(
-                "Venv entry point not found",
-                "(hermes not in venv/bin/ or .venv/bin/ — reinstall with pip install -e '.[all]')"
+                "未找到 venv 入口点",
+                "（hermes 不在 venv/bin/ 或 .venv/bin/ 中——请用 pip install -e '.[all]' 重新安装）"
             )
             manual_issues.append(
-                f"Reinstall entry point: cd {PROJECT_ROOT} && source venv/bin/activate && pip install -e '.[all]'"
+                f"重新安装入口点：cd {PROJECT_ROOT} && source venv/bin/activate && pip install -e '.[all]'"
             )
         else:
-            check_ok(f"Venv entry point exists ({_venv_bin.relative_to(PROJECT_ROOT)})")
+            check_ok(f"Venv 入口点存在（{_venv_bin.relative_to(PROJECT_ROOT)}）")
 
             # Check the symlink at the command link location
             if _cmd_link.is_symlink():
                 _target = _cmd_link.resolve()
                 _expected = _venv_bin.resolve()
                 if _target == _expected:
-                    check_ok(f"{_cmd_link_display}/hermes → correct target")
+                    check_ok(f"{_cmd_link_display}/hermes → 正确目标")
                 else:
                     check_warn(
-                        f"{_cmd_link_display}/hermes points to wrong target",
-                        f"(→ {_target}, expected → {_expected})"
+                        f"{_cmd_link_display}/hermes 指向错误目标",
+                        f"（→ {_target}，应为 → {_expected}）"
                     )
                     if should_fix:
                         _cmd_link.unlink()
                         _cmd_link.symlink_to(_venv_bin)
-                        check_ok(f"Fixed symlink: {_cmd_link_display}/hermes → {_venv_bin}")
+                        check_ok(f"已修复符号链接：{_cmd_link_display}/hermes → {_venv_bin}")
                         fixed_count += 1
                     else:
-                        issues.append(f"Broken symlink at {_cmd_link_display}/hermes — run 'hermes doctor --fix'")
+                        issues.append(f"{_cmd_link_display}/hermes 符号链接损坏——运行 'hermes doctor --fix'")
             elif _cmd_link.exists():
                 # It's a regular file, not a symlink — possibly a wrapper script
-                check_ok(f"{_cmd_link_display}/hermes exists (non-symlink)")
+                check_ok(f"{_cmd_link_display}/hermes 存在（非符号链接）")
             else:
                 check_fail(
-                    f"{_cmd_link_display}/hermes not found",
-                    "(hermes command may not work outside the venv)"
+                    f"未找到 {_cmd_link_display}/hermes",
+                    "（hermes 命令在 venv 外可能无法工作）"
                 )
                 if should_fix:
                     _cmd_link_dir.mkdir(parents=True, exist_ok=True)
                     _cmd_link.symlink_to(_venv_bin)
-                    check_ok(f"Created symlink: {_cmd_link_display}/hermes → {_venv_bin}")
+                    check_ok(f"已创建符号链接：{_cmd_link_display}/hermes → {_venv_bin}")
                     fixed_count += 1
 
                     # Check if the link dir is on PATH
                     _path_dirs = os.environ.get("PATH", "").split(os.pathsep)
                     if str(_cmd_link_dir) not in _path_dirs:
                         check_warn(
-                            f"{_cmd_link_display} is not on your PATH",
-                            "(add it to your shell config: export PATH=\"$HOME/.local/bin:$PATH\")"
+                            f"{_cmd_link_display} 不在 PATH 中",
+                            "（请添加到 shell 配置：export PATH=\"$HOME/.local/bin:$PATH\"）"
                         )
-                        manual_issues.append(f"Add {_cmd_link_display} to your PATH")
+                        manual_issues.append(f"将 {_cmd_link_display} 添加到 PATH")
                 else:
-                    issues.append(f"Missing {_cmd_link_display}/hermes symlink — run 'hermes doctor --fix'")
+                    issues.append(f"缺少 {_cmd_link_display}/hermes 符号链接——运行 'hermes doctor --fix'")
 
-    _section("External Tools")
+    _section("外部工具")
     # Git
     if _safe_which("git"):
         check_ok("git")
     else:
-        check_warn("git not found", "(optional)")
+        check_warn("未找到 git", "（可选）")
     
     # ripgrep (optional, for faster file search)
     if _safe_which("rg"):
-        check_ok("ripgrep (rg)", "(faster file search)")
+        check_ok("ripgrep (rg)", "（更快的文件搜索）")
     else:
-        check_warn("ripgrep (rg) not found", "(file search uses grep fallback)")
-        check_info(f"Install for faster search: {_system_package_install_cmd('ripgrep')}")
+        check_warn("未找到 ripgrep (rg)", "（文件搜索将使用 grep 回退）")
+        check_info(f"安装以获得更快的搜索：{_system_package_install_cmd('ripgrep')}")
     
     # Docker (optional)
     terminal_env = os.getenv("TERMINAL_ENV", "local")
@@ -1084,22 +1083,22 @@ def run_doctor(args):
             except subprocess.TimeoutExpired:
                 result = None
             if result is not None and result.returncode == 0:
-                check_ok("docker", "(daemon running)")
+                check_ok("docker", "（守护进程运行中）")
             else:
-                _fail_and_issue("docker daemon not running", "", "Start Docker daemon", issues)
+                _fail_and_issue("docker 守护进程未运行", "", "启动 Docker 守护进程", issues)
         else:
             _fail_and_issue(
-                "docker not found",
-                "(required for TERMINAL_ENV=docker)",
-                "Install Docker or change TERMINAL_ENV",
+                "未找到 docker",
+                "（TERMINAL_ENV=docker 需要）",
+                "安装 Docker 或更改 TERMINAL_ENV",
                 issues,
             )
     elif _safe_which("docker"):
-        check_ok("docker", "(optional)")
+        check_ok("docker", "（可选）")
     elif _is_termux():
-        check_info("Docker backend is not available inside Termux (expected on Android)")
+        check_info("Docker 后端在 Termux 中不可用（Android 上预期行为）")
     else:
-        check_warn("docker not found", "(optional)")
+        check_warn("未找到 docker", "（可选）")
     
     # SSH (if using ssh backend)
     if terminal_env == "ssh":
@@ -1126,14 +1125,14 @@ def run_doctor(args):
             except subprocess.TimeoutExpired:
                 result = None
             if result is not None and result.returncode == 0:
-                check_ok(f"SSH connection to {ssh_host}")
+                check_ok(f"SSH 连接至 {ssh_host}")
             else:
-                _fail_and_issue(f"SSH connection to {ssh_host}", "", f"Check SSH configuration for {ssh_host}", issues)
+                _fail_and_issue(f"SSH 连接至 {ssh_host}", "", f"检查 {ssh_host} 的 SSH 配置", issues)
         else:
             _fail_and_issue(
-                "TERMINAL_SSH_HOST not set",
-                "(required for TERMINAL_ENV=ssh)",
-                "Set TERMINAL_SSH_HOST in .env",
+                "TERMINAL_SSH_HOST 未设置",
+                "（TERMINAL_ENV=ssh 需要）",
+                "在 .env 中设置 TERMINAL_SSH_HOST",
                 issues,
             )
     
@@ -1141,22 +1140,22 @@ def run_doctor(args):
     if terminal_env == "daytona":
         daytona_key = os.getenv("DAYTONA_API_KEY")
         if daytona_key:
-            check_ok("Daytona API key", "(configured)")
+            check_ok("Daytona API 密钥", "（已配置）")
         else:
             _fail_and_issue(
-                "DAYTONA_API_KEY not set",
-                "(required for TERMINAL_ENV=daytona)",
-                "Set DAYTONA_API_KEY environment variable",
+                "DAYTONA_API_KEY 未设置",
+                "（TERMINAL_ENV=daytona 需要）",
+                "设置 DAYTONA_API_KEY 环境变量",
                 issues,
             )
         try:
             from daytona import Daytona  # noqa: F401 — SDK presence check
-            check_ok("daytona SDK", "(installed)")
+            check_ok("daytona SDK", "（已安装）")
         except ImportError:
             _fail_and_issue(
-                "daytona SDK not installed",
-                "(pip install daytona)",
-                "Install daytona SDK: pip install daytona",
+                "daytona SDK 未安装",
+                "（pip install daytona）",
+                "安装 daytona SDK：pip install daytona",
                 issues,
             )
 
@@ -1165,62 +1164,62 @@ def run_doctor(args):
         runtime = os.getenv("TERMINAL_VERCEL_RUNTIME", "node24").strip() or "node24"
         from tools.terminal_tool import _SUPPORTED_VERCEL_RUNTIMES
         if runtime in _SUPPORTED_VERCEL_RUNTIMES:
-            check_ok("Vercel runtime", f"({runtime})")
+            check_ok("Vercel 运行环境", f"({runtime})")
         else:
             supported = ", ".join(_SUPPORTED_VERCEL_RUNTIMES)
             _fail_and_issue(
-                "Vercel runtime unsupported",
-                f"({runtime}; use {supported})",
-                f"Set TERMINAL_VERCEL_RUNTIME to one of: {supported}",
+                "Vercel 运行环境不受支持",
+                f"（{runtime}；请使用 {supported}）",
+                f"将 TERMINAL_VERCEL_RUNTIME 设为：{supported}",
                 issues,
             )
 
         disk = os.getenv("TERMINAL_CONTAINER_DISK", "51200").strip()
         if disk in {"", "0", "51200"}:
-            check_ok("Vercel disk setting", "(uses platform default)")
+            check_ok("Vercel 磁盘设置", "（使用平台默认值）")
         else:
             _fail_and_issue(
-                "Vercel custom disk unsupported",
-                "(reset terminal.container_disk to 51200)",
-                "Vercel Sandbox does not support custom container_disk; use the shared default 51200",
+                "Vercel 自定义磁盘不受支持",
+                "（将 terminal.container_disk 重置为 51200）",
+                "Vercel Sandbox 不支持自定义 container_disk；请使用共享默认值 51200",
                 issues,
             )
 
         if importlib.util.find_spec("vercel") is not None:
-            check_ok("vercel SDK", "(installed)")
+            check_ok("vercel SDK", "（已安装）")
         else:
             _fail_and_issue(
-                "vercel SDK not installed",
-                "(pip install 'hermes-agent[vercel]')",
-                "Install the Vercel optional dependency: pip install 'hermes-agent[vercel]'",
+                "vercel SDK 未安装",
+                "（pip install 'hermes-agent[vercel]'）",
+                "安装 Vercel 可选依赖：pip install 'hermes-agent[vercel]'",
                 issues,
             )
 
         auth_status = describe_vercel_auth()
         if auth_status.ok:
-            check_ok("Vercel auth", f"({auth_status.label})")
+            check_ok("Vercel 认证", f"({auth_status.label})")
         elif auth_status.label.startswith("partial"):
             _fail_and_issue(
-                "Vercel auth incomplete",
+                "Vercel 认证不完整",
                 f"({auth_status.label})",
-                "Set VERCEL_TOKEN, VERCEL_PROJECT_ID, and VERCEL_TEAM_ID together",
+                "请同时设置 VERCEL_TOKEN、VERCEL_PROJECT_ID 和 VERCEL_TEAM_ID",
                 issues,
             )
         else:
             _fail_and_issue(
-                "Vercel auth not configured",
+                "Vercel 认证未配置",
                 f"({auth_status.label})",
-                "Configure Vercel Sandbox auth with VERCEL_TOKEN, VERCEL_PROJECT_ID, and VERCEL_TEAM_ID",
+                "使用 VERCEL_TOKEN、VERCEL_PROJECT_ID 和 VERCEL_TEAM_ID 配置 Vercel Sandbox 认证",
                 issues,
             )
         for line in auth_status.detail_lines:
-            check_info(f"Vercel auth {line}")
+            check_info(f"Vercel 认证 {line}")
 
         persistent = os.getenv("TERMINAL_CONTAINER_PERSISTENT", "true").lower() in {"1", "true", "yes", "on"}
         if persistent:
-            check_info("Vercel persistence: snapshot filesystem only; live processes do not survive sandbox recreation")
+            check_info("Vercel 持久化：仅快照文件系统；活动的进程在沙箱重建后将不会存活")
         else:
-            check_info("Vercel persistence: ephemeral filesystem")
+            check_info("Vercel 持久化：临时文件系统")
 
     # Node.js + agent-browser (for browser automation tools)
     if _safe_which("node"):
@@ -1351,7 +1350,7 @@ def run_doctor(args):
         for note in _termux_install_all_fallback_notes():
             check_info(note)
 
-    _section("API Connectivity")
+    _section("API 连接性")
     # Refactor: every connectivity probe below is HTTP-bound and fully
     # independent. Running them in series spent ~5s wall on a typical
     # workstation (2s of that was boto3's IMDS lookup for AWS credentials,
@@ -1377,7 +1376,7 @@ def run_doctor(args):
             return _ConnectivityResult(
                 "OpenRouter API",
                 [(color("⚠", Colors.YELLOW), "OpenRouter API",
-                  color("(not configured)", Colors.DIM))],
+                  color("（未配置）", Colors.DIM))],
                 [],
             )
         try:
@@ -1397,39 +1396,37 @@ def run_doctor(args):
                 return _ConnectivityResult(
                     "OpenRouter API",
                     [(color("✗", Colors.RED), "OpenRouter API",
-                      color("(invalid API key)", Colors.DIM))],
-                    ["Check OPENROUTER_API_KEY in .env"],
+                      color("（API 密钥无效）", Colors.DIM))],
+                    ["检查 .env 中的 OPENROUTER_API_KEY"],
                 )
             if r.status_code == 402:
                 return _ConnectivityResult(
                     "OpenRouter API",
                     [(color("✗", Colors.RED), "OpenRouter API",
-                      color("(out of credits — payment required)", Colors.DIM))],
-                    ["OpenRouter account has insufficient credits. "
-                     "Fix: run 'hermes config set model.provider <provider>' "
-                     "to switch providers, or fund your OpenRouter account "
-                     "at https://openrouter.ai/settings/credits"],
+                      color("（余额不足——需要充值）", Colors.DIM))],
+                    ["OpenRouter 账户余额不足。"
+                     "修复：运行 'hermes config set model.provider <provider>' "
+                     "切换提供者，或在 https://openrouter.ai/settings/credits 为账户充值"],
                 )
             if r.status_code == 429:
                 return _ConnectivityResult(
                     "OpenRouter API",
                     [(color("✗", Colors.RED), "OpenRouter API",
-                      color("(rate limited)", Colors.DIM))],
-                    ["OpenRouter rate limit hit — consider switching to "
-                     "a different provider or waiting"],
+                      color("（已达到速率限制）", Colors.DIM))],
+                    ["OpenRouter 已达到速率限制——考虑切换提供者或等待"],
                 )
             return _ConnectivityResult(
                 "OpenRouter API",
                 [(color("✗", Colors.RED), "OpenRouter API",
-                  color(f"(HTTP {r.status_code})", Colors.DIM))],
+                  color(f"（HTTP {r.status_code}）", Colors.DIM))],
                 [],
             )
         except Exception as e:
             return _ConnectivityResult(
                 "OpenRouter API",
                 [(color("✗", Colors.RED), "OpenRouter API",
-                  color(f"({e})", Colors.DIM))],
-                ["Check network connectivity"],
+                  color(f"（{e}）", Colors.DIM))],
+                ["检查网络连接"],
             )
 
     def _probe_anthropic() -> _ConnectivityResult:
@@ -1484,20 +1481,20 @@ def run_doctor(args):
                 return _ConnectivityResult(
                     "Anthropic API",
                     [(color("✗", Colors.RED), "Anthropic API",
-                      color("(invalid API key)", Colors.DIM))],
+                      color("（API 密钥无效）", Colors.DIM))],
                     [],
                 )
             return _ConnectivityResult(
                 "Anthropic API",
                 [(color("⚠", Colors.YELLOW), "Anthropic API",
-                  color("(couldn't verify)", Colors.DIM))],
+                  color("（无法验证）", Colors.DIM))],
                 [],
             )
         except Exception as e:
             return _ConnectivityResult(
                 "Anthropic API",
                 [(color("⚠", Colors.YELLOW), "Anthropic API",
-                  color(f"({e})", Colors.DIM))],
+                  color(f"（{e}）", Colors.DIM))],
                 [],
             )
 
@@ -1515,7 +1512,7 @@ def run_doctor(args):
             return _ConnectivityResult(
                 pname,
                 [(color("✓", Colors.GREEN), label,
-                  color("(key configured)", Colors.DIM))],
+                  color("（密钥已配置）", Colors.DIM))],
                 [],
             )
         try:
@@ -1541,7 +1538,7 @@ def run_doctor(args):
             if base_url_host_matches(base, "api.kimi.com"):
                 headers["User-Agent"] = "claude-code/0.1.0"
             # Google's Generative Language API (generativelanguage.googleapis.com)
-            # rejects ``Authorization: Bearer <api-key>`` with 401
+            # rejects ``Authorization: Bearer *** with 401
             # ``ACCESS_TOKEN_TYPE_UNSUPPORTED`` — that header is reserved for
             # OAuth 2 access tokens, not plain API keys. Plain keys use
             # ``x-goog-api-key`` (or ``?key=``). Without this, a perfectly valid
@@ -1569,20 +1566,20 @@ def run_doctor(args):
                 return _ConnectivityResult(
                     pname,
                     [(color("✗", Colors.RED), label,
-                      color("(invalid API key)", Colors.DIM))],
-                    [f"Check {env_vars[0]} in .env"],
+                      color("（API 密钥无效）", Colors.DIM))],
+                    [f"检查 .env 中的 {env_vars[0]}"],
                 )
             return _ConnectivityResult(
                 pname,
                 [(color("⚠", Colors.YELLOW), label,
-                  color(f"(HTTP {r.status_code})", Colors.DIM))],
+                  color(f"（HTTP {r.status_code}）", Colors.DIM))],
                 [],
             )
         except Exception as e:
             return _ConnectivityResult(
                 pname,
                 [(color("⚠", Colors.YELLOW), label,
-                  color(f"({e})", Colors.DIM))],
+                  color(f"（{e}）", Colors.DIM))],
                 [],
             )
 
@@ -1616,24 +1613,24 @@ def run_doctor(args):
             return _ConnectivityResult(
                 "AWS Bedrock",
                 [(color("✓", Colors.GREEN), label,
-                  color(f"({auth_var}, {region}, {n} models)", Colors.DIM))],
+                  color(f"（{auth_var}、{region}、{n} 个模型）", Colors.DIM))],
                 [],
             )
         except ImportError:
             return _ConnectivityResult(
                 "AWS Bedrock",
                 [(color("⚠", Colors.YELLOW), label,
-                  color(f"(boto3 not installed — {sys.executable} -m pip install boto3)",
+                  color(f"（boto3 未安装——{sys.executable} -m pip install boto3）",
                         Colors.DIM))],
-                [f"Install boto3 for Bedrock: {sys.executable} -m pip install boto3"],
+                [f"安装 boto3 以使用 Bedrock：{sys.executable} -m pip install boto3"],
             )
         except Exception as e:
             err_name = type(e).__name__
             return _ConnectivityResult(
                 "AWS Bedrock",
                 [(color("⚠", Colors.YELLOW), label,
-                  color(f"({err_name}: {e})", Colors.DIM))],
-                [f"AWS Bedrock: {err_name} — check IAM permissions for "
+                  color(f"（{err_name}：{e}）", Colors.DIM))],
+                [f"AWS Bedrock：{err_name}——检查 IAM 权限 "
                  f"bedrock:ListFoundationModels"],
             )
 
@@ -1673,16 +1670,16 @@ def run_doctor(args):
             return _ConnectivityResult(
                 "Azure Foundry (Entra ID)",
                 [(color("⚠", Colors.YELLOW), label,
-                  color(f"(adapter import failed: {exc})", Colors.DIM))],
-                [f"Azure Foundry adapter import failed: {exc}"],
+                  color(f"（适配器导入失败：{exc}）", Colors.DIM))],
+                [f"Azure Foundry 适配器导入失败：{exc}"],
             )
 
         if not has_azure_identity_installed():
             return _ConnectivityResult(
                 "Azure Foundry (Entra ID)",
                 [(color("⚠", Colors.YELLOW), label,
-                  color("(azure-identity not installed)", Colors.DIM))],
-                [f"Install azure-identity: {sys.executable} -m pip install azure-identity"],
+                  color("（azure-identity 未安装）", Colors.DIM))],
+                [f"安装 azure-identity：{sys.executable} -m pip install azure-identity"],
             )
 
         base_url = str(model_cfg.get("base_url") or "").strip()
@@ -1699,23 +1696,23 @@ def run_doctor(args):
         info = describe_active_credential(config=config, timeout_seconds=10.0)
         if info.get("ok"):
             env_sources = info.get("env_sources") or []
-            tag = ", ".join(env_sources) if env_sources else "default credential chain"
+            tag = ", ".join(env_sources) if env_sources else "默认凭据链"
             return _ConnectivityResult(
                 "Azure Foundry (Entra ID)",
                 [(color("✓", Colors.GREEN), label,
-                  color(f"({tag}, scope={scope})", Colors.DIM))],
+                  color(f"（{tag}，scope={scope}）", Colors.DIM))],
                 [],
             )
-        err = info.get("error") or "credential chain exhausted"
+        err = info.get("error") or "凭据链耗尽"
         hint = info.get("hint") or (
-            "Run `az login`, set AZURE_TENANT_ID/AZURE_CLIENT_ID/"
-            "AZURE_CLIENT_SECRET, or attach a managed identity to this VM."
+            "运行 `az login`、设置 AZURE_TENANT_ID/AZURE_CLIENT_ID/"
+            "AZURE_CLIENT_SECRET，或为本机附加托管标识。"
         )
         return _ConnectivityResult(
             "Azure Foundry (Entra ID)",
             [(color("⚠", Colors.YELLOW), label,
-              color(f"({err})", Colors.DIM))],
-            [f"Azure Foundry Entra: {err}. {hint}"],
+              color(f"（{err}）", Colors.DIM))],
+            [f"Azure Foundry Entra：{err}。{hint}"],
         )
 
     # Build the probe submission list in display order
@@ -1739,7 +1736,7 @@ def run_doctor(args):
 
     # Print a single status line so users see something happening, then
     # fan out. ``\r`` clears it once the first real result line lands.
-    print(f"  {color(f'Running {len(_probes)} connectivity checks in parallel…', Colors.DIM)}",
+    print(f"  {color(f'正在并行运行 {len(_probes)} 项连接检查…', Colors.DIM)}",
           end="", flush=True)
 
     # Disable boto3's EC2 instance-metadata-service probe for the duration
@@ -1781,7 +1778,7 @@ def run_doctor(args):
         for _issue in _issues_to_add:
             issues.append(_issue)
 
-    _section("Tool Availability")
+    _section("工具可用性")
     try:
         # Add project root to path for imports
         sys.path.insert(0, str(PROJECT_ROOT))
@@ -1798,36 +1795,36 @@ def run_doctor(args):
             env_vars = item.get("missing_vars") or item.get("env_vars") or []
             if env_vars:
                 vars_str = ", ".join(env_vars)
-                check_warn(item["name"], f"(missing {vars_str})")
+                check_warn(item["name"], f"（缺少 {vars_str}）")
             else:
-                check_warn(item["name"], "(system dependency not met)")
+                check_warn(item["name"], "（系统依赖未满足）")
 
         # Count disabled tools with API key requirements
         api_disabled = [u for u in unavailable if (u.get("missing_vars") or u.get("env_vars"))]
         if api_disabled:
-            issues.append("Run 'hermes setup' to configure missing API keys for full tool access")
+            issues.append("运行 'hermes setup' 配置缺失的 API 密钥以获取完整工具访问权限")
     except Exception as e:
-        check_warn("Could not check tool availability", f"({e})")
+        check_warn("无法检查工具可用性", f"（{e}）")
     
-    _section("Skills Hub")
+    _section("技能中心")
     hub_dir = HERMES_HOME / "skills" / ".hub"
     if hub_dir.exists():
-        check_ok("Skills Hub directory exists")
+        check_ok("技能中心目录已存在")
         lock_file = hub_dir / "lock.json"
         if lock_file.exists():
             try:
                 import json
                 lock_data = json.loads(lock_file.read_text())
                 count = len(lock_data.get("installed", {}))
-                check_ok(f"Lock file OK ({count} hub-installed skill(s))")
+                check_ok(f"锁文件正常（{count} 个已安装的技能）")
             except Exception:
-                check_warn("Lock file", "(corrupted or unreadable)")
+                check_warn("锁文件", "（损坏或无法读取）")
         quarantine = hub_dir / "quarantine"
         q_count = sum(1 for d in quarantine.iterdir() if d.is_dir()) if quarantine.exists() else 0
         if q_count > 0:
-            check_warn(f"{q_count} skill(s) in quarantine", "(pending review)")
+            check_warn(f"{q_count} 个技能处于隔离区", "（待审查）")
     else:
-        check_warn("Skills Hub directory not initialized", "(run: hermes skills list)")
+        check_warn("技能中心目录未初始化", "（运行：hermes skills list）")
 
     from hermes_cli.config import get_env_value
 
@@ -1844,13 +1841,13 @@ def run_doctor(args):
 
     github_token = get_env_value("GITHUB_TOKEN") or get_env_value("GH_TOKEN")
     if github_token:
-        check_ok("GitHub token configured (authenticated API access)")
+        check_ok("已配置 GitHub 令牌（已认证的 API 访问）")
     elif _gh_authenticated():
-        check_ok("GitHub authenticated via gh CLI", "(full API access — no GITHUB_TOKEN needed)")
+        check_ok("通过 gh CLI 进行了 GitHub 认证", "（完整 API 访问——无需 GITHUB_TOKEN）")
     else:
-        check_warn("No GITHUB_TOKEN", f"(60 req/hr rate limit — set in {_DHH}/.env for better rates)")
+        check_warn("未设置 GITHUB_TOKEN", f"（60 次/小时请求速率限制——请在 {_DHH}/.env 中设置以获得更高限额）")
 
-    _section("Memory Provider")
+    _section("记忆提供者")
     _active_memory_provider = ""
     try:
         import yaml as _yaml
@@ -1863,7 +1860,7 @@ def run_doctor(args):
         pass
 
     if not _active_memory_provider:
-        check_ok("Built-in memory active", "(no external provider configured — this is fine)")
+        check_ok("内置记忆已激活", "（未配置外部提供者——这完全没问题）")
     elif _active_memory_provider == "honcho":
         try:
             from plugins.memory.honcho.client import HonchoClientConfig, resolve_config_path
@@ -1871,14 +1868,14 @@ def run_doctor(args):
             _honcho_cfg_path = resolve_config_path()
 
             if not _honcho_cfg_path.exists():
-                check_warn("Honcho config not found", "run: hermes memory setup")
+                check_warn("未找到 Honcho 配置", "运行：hermes memory setup")
             elif not hcfg.enabled:
-                check_info(f"Honcho disabled (set enabled: true in {_honcho_cfg_path} to activate)")
+                check_info(f"Honcho 已禁用（在 {_honcho_cfg_path} 中设置 enabled: true 以激活）")
             elif not (hcfg.api_key or hcfg.base_url):
                 _fail_and_issue(
-                    "Honcho API key or base URL not set",
-                    "run: hermes memory setup",
-                    "No Honcho API key — run 'hermes memory setup'",
+                    "未设置 Honcho API 密钥或基础 URL",
+                    "运行：hermes memory setup",
+                    "未找到 Honcho API 密钥——运行 'hermes memory setup'",
                     issues,
                 )
             else:
@@ -1887,57 +1884,57 @@ def run_doctor(args):
                 try:
                     get_honcho_client(hcfg)
                     check_ok(
-                        "Honcho connected",
+                        "Honcho 已连接",
                         f"workspace={hcfg.workspace_id} mode={hcfg.recall_mode} freq={hcfg.write_frequency}",
                     )
                 except Exception as _e:
-                    _fail_and_issue("Honcho connection failed", str(_e), f"Honcho unreachable: {_e}", issues)
+                    _fail_and_issue("Honcho 连接失败", str(_e), f"Honcho 不可达：{_e}", issues)
         except ImportError:
             _fail_and_issue(
-                "honcho-ai not installed",
+                "honcho-ai 未安装",
                 "pip install honcho-ai",
-                "Honcho is set as memory provider but honcho-ai is not installed",
+                "已配置 Honcho 为记忆提供者但未安装 honcho-ai",
                 issues,
             )
         except Exception as _e:
-            check_warn("Honcho check failed", str(_e))
+            check_warn("Honcho 检查失败", str(_e))
     elif _active_memory_provider == "mem0":
         try:
             from plugins.memory.mem0 import _load_config as _load_mem0_config
             mem0_cfg = _load_mem0_config()
             mem0_key = mem0_cfg.get("api_key", "")
             if mem0_key:
-                check_ok("Mem0 API key configured")
+                check_ok("已配置 Mem0 API 密钥")
                 check_info(f"user_id={mem0_cfg.get('user_id', '?')}  agent_id={mem0_cfg.get('agent_id', '?')}")
             else:
                 _fail_and_issue(
-                    "Mem0 API key not set",
-                    "(set MEM0_API_KEY in .env or run hermes memory setup)",
-                    "Mem0 is set as memory provider but API key is missing",
+                    "未设置 Mem0 API 密钥",
+                    "（在 .env 中设置 MEM0_API_KEY 或运行 hermes memory setup）",
+                    "已配置 Mem0 为记忆提供者但缺少 API 密钥",
                     issues,
                 )
         except ImportError:
             _fail_and_issue(
-                "Mem0 plugin not loadable",
+                "无法加载 Mem0 插件",
                 "pip install mem0ai",
-                "Mem0 is set as memory provider but mem0ai is not installed",
+                "已配置 Mem0 为记忆提供者但未安装 mem0ai",
                 issues,
             )
         except Exception as _e:
-            check_warn("Mem0 check failed", str(_e))
+            check_warn("Mem0 检查失败", str(_e))
     else:
-        # Generic check for other memory providers (openviking, hindsight, etc.)
+        # 其他记忆提供者的通用检查（openviking、hindsight 等）
         try:
             from plugins.memory import load_memory_provider
             _provider = load_memory_provider(_active_memory_provider)
             if _provider and _provider.is_available():
-                check_ok(f"{_active_memory_provider} provider active")
+                check_ok(f"{_active_memory_provider} 提供者已激活")
             elif _provider:
-                check_warn(f"{_active_memory_provider} configured but not available", "run: hermes memory status")
+                check_warn(f"{_active_memory_provider} 已配置但不可用", "运行：hermes memory status")
             else:
-                check_warn(f"{_active_memory_provider} plugin not found", "run: hermes memory setup")
+                check_warn(f"未找到 {_active_memory_provider} 插件", "运行：hermes memory setup")
         except Exception as _e:
-            check_warn(f"{_active_memory_provider} check failed", str(_e))
+            check_warn(f"{_active_memory_provider} 检查失败", str(_e))
 
     try:
         from hermes_cli.profiles import list_profiles, _get_wrapper_dir, profile_exists
@@ -1945,23 +1942,23 @@ def run_doctor(args):
 
         named_profiles = [p for p in list_profiles() if not p.is_default]
         if named_profiles:
-            _section("Profiles")
-            check_ok(f"{len(named_profiles)} profile(s) found")
+            _section("配置文件集")
+            check_ok(f"已找到 {len(named_profiles)} 个配置文件")
             wrapper_dir = _get_wrapper_dir()
             for p in named_profiles:
                 parts = []
                 if p.gateway_running:
-                    parts.append("gateway running")
+                    parts.append("网关运行中")
                 if p.model:
                     parts.append(p.model[:30])
                 if not (p.path / "config.yaml").exists():
-                    parts.append("⚠ missing config")
+                    parts.append("⚠ 缺少配置")
                 if not (p.path / ".env").exists():
-                    parts.append("no .env")
+                    parts.append("无 .env")
                 wrapper = wrapper_dir / p.name
                 if not wrapper.exists():
-                    parts.append("no alias")
-                status = ", ".join(parts) if parts else "configured"
+                    parts.append("无别名")
+                status = ", ".join(parts) if parts else "已配置"
                 check_ok(f"  {p.name}: {status}")
 
             # Check for orphan wrappers
@@ -1974,7 +1971,7 @@ def run_doctor(args):
                         if "hermes -p" in content:
                             _m = _re.search(r"hermes -p (\S+)", content)
                             if _m and not profile_exists(_m.group(1)):
-                                check_warn(f"Orphan alias: {wrapper.name} → profile '{_m.group(1)}' no longer exists")
+                                check_warn(f"孤立别名：{wrapper.name} → 配置文件 '{_m.group(1)}' 已不存在")
                     except Exception:
                         pass
     except ImportError:
@@ -1986,9 +1983,9 @@ def run_doctor(args):
     remaining_issues = issues + manual_issues
     if should_fix and fixed_count > 0:
         print(color("─" * 60, Colors.GREEN))
-        print(color(f"  Fixed {fixed_count} issue(s).", Colors.GREEN, Colors.BOLD), end="")
+        print(color(f"  已修复 {fixed_count} 个问题。", Colors.GREEN, Colors.BOLD), end="")
         if remaining_issues:
-            print(color(f" {len(remaining_issues)} issue(s) require manual intervention.", Colors.YELLOW, Colors.BOLD))
+            print(color(f" 还有 {len(remaining_issues)} 个问题需要手动处理。", Colors.YELLOW, Colors.BOLD))
         else:
             print()
         print()
@@ -1998,15 +1995,15 @@ def run_doctor(args):
             print()
     elif remaining_issues:
         print(color("─" * 60, Colors.YELLOW))
-        print(color(f"  Found {len(remaining_issues)} issue(s) to address:", Colors.YELLOW, Colors.BOLD))
+        print(color(f"  发现 {len(remaining_issues)} 个待解决问题：", Colors.YELLOW, Colors.BOLD))
         print()
         for i, issue in enumerate(remaining_issues, 1):
             print(f"  {i}. {issue}")
         print()
         if not should_fix:
-            print(color("  Tip: run 'hermes doctor --fix' to auto-fix what's possible.", Colors.DIM))
+            print(color("  提示：运行 'hermes doctor --fix' 以自动修复可解决的问题。", Colors.DIM))
     else:
         print(color("─" * 60, Colors.GREEN))
-        print(color("  All checks passed! 🎉", Colors.GREEN, Colors.BOLD))
+        print(color("  全部检查通过！🎉", Colors.GREEN, Colors.BOLD))
     
     print()

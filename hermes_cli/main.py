@@ -1,53 +1,53 @@
 #!/usr/bin/env python3
 """
-Hermes CLI - Main entry point.
+Hermes CLI - 主入口
 
-Usage:
-    hermes                     # Interactive chat (default)
-    hermes chat                # Interactive chat
-    hermes gateway             # Run gateway in foreground
-    hermes gateway start       # Start gateway as service
-    hermes gateway stop        # Stop gateway service
-    hermes gateway status      # Show gateway status
-    hermes gateway install     # Install gateway service
-    hermes gateway uninstall   # Uninstall gateway service
-    hermes setup               # Interactive setup wizard
-    hermes logout              # Clear stored authentication
-    hermes status              # Show status of all components
-    hermes cron                # Manage cron jobs
-    hermes cron list           # List cron jobs
-    hermes cron status         # Check if cron scheduler is running
-    hermes doctor              # Check configuration and dependencies
-    hermes honcho setup                    # Configure Honcho AI memory integration
-    hermes honcho status                   # Show Honcho config and connection status
-    hermes honcho sessions                 # List directory → session name mappings
-    hermes honcho map <name>               # Map current directory to a session name
-    hermes honcho peer                     # Show peer names and dialectic settings
-    hermes honcho peer --user NAME         # Set user peer name
-    hermes honcho peer --ai NAME           # Set AI peer name
-    hermes honcho peer --reasoning LEVEL   # Set dialectic reasoning level
-    hermes honcho mode                     # Show current memory mode
-    hermes honcho mode [hybrid|honcho|local]  # Set memory mode
-    hermes honcho tokens                   # Show token budget settings
-    hermes honcho tokens --context N       # Set session.context() token cap
-    hermes honcho tokens --dialectic N     # Set dialectic result char cap
-    hermes honcho identity                 # Show AI peer identity representation
-    hermes honcho identity <file>          # Seed AI peer identity from a file (SOUL.md etc.)
-    hermes honcho migrate                  # Step-by-step migration guide: OpenClaw native → Hermes + Honcho
-    hermes version             Show version
-    hermes update              Update to latest version
-    hermes uninstall           Uninstall Hermes Agent
-    hermes acp                 Run as an ACP server for editor integration
-    hermes sessions browse     Interactive session picker with search
+用法：
+    hermes                     # 交互式聊天（默认）
+    hermes chat                # 交互式聊天
+    hermes gateway             # 在前台运行网关
+    hermes gateway start       # 以服务形式启动网关
+    hermes gateway stop        # 停止网关服务
+    hermes gateway status      # 显示网关状态
+    hermes gateway install     # 安装网关服务
+    hermes gateway uninstall   # 卸载网关服务
+    hermes setup               # 交互式设置向导
+    hermes logout              # 清除已存储的认证信息
+    hermes status              # 显示所有组件的状态
+    hermes cron                # 管理定时任务
+    hermes cron list           # 列出定时任务
+    hermes cron status         # 检查定时调度器是否在运行
+    hermes doctor              # 检查配置和依赖
+    hermes honcho setup                    # 配置 Honcho AI 记忆集成
+    hermes honcho status                   # 显示 Honcho 配置和连接状态
+    hermes honcho sessions                 # 列出目录到会话名称的映射
+    hermes honcho map <名称>               # 将当前目录映射到会话名称
+    hermes honcho peer                     # 显示对等体名称和辩证设置
+    hermes honcho peer --user 名称         # 设置用户对等体名称
+    hermes honcho peer --ai 名称           # 设置 AI 对等体名称
+    hermes honcho peer --reasoning 级别   # 设置辩证推理级别
+    hermes honcho mode                     # 显示当前记忆模式
+    hermes honcho mode [hybrid|honcho|local]  # 设置记忆模式
+    hermes honcho tokens                   # 显示 Token 预算设置
+    hermes honcho tokens --context N       # 设置 session.context() token 上限
+    hermes honcho tokens --dialectic N     # 设置辩证结果字符上限
+    hermes honcho identity                 # 显示 AI 对等体身份表示
+    hermes honcho identity <文件>          # 从文件（SOUL.md 等）播种 AI 对等体身份
+    hermes honcho migrate                  # 逐步迁移指南：OpenClaw 原生 → Hermes + Honcho
+    hermes version             显示版本
+    hermes update              更新到最新版本
+    hermes uninstall           卸载 Hermes Agent
+    hermes acp                 作为 ACP 服务器运行以集成编辑器
+    hermes sessions browse     交互式会话选择器（支持搜索）
 
-    hermes claw migrate --dry-run  # Preview migration without changes
+    hermes claw migrate --dry-run  # 预览迁移（不进行更改）
 """
 
 # IMPORTANT: hermes_bootstrap must be the very first import — it sets up
 # UTF-8 stdio on Windows so print()/subprocess children don't hit
 # UnicodeEncodeError with non-ASCII characters.  No-op on POSIX.
 #
-# Guarded against ModuleNotFoundError because ``hermes_bootstrap`` is a
+# Guarded against ModuleNotFoundError 因为 ``hermes_bootstrap`` is a
 # top-level module registered via pyproject.toml's ``py-modules`` list.
 # When the user upgrades code via ``git pull`` (or ``hermes update``
 # crashes between ``git reset --hard`` and ``uv pip install -e .``), the
@@ -79,8 +79,8 @@ def _add_accept_hooks_flag(parser) -> None:
         action="store_true",
         default=argparse.SUPPRESS,
         help=(
-            "Auto-approve unseen shell hooks without a TTY prompt "
-            "(equivalent to HERMES_ACCEPT_HOOKS=1 / hooks_auto_accept: true)."
+            "自动批准未见的 shell 钩子，无需 TTY 提示"
+            "（等同于 HERMES_ACCEPT_HOOKS=1 / hooks_auto_accept: true）。"
         ),
     )
 
@@ -94,9 +94,9 @@ def _require_tty(command_name: str) -> None:
     """
     if not sys.stdin.isatty():
         print(
-            f"Error: 'hermes {command_name}' requires an interactive terminal.\n"
-            f"It cannot be run through a pipe or non-interactive subprocess.\n"
-            f"Run it directly in your terminal instead.",
+            f"错误：'hermes {command_name}' 需要交互式终端。\n"
+            f"无法通过管道或非交互式子进程运行。\n"
+            f"请直接在终端中运行。",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -179,12 +179,12 @@ def _apply_profile_override() -> None:
 
             hermes_home = resolve_profile_env(profile_name)
         except (ValueError, FileNotFoundError) as exc:
-            print(f"Error: {exc}", file=sys.stderr)
+            print(f"错误：{exc}", file=sys.stderr)
             sys.exit(1)
         except Exception as exc:
             # A bug in profiles.py must NEVER prevent hermes from starting
             print(
-                f"Warning: profile override failed ({exc}), using default",
+                f"警告：配置文件覆盖失败（{exc}），使用默认配置",
                 file=sys.stderr,
             )
             return
@@ -193,7 +193,7 @@ def _apply_profile_override() -> None:
         if consume > 0:
             for i, arg in enumerate(argv):
                 if arg in {"--profile", "-p"}:
-                    start = i + 1  # +1 because argv is sys.argv[1:]
+                    start = i + 1  # +1 因为 argv is sys.argv[1:]
                     sys.argv = sys.argv[:start] + sys.argv[start + consume :]
                     break
                 elif arg.startswith("--profile="):
@@ -542,7 +542,7 @@ def _session_browse_picker(sessions: list) -> Optional[str]:
     bug in tmux/iTerm when arrow keys are used.
     """
     if not sessions:
-        print("No sessions found.")
+        print("未找到会话。")
         return None
 
     # Try curses-based picker first
@@ -646,7 +646,7 @@ def _session_browse_picker(sessions: list) -> Optional[str]:
                 # Clamp cursor and scroll
                 if not filtered:
                     try:
-                        msg = "  No sessions match the filter."
+                        msg = "  没有会话匹配当前过滤条件。"
                         stdscr.addnstr(3, 0, msg, max_x - 1, curses.A_DIM)
                     except curses.error:
                         pass
@@ -767,9 +767,9 @@ def _session_browse_picker(sessions: list) -> Optional[str]:
             idx = int(val) - 1
             if 0 <= idx < len(sessions):
                 return sessions[idx]["id"]
-            print(f"  Invalid selection. Enter 1-{len(sessions)} or q to cancel.")
+            print(f"  无效选择。请输入 1-{len(sessions)} 或输入 q 取消。")
         except ValueError:
-            print("  Invalid input. Enter a number or q to cancel.")
+            print("  无效输入。请输入数字或输入 q 取消。")
         except (KeyboardInterrupt, EOFError):
             print()
             return None
@@ -806,8 +806,8 @@ def _probe_container(cmd: list, backend: str, via_sudo: bool = False):
     except subprocess.TimeoutExpired:
         label = f"sudo {backend}" if via_sudo else backend
         print(
-            f"Error: timed out waiting for {label} to respond.\n"
-            f"The {backend} daemon may be unresponsive or starting up.",
+            f"错误：等待 {label} 响应超时。\n"
+            f"{backend} 守护进程可能无响应或正在启动。",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -834,7 +834,7 @@ def _exec_in_container(container_info: dict, cli_args: list):
     runtime = shutil.which(backend)
     if not runtime:
         print(
-            f"Error: {backend} not found on PATH. Cannot route to container.",
+            f"错误：{backend} 未在 PATH 中找到。无法路由到容器。",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -857,28 +857,28 @@ def _exec_in_container(container_info: dict, cli_args: list):
             )
             if probe2.returncode != 0:
                 print(
-                    f"Error: container '{container_name}' not found via {backend}.\n"
+                    f"错误：容器 '{container_name}' 未通过 {backend}。\n"
                     f"\n"
-                    f"The container is likely running as root. Your user cannot see it\n"
-                    f"because {backend} uses per-user namespaces. Grant passwordless\n"
-                    f"sudo for {backend} — the -n (non-interactive) flag is required\n"
-                    f"because a password prompt would hang or break piped commands.\n"
+                    f"容器可能正在以 root 身份运行。您的用户无法看到它，\n"
+                    f"因为 {backend} 使用每用户命名空间。请授予无密码\n"
+                    f"sudo 权限给 {backend} — 需要 -n（非交互）标志，\n"
+                    f"因为密码提示会使管道命令挂起或中断。\n"
                     f"\n"
-                    f"On NixOS:\n"
+                    f"在 NixOS 上：\n"
                     f"\n"
                     f"  security.sudo.extraRules = [{{\n"
                     f'    users = [ "{os.getenv("USER", "your-user")}" ];\n'
                     f'    commands = [{{ command = "{runtime}"; options = [ "NOPASSWD" ]; }}];\n'
                     f"  }}];\n"
                     f"\n"
-                    f"Or run: sudo hermes {' '.join(cli_args)}",
+                    f"或者运行：sudo hermes {' '.join(cli_args)}",
                     file=sys.stderr,
                 )
                 sys.exit(1)
         else:
             print(
-                f"Error: container '{container_name}' not found via {backend}.\n"
-                f"The container may be running under root. Try: sudo hermes {' '.join(cli_args)}",
+                f"错误：容器 '{container_name}' 未通过 {backend}.\n"
+                f"容器可能以 root 身份运行。请尝试：sudo hermes {' '.join(cli_args)}",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -981,7 +981,7 @@ def _print_tui_exit_summary(
         title = db.get_session_title(target)
         message_count = int(session.get("message_count") or 0)
         if message_count == 0:
-            return  # No real conversation — don't show resume info
+            return  # 没有 real conversation — don't show resume info
         input_tokens = int(session.get("input_tokens") or 0)
         output_tokens = int(session.get("output_tokens") or 0)
         cache_read_tokens = int(session.get("cache_read_tokens") or 0)
@@ -1001,17 +1001,17 @@ def _print_tui_exit_summary(
             db.close()
 
     print()
-    print("Resume this session with:")
+    print("通过以下命令恢复此会话：")
     print(f"  hermes --tui --resume {target}")
     if title:
         print(f'  hermes --tui -c "{title}"')
     print()
-    print(f"Session:        {target}")
+    print(f"会话：        {target}")
     if title:
-        print(f"Title:          {title}")
-    print(f"Messages:       {message_count}")
+        print(f"标题：          {title}")
+    print(f"消息数：       {message_count}")
     print(
-        "Tokens:         "
+        "Token 数：     "
         f"{total_tokens} (in {input_tokens}, out {output_tokens}, "
         f"cache {cache_read_tokens + cache_write_tokens}, reasoning {reasoning_tokens})"
     )
@@ -1252,7 +1252,7 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
             except Exception:
                 pass
         if not path:
-            print(f"{bin} not found — install Node.js to use the TUI.")
+            print(f"{bin} 未找到 — 请安装 Node.js 以使用 TUI。")
             sys.exit(1)
         return path
 
@@ -1260,9 +1260,9 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
     ext_dir = os.environ.get("HERMES_TUI_DIR")
     if tui_dev and ext_dir:
         print(
-            f"Error: --dev is incompatible with HERMES_TUI_DIR={ext_dir}\n"
+            f"错误：--dev 与 HERMES_TUI_DIR= 不兼容{ext_dir}\n"
             f"The prebuilt TUI has no source code to hot-reload.\n"
-            f"Unset HERMES_TUI_DIR (e.g. `unset HERMES_TUI_DIR`) to use --dev from a checkout.",
+            f"请取消设置 HERMES_TUI_DIR（例如 `unset HERMES_TUI_DIR`）以从开发副本使用 --dev。",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -1287,7 +1287,7 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
     if _tui_need_npm_install(tui_dir):
         npm = _node_bin("npm")
         if not os.environ.get("HERMES_QUIET"):
-            print("Installing TUI dependencies…")
+            print("正在安装 TUI 依赖…")
         result = subprocess.run(
             [npm, "install", "--silent", "--no-fund", "--no-audit", "--progress=false"],
             cwd=str(tui_dir),
@@ -1299,7 +1299,7 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
         if result.returncode != 0:
             combined = f"{result.stdout or ''}\n{result.stderr or ''}".strip()
             preview = "\n".join(combined.splitlines()[-30:])
-            print("npm install failed.")
+            print("npm 安装失败。")
             if preview:
                 print(preview)
             sys.exit(1)
@@ -1322,7 +1322,7 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
         if result.returncode != 0:
             combined = f"{result.stdout or ''}{result.stderr or ''}".strip()
             preview = "\n".join(combined.splitlines()[-30:])
-            print("TUI dev prebuild failed.")
+            print("TUI 开发预构建失败。")
             if preview:
                 print(preview)
             sys.exit(1)
@@ -1333,7 +1333,7 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
         return [npm, "start"], tui_dir
 
     # Desktop/dev launches retain the historical "always rebuild" behaviour.
-    # Termux cold starts use the freshness check because esbuild startup is
+    # Termux cold starts use the freshness check 因为 esbuild startup is
     # expensive on old mobile CPUs.
     should_build = True
     if _is_termux_startup_environment():
@@ -1350,7 +1350,7 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
         if result.returncode != 0:
             combined = f"{result.stdout or ''}{result.stderr or ''}".strip()
             preview = "\n".join(combined.splitlines()[-30:])
-            print("TUI build failed.")
+            print("TUI 构建失败。")
             if preview:
                 print(preview)
             sys.exit(1)
@@ -1433,7 +1433,7 @@ def _launch_tui(
                 _prune_stale_worktrees(repo)
             wt_info = _setup_worktree()
         except Exception as exc:
-            print(f"✗ Failed to create TUI worktree: {exc}", file=sys.stderr)
+            print(f"✗ 创建 TUI 工作树失败：{exc}", file=sys.stderr)
             wt_info = None
         if not wt_info:
             sys.exit(1)
@@ -1529,7 +1529,7 @@ def _launch_tui(
         from hermes_cli.relaunch import relaunch
 
         print()
-        print("⚕ Launching update...")
+        print("⚕ 正在启动更新...")
         print()
         relaunch(["update"], preserve_inherited=False)
 
@@ -1570,8 +1570,8 @@ def cmd_chat(args):
             if resolved:
                 args.resume = resolved
             else:
-                print(f"No session found matching '{continue_val}'.")
-                print("Use 'hermes sessions list' to see available sessions.")
+                print(f"未找到匹配 '{continue_val}'。")
+                print("使用 'hermes sessions list' 查看可用会话。")
                 sys.exit(1)
         else:
             # -c with no argument — continue the most recent session
@@ -1583,7 +1583,7 @@ def cmd_chat(args):
                 args.resume = last_id
             else:
                 kind = "TUI" if use_tui else "CLI"
-                print(f"No previous {kind} session found to continue.")
+                print(f"未找到之前的 {kind} 会话可供继续。")
                 sys.exit(1)
 
     # Resolve --resume by title if it's not a direct session ID
@@ -1622,10 +1622,10 @@ def cmd_chat(args):
     if not _has_any_provider_configured():
         print()
         print(
-            "It looks like Hermes isn't configured yet -- no API keys or providers found."
+            "看起来 Hermes 尚未配置 -- 未找到 API 密钥或提供商。"
         )
         print()
-        print("  Run:  hermes setup")
+        print("  运行：hermes setup")
         print()
 
         from hermes_cli.setup import (
@@ -1635,19 +1635,19 @@ def cmd_chat(args):
 
         if not is_interactive_stdin():
             print_noninteractive_setup_guidance(
-                "No interactive TTY detected for the first-run setup prompt."
+                "首次运行设置提示未检测到交互式 TTY。"
             )
             sys.exit(1)
 
         try:
-            reply = input("Run setup now? [Y/n] ").strip().lower()
+            reply = input("立即运行设置？[Y/n] ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             reply = "n"
         if reply in {"", "y", "yes"}:
             cmd_setup(args)
             return
         print()
-        print("You can run 'hermes setup' at any time to configure.")
+        print("您可以随时运行 'hermes setup' 进行配置。")
         sys.exit(1)
 
     # Start update check in background (runs while other init happens).
@@ -1737,7 +1737,7 @@ def cmd_chat(args):
     try:
         cli_main(**kwargs)
     except ValueError as e:
-        print(f"Error: {e}")
+        print(f"错误：{e}")
         sys.exit(1)
 
 
@@ -1765,24 +1765,24 @@ def cmd_whatsapp(args):
     from hermes_cli.config import get_env_value, save_env_value
 
     print()
-    print("⚕ WhatsApp Setup")
+    print("⚕ WhatsApp 设置")
     print("=" * 50)
 
     # ── Step 1: Choose mode ──────────────────────────────────────────────
     current_mode = get_env_value("WHATSAPP_MODE") or ""
     if not current_mode:
         print()
-        print("How will you use WhatsApp with Hermes?")
+        print("您将如何使用 WhatsApp 与 Hermes？")
         print()
-        print("  1. Separate bot number (recommended)")
-        print("     People message the bot's number directly — cleanest experience.")
+        print("  1. 独立机器人号码（推荐）")
+        print("     用户直接向机器人号码发送消息 — 最干净的体验。")
         print(
-            "     Requires a second phone number with WhatsApp installed on a device."
+            "     需要一个安装了 WhatsApp 的设备的第二个手机号码。"
         )
         print()
-        print("  2. Personal number (self-chat)")
-        print("     You message yourself to talk to the agent.")
-        print("     Quick to set up, but the UX is less intuitive.")
+        print("  2. 个人号码（自我聊天）")
+        print("     您给自己发消息与代理对话。")
+        print("     设置快速，但用户体验不够直观。")
         print()
         try:
             choice = input("  Choose [1/2]: ").strip()
@@ -1793,7 +1793,7 @@ def cmd_whatsapp(args):
         if choice == "1":
             save_env_value("WHATSAPP_MODE", "bot")
             wa_mode = "bot"
-            print("  ✓ Mode: separate bot number")
+            print("  ✓ 模式：独立机器人号码")
             print()
             print("  ┌─────────────────────────────────────────────────┐")
             print("  │  Getting a second number for the bot:           │")
@@ -1810,7 +1810,7 @@ def cmd_whatsapp(args):
         else:
             save_env_value("WHATSAPP_MODE", "self-chat")
             wa_mode = "self-chat"
-            print("  ✓ Mode: personal number (self-chat)")
+            print("  ✓ 模式：个人号码（自我聊天）")
     else:
         wa_mode = current_mode
         mode_label = (
@@ -1829,12 +1829,12 @@ def cmd_whatsapp(args):
     # successful pairing) stay enabled — we just don't write it pre-emptively.
     print()
     if (get_env_value("WHATSAPP_ENABLED") or "").lower() == "true":
-        print("✓ WhatsApp is already enabled")
+        print("✓ WhatsApp 已启用")
 
     # ── Step 3: Allowed users ────────────────────────────────────────────
     current_users = get_env_value("WHATSAPP_ALLOWED_USERS") or ""
     if current_users:
-        print(f"✓ Allowed users: {current_users}")
+        print(f"✓ 已允许的用户：{current_users}")
         try:
             response = input("\n  Update allowed users? [y/N] ").strip()
         except (EOFError, KeyboardInterrupt):
@@ -1848,11 +1848,11 @@ def cmd_whatsapp(args):
                 phone = input("  Your phone number (e.g. 15551234567): ").strip()
             if phone:
                 save_env_value("WHATSAPP_ALLOWED_USERS", phone.replace(" ", ""))
-                print(f"  ✓ Updated to: {phone}")
+                print(f"  ✓ 已更新为：{phone}")
     else:
         print()
         if wa_mode == "bot":
-            print("  Who should be allowed to message the bot?")
+            print("  谁应被允许向机器人发送消息？")
             phone = input(
                 "  Phone numbers (comma-separated, or * for anyone): "
             ).strip()
@@ -1860,9 +1860,9 @@ def cmd_whatsapp(args):
             phone = input("  Your phone number (e.g. 15551234567): ").strip()
         if phone:
             save_env_value("WHATSAPP_ALLOWED_USERS", phone.replace(" ", ""))
-            print(f"  ✓ Allowed users set: {phone}")
+            print(f"  ✓ 已允许的用户设置为：{phone}")
         else:
-            print("  ⚠ No allowlist — the agent will respond to ALL incoming messages")
+            print("  ⚠ 无允许列表 — 代理将响应所有传入消息")
 
     # ── Step 4: Install bridge dependencies ──────────────────────────────
     project_root = Path(__file__).resolve().parents[1]
@@ -1870,7 +1870,7 @@ def cmd_whatsapp(args):
     bridge_script = bridge_dir / "bridge.js"
 
     if not bridge_script.exists():
-        print(f"\n✗ Bridge script not found at {bridge_script}")
+        print(f"\n✗ 桥接脚本未找到于 {bridge_script}")
         return
 
     if not (bridge_dir / "node_modules").exists():
@@ -1879,7 +1879,7 @@ def cmd_whatsapp(args):
         )
         npm = shutil.which("npm")
         if not npm:
-            print("  ✗ npm not found on PATH — install Node.js first")
+            print("  ✗ PATH 中未找到 npm — 请先安装 Node.js")
             return
         try:
             result = subprocess.run(
@@ -1895,19 +1895,19 @@ def cmd_whatsapp(args):
         if result.returncode != 0:
             err = (result.stderr or "").strip()
             preview = "\n".join(err.splitlines()[-30:]) if err else "(no output)"
-            print("  ✗ npm install failed:")
+            print("  ✗ npm 安装失败：")
             print(preview)
             return
-        print("  ✓ Dependencies installed")
+        print("  ✓ 依赖已安装")
     else:
-        print("✓ Bridge dependencies already installed")
+        print("✓ 桥接依赖已安装")
 
     # ── Step 5: Check for existing session ───────────────────────────────
     session_dir = get_hermes_home() / "whatsapp" / "session"
     session_dir.mkdir(parents=True, exist_ok=True)
 
     if (session_dir / "creds.json").exists():
-        print("✓ Existing WhatsApp session found")
+        print("✓ 找到现有的 WhatsApp 会话")
         try:
             response = input(
                 "\n  Re-pair? This will clear the existing session. [y/N] "
@@ -1917,7 +1917,7 @@ def cmd_whatsapp(args):
         if response.lower() in {"y", "yes"}:
             shutil.rmtree(session_dir, ignore_errors=True)
             session_dir.mkdir(parents=True, exist_ok=True)
-            print("  ✓ Session cleared")
+            print("  ✓ 会话已清除")
         else:
             # Existing pairing — ensure WHATSAPP_ENABLED reflects that.
             # (Older installs may have lost the env var; covers re-runs
@@ -1926,7 +1926,7 @@ def cmd_whatsapp(args):
             if (get_env_value("WHATSAPP_ENABLED") or "").lower() != "true":
                 save_env_value("WHATSAPP_ENABLED", "true")
             print("\n✓ WhatsApp is configured and paired!")
-            print("  Start the gateway with: hermes gateway")
+            print("  使用以下命令启动网关：hermes gateway")
             return
 
     # ── Step 6: QR code pairing ──────────────────────────────────────────
@@ -1958,27 +1958,27 @@ def cmd_whatsapp(args):
         # and `hermes gateway` skips it cleanly instead of paying a 30s
         # bridge timeout + queueing the platform for indefinite retries.
         save_env_value("WHATSAPP_ENABLED", "true")
-        print("✓ WhatsApp paired successfully!")
+        print("✓ WhatsApp 配对成功！")
         print()
         if wa_mode == "bot":
-            print("  Next steps:")
-            print("    1. Start the gateway:  hermes gateway")
-            print("    2. Send a message to the bot's WhatsApp number")
-            print("    3. The agent will reply automatically")
+            print("  后续步骤：")
+            print("    1. 启动网关：hermes gateway")
+            print("    2. 向机器人的 WhatsApp 号码发送消息")
+            print("    3. 代理将自动回复")
             print()
-            print("  Tip: Agent responses are prefixed with '⚕ Hermes Agent'")
+            print("  提示：代理回复以 '⚕ Hermes Agent' 为前缀")
         else:
-            print("  Next steps:")
-            print("    1. Start the gateway:  hermes gateway")
-            print("    2. Open WhatsApp → Message Yourself")
-            print("    3. Type a message — the agent will reply")
+            print("  后续步骤：")
+            print("    1. 启动网关：hermes gateway")
+            print("    2. 打开 WhatsApp → 给自己发消息")
+            print("    3. 输入消息 — 代理将回复")
             print()
-            print("  Tip: Agent responses are prefixed with '⚕ Hermes Agent'")
-            print("  so you can tell them apart from your own messages.")
+            print("  提示：代理回复以 '⚕ Hermes Agent' 为前缀")
+            print("  以便您区分代理回复和您自己的消息。")
         print()
-        print("  Or install as a service: hermes gateway install")
+        print("  或安装为服务：hermes gateway install")
     else:
-        print("⚠ Pairing may not have completed. Run 'hermes whatsapp' to try again.")
+        print("⚠ 配对可能未完成。运行 'hermes whatsapp' 重试。")
 
 
 def cmd_setup(args):
@@ -1995,7 +1995,7 @@ def cmd_postinstall(args):
 
     stamp_install_method("pip")
 
-    print("⚕ Hermes post-install bootstrap")
+    print("⚕ Hermes 安装后引导")
     print()
 
     for dep in ("node", "browser", "ripgrep", "ffmpeg"):
@@ -2006,7 +2006,7 @@ def cmd_postinstall(args):
         cmd_setup(args)
     else:
         print()
-        print("✓ Post-install complete.")
+        print("✓ 安装后设置完成。")
 
 
 def cmd_model(args):
@@ -2228,14 +2228,14 @@ def select_provider_and_model(args=None):
                 "available providers, or run 'hermes doctor' to diagnose config "
                 "issues."
             )
-            print(f"Warning: {warning} Falling back to auto provider detection.")
+            print(f"Warning: {warning} 回退到自动提供商检测。")
     if not active:
         try:
             active = resolve_provider("auto")
         except AuthError as exc:
             if effective_provider == "auto":
                 warning = format_auth_error(exc)
-                print(f"Warning: {warning} Falling back to auto provider detection.")
+                print(f"Warning: {warning} 回退到自动提供商检测。")
             active = None  # no provider yet; default to first in list
 
     # Detect custom endpoint
@@ -2251,8 +2251,8 @@ def select_provider_and_model(args=None):
         active_label = provider_labels.get(active, active) if active else "none"
 
     print()
-    print(f"  Current model:    {current_model}")
-    print(f"  Active provider:  {active_label}")
+    print(f"  当前模型：    {current_model}")
+    print(f"  活跃提供商：  {active_label}")
     print()
 
     # Step 1: Provider selection — flat list from CANONICAL_PROVIDERS
@@ -2290,7 +2290,7 @@ def select_provider_and_model(args=None):
         default=default_idx,
     )
     if provider_idx is None or ordered[provider_idx][0] == "cancel":
-        print("No change.")
+        print("未做更改。")
         return
 
     selected_provider = ordered[provider_idx][0]
@@ -2329,8 +2329,8 @@ def select_provider_and_model(args=None):
         provider_info = _named_custom_provider_map(load_config()).get(selected_provider)
         if provider_info is None:
             print(
-                "Warning: the selected saved custom provider is no longer available. "
-                "It may have been removed from config.yaml. No change."
+                "警告：所选保存的自定义提供商不再可用。"
+                "它可能已从 config.yaml 中移除。未做更改。"
             )
             return
         _model_flow_named_custom(config, provider_info)
@@ -2532,9 +2532,9 @@ def _aux_config_menu() -> None:
         aux = cfg.get("auxiliary", {}) if isinstance(cfg.get("auxiliary"), dict) else {}
 
         print()
-        print("  Auxiliary models — side-task routing")
+        print("  辅助模型 — 任务路由")
         print()
-        print("  Side tasks (vision, compression, web extraction, etc.) default")
+        print("  辅助任务（视觉、压缩、网页提取等）默认")
         print('  to your main chat model.  "auto" means "use my main model" —')
         print("  Hermes only falls back to a lightweight backend (OpenRouter,")
         print("  Nous Portal) if the main model is unavailable.  Override a")
@@ -2571,7 +2571,7 @@ def _aux_config_menu() -> None:
             if n:
                 print(f"Reset {n} auxiliary task(s) to auto.")
             else:
-                print("All auxiliary tasks were already set to auto.")
+                print("所有辅助任务已设置为自动。")
             print()
             continue
         # Otherwise configure the specific task
@@ -2606,7 +2606,7 @@ def _aux_select_for_task(task: str) -> None:
             current_base_url=current_base_url,
         )
     except Exception as exc:
-        print(f"Could not detect authenticated providers: {exc}")
+        print(f"无法检测已认证的提供商：{exc}")
         providers = []
 
     entries: list[tuple[str, str, list[str]]] = []  # (slug, label, models)
@@ -2633,7 +2633,7 @@ def _aux_select_for_task(task: str) -> None:
     entries.append(("__back__", "Back", []))
 
     print()
-    print(f"  Configure {display_name} — current: {_format_aux_current(task_cfg)}")
+    print(f"  配置 {display_name} — 当前：{_format_aux_current(task_cfg)}")
     print()
 
     idx = _prompt_provider_choice([label for _, label, _ in entries], default=0)
@@ -2646,7 +2646,7 @@ def _aux_select_for_task(task: str) -> None:
 
     if slug == "__auto__":
         _save_aux_choice(task, provider="auto", model="", base_url="", api_key="")
-        print(f"{display_name}: reset to auto.")
+        print(f"{display_name}：已重置为自动。")
         return
 
     if slug == "__custom__":
@@ -2682,8 +2682,8 @@ def _aux_flow_provider_model(
     # model name" and cancel.  When there's no curated list (rare), fall back
     # to a raw input prompt.
     if not model_list:
-        print(f"No curated model list for {provider_slug}.")
-        print("Enter a model slug manually (blank = use provider default):")
+        print(f"没有 {provider_slug}.")
+        print("手动输入模型标识（留空 = 使用提供商默认）：")
         try:
             val = input("Model: ").strip()
         except (KeyboardInterrupt, EOFError):
@@ -2697,7 +2697,7 @@ def _aux_flow_provider_model(
             pricing=pricing,
         )
         if selected is None:
-            print("No change.")
+            print("未做更改。")
             return
 
     _save_aux_choice(
@@ -2718,8 +2718,8 @@ def _aux_flow_custom_endpoint(task: str, task_cfg: dict) -> None:
     current_model = str(task_cfg.get("model") or "").strip()
 
     print()
-    print(f"  Custom endpoint for {display_name}")
-    print("  Provide an OpenAI-compatible base URL (e.g. http://localhost:11434/v1)")
+    print(f"  自定义端点 {display_name}")
+    print("  提供兼容 OpenAI 的 base URL（例如 http://localhost:11434/v1）")
     print()
     try:
         url_prompt = (
@@ -2731,7 +2731,7 @@ def _aux_flow_custom_endpoint(task: str, task_cfg: dict) -> None:
         return
     url = url or current_base_url
     if not url:
-        print("No URL provided. No change.")
+        print("未提供 URL。未做更改。")
         return
     try:
         model_prompt = (
@@ -2773,7 +2773,7 @@ def _prompt_provider_choice(choices, *, default=0):
     try:
         from hermes_cli.setup import _curses_prompt_choice
 
-        idx = _curses_prompt_choice("Select provider:", choices, default)
+        idx = _curses_prompt_choice("选择提供商：", choices, default)
         if idx >= 0:
             print()
             return idx
@@ -2781,7 +2781,7 @@ def _prompt_provider_choice(choices, *, default=0):
         pass
 
     # Fallback: numbered list
-    print("Select provider:")
+    print("选择提供商：")
     for i, c in enumerate(choices, 1):
         marker = "→" if i - 1 == default else " "
         print(f"  {marker} {i}. {c}")
@@ -2794,9 +2794,9 @@ def _prompt_provider_choice(choices, *, default=0):
             idx = int(val) - 1
             if 0 <= idx < len(choices):
                 return idx
-            print(f"Please enter 1-{len(choices)}")
+            print(f"请输入 1-{len(choices)}")
         except ValueError:
-            print("Please enter a number")
+            print("请输入 a number")
         except (KeyboardInterrupt, EOFError):
             print()
             return None
@@ -2826,7 +2826,7 @@ def _model_flow_openrouter(config, current_model=""):
     )
     existing_key = get_env_value("OPENROUTER_API_KEY") or ""
     if not existing_key:
-        print("Get one at: https://openrouter.ai/keys")
+        print("在此获取：https://openrouter.ai/keys")
         print()
     _resolved, abort = _prompt_api_key(pconfig, existing_key, provider_id="openrouter")
     if abort:
@@ -2858,9 +2858,9 @@ def _model_flow_openrouter(config, current_model=""):
         model["api_mode"] = "chat_completions"
         save_config(cfg)
         deactivate_provider()
-        print(f"Default model set to: {selected} (via OpenRouter)")
+        print(f"默认模型已设置为：{selected}（通过 OpenRouter)")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_ai_gateway(config, current_model=""):
@@ -2882,7 +2882,7 @@ def _model_flow_ai_gateway(config, current_model=""):
         print(
             "Create API key here: https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai-gateway&title=AI+Gateway"
         )
-        print("Add a payment method to get $5 in free credits.")
+        print("添加付款方式以获取 $5 免费额度。")
         print()
     _resolved, abort = _prompt_api_key(pconfig, existing_key, provider_id="ai-gateway")
     if abort:
@@ -2911,9 +2911,9 @@ def _model_flow_ai_gateway(config, current_model=""):
         model["api_mode"] = "chat_completions"
         save_config(cfg)
         deactivate_provider()
-        print(f"Default model set to: {selected} (via Vercel AI Gateway)")
+        print(f"默认模型已设置为：{selected}（通过 Vercel AI Gateway)")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_nous(config, current_model="", args=None):
@@ -2939,7 +2939,7 @@ def _model_flow_nous(config, current_model="", args=None):
 
     state = get_provider_auth_state("nous")
     if not state or not state.get("access_token"):
-        print("Not logged into Nous Portal. Starting login...")
+        print("未登录 Nous Portal。正在启动登录...")
         print()
         try:
             mock_args = argparse.Namespace(
@@ -2960,10 +2960,10 @@ def _model_flow_nous(config, current_model="", args=None):
             except Exception:
                 pass
         except SystemExit:
-            print("Login cancelled or failed.")
+            print("登录已取消或失败。")
             return
         except Exception as exc:
-            print(f"Login failed: {exc}")
+            print(f"登录失败：{exc}")
             return
         # login_nous already handles model selection + config update
         return
@@ -2982,7 +2982,7 @@ def _model_flow_nous(config, current_model="", args=None):
 
     model_ids = get_curated_nous_model_ids()
     if not model_ids:
-        print("No curated models available for Nous Portal.")
+        print("Nous Portal 没有可用的精选模型。")
         return
 
     # Verify credentials are still valid (catches expired sessions early)
@@ -2992,7 +2992,7 @@ def _model_flow_nous(config, current_model="", args=None):
         relogin = isinstance(exc, AuthError) and exc.relogin_required
         msg = format_auth_error(exc) if isinstance(exc, AuthError) else str(exc)
         if relogin:
-            print(f"Session expired: {msg}")
+            print(f"会话已过期：{msg}")
             print("Re-authenticating with Nous Portal...\n")
             try:
                 mock_args = argparse.Namespace(
@@ -3007,9 +3007,9 @@ def _model_flow_nous(config, current_model="", args=None):
                 )
                 _login_nous(mock_args, PROVIDER_REGISTRY["nous"])
             except Exception as login_exc:
-                print(f"Re-login failed: {login_exc}")
+                print(f"重新登录失败：{login_exc}")
             return
-        print(f"Could not verify credentials: {msg}")
+        print(f"无法验证凭据：{msg}")
         return
 
     # Fetch live pricing (non-blocking — returns empty dict on failure)
@@ -3051,20 +3051,20 @@ def _model_flow_nous(config, current_model="", args=None):
         )
 
     if not model_ids and not unavailable_models:
-        print("No models available for Nous Portal after filtering.")
+        print("过滤后 Nous Portal 没有可用模型。")
         return
 
     if free_tier and not model_ids:
-        print("No free models currently available.")
+        print("当前没有可用免费模型。")
         if unavailable_models:
             from hermes_cli.auth import DEFAULT_NOUS_PORTAL_URL
 
             _url = (_nous_portal_url or DEFAULT_NOUS_PORTAL_URL).rstrip("/")
-            print(f"Upgrade at {_url} to access paid models.")
+            print(f"请前往 {_url} 升级以访问付费模型。")
         return
 
     print(
-        f'Showing {len(model_ids)} curated models — use "Enter custom model name" for others.'
+        f'Showing {len(model_ids)} 个精选模型 — use "Enter custom model name" for others.'
     )
 
     selected = _prompt_model_selection(
@@ -3098,11 +3098,11 @@ def _model_flow_nous(config, current_model="", args=None):
             save_env_value("OPENAI_BASE_URL", "")
             save_env_value("OPENAI_API_KEY", "")
         save_config(config)
-        print(f"Default model set to: {selected} (via Nous Portal)")
+        print(f"默认模型已设置为：{selected}（通过 Nous Portal)")
         # Offer Tool Gateway enablement for paid subscribers
         prompt_enable_tool_gateway(config)
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_openai_codex(config, current_model=""):
@@ -3120,11 +3120,11 @@ def _model_flow_openai_codex(config, current_model=""):
 
     status = get_codex_auth_status()
     if status.get("logged_in"):
-        print("  OpenAI Codex credentials: ✓")
+        print("  OpenAI Codex 凭据：✓")
         print()
-        print("    1. Use existing credentials")
-        print("    2. Reauthenticate (new OAuth login)")
-        print("    3. Cancel")
+        print("    1. 使用现有凭据")
+        print("    2. 重新认证（新的 OAuth 登录）")
+        print("    3. 取消")
         print()
         try:
             choice = input("  Choice [1/2/3]: ").strip()
@@ -3132,7 +3132,7 @@ def _model_flow_openai_codex(config, current_model=""):
             choice = "1"
 
         if choice == "2":
-            print("Starting a fresh OpenAI Codex login...")
+            print("正在启动 OpenAI Codex 登录...")
             print()
             try:
                 mock_args = argparse.Namespace()
@@ -3142,28 +3142,28 @@ def _model_flow_openai_codex(config, current_model=""):
                     force_new_login=True,
                 )
             except SystemExit:
-                print("Login cancelled or failed.")
+                print("登录已取消或失败。")
                 return
             except Exception as exc:
-                print(f"Login failed: {exc}")
+                print(f"登录失败：{exc}")
                 return
             status = get_codex_auth_status()
             if not status.get("logged_in"):
-                print("Login failed.")
+                print("登录失败。")
                 return
         elif choice == "3":
             return
     else:
-        print("Not logged into OpenAI Codex. Starting login...")
+        print("未登录 OpenAI Codex。正在启动登录...")
         print()
         try:
             mock_args = argparse.Namespace()
             _login_openai_codex(mock_args, PROVIDER_REGISTRY["openai-codex"])
         except SystemExit:
-            print("Login cancelled or failed.")
+            print("登录已取消或失败。")
             return
         except Exception as exc:
-            print(f"Login failed: {exc}")
+            print(f"登录失败：{exc}")
             return
 
     _codex_token = None
@@ -3190,9 +3190,9 @@ def _model_flow_openai_codex(config, current_model=""):
     if selected:
         _save_model_choice(selected)
         _update_config_for_provider("openai-codex", DEFAULT_CODEX_BASE_URL)
-        print(f"Default model set to: {selected} (via OpenAI Codex)")
+        print(f"默认模型已设置为：{selected}（通过 OpenAI Codex)")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_xai_oauth(_config, current_model="", *, args=None):
@@ -3211,11 +3211,11 @@ def _model_flow_xai_oauth(_config, current_model="", *, args=None):
 
     status = get_xai_oauth_auth_status()
     if status.get("logged_in"):
-        print("  xAI Grok OAuth (SuperGrok Subscription) credentials: ✓")
+        print("  xAI Grok OAuth（SuperGrok 订阅）凭据：✓")
         print()
-        print("    1. Use existing credentials")
-        print("    2. Reauthenticate (new OAuth login)")
-        print("    3. Cancel")
+        print("    1. 使用现有凭据")
+        print("    2. 重新认证（新的 OAuth 登录）")
+        print("    3. 取消")
         print()
         try:
             choice = input("  Choice [1/2/3]: ").strip()
@@ -3223,7 +3223,7 @@ def _model_flow_xai_oauth(_config, current_model="", *, args=None):
             choice = "1"
 
         if choice == "2":
-            print("Starting a fresh xAI OAuth login...")
+            print("正在启动新的 xAI OAuth 登录...")
             print()
             try:
                 # Forward CLI flags from ``hermes model --manual-paste``
@@ -3241,15 +3241,15 @@ def _model_flow_xai_oauth(_config, current_model="", *, args=None):
                     force_new_login=True,
                 )
             except SystemExit:
-                print("Login cancelled or failed.")
+                print("登录已取消或失败。")
                 return
             except Exception as exc:
-                print(f"Login failed: {exc}")
+                print(f"登录失败：{exc}")
                 return
         elif choice == "3":
             return
     else:
-        print("Not logged into xAI Grok OAuth (SuperGrok Subscription). Starting login...")
+        print("未登录 xAI Grok OAuth（SuperGrok 订阅）。正在启动登录...")
         print()
         try:
             mock_args = argparse.Namespace(
@@ -3259,10 +3259,10 @@ def _model_flow_xai_oauth(_config, current_model="", *, args=None):
             )
             _login_xai_oauth(mock_args, PROVIDER_REGISTRY["xai-oauth"])
         except SystemExit:
-            print("Login cancelled or failed.")
+            print("登录已取消或失败。")
             return
         except Exception as exc:
-            print(f"Login failed: {exc}")
+            print(f"登录失败：{exc}")
             return
 
     # Resolve a usable base URL.  ``resolve_xai_oauth_runtime_credentials``
@@ -3283,9 +3283,9 @@ def _model_flow_xai_oauth(_config, current_model="", *, args=None):
     if selected:
         _save_model_choice(selected)
         _update_config_for_provider("xai-oauth", base_url)
-        print(f"Default model set to: {selected} (via xAI Grok OAuth — SuperGrok Subscription)")
+        print(f"默认模型已设置为：{selected}（通过 xAI Grok OAuth — SuperGrok Subscription)")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 _DEFAULT_QWEN_PORTAL_MODELS = [
@@ -3308,13 +3308,13 @@ def _model_flow_qwen_oauth(_config, current_model=""):
 
     status = get_qwen_auth_status()
     if not status.get("logged_in"):
-        print("Not logged into Qwen CLI OAuth.")
-        print("Run: qwen auth qwen-oauth")
+        print("未登录 Qwen CLI OAuth。")
+        print("运行：qwen auth qwen-oauth")
         auth_file = status.get("auth_file")
         if auth_file:
-            print(f"Expected credentials file: {auth_file}")
+            print(f"期望的凭据文件：{auth_file}")
         if status.get("error"):
-            print(f"Error: {status.get('error')}")
+            print(f"错误：{status.get('error')}")
         return
 
     # Try live model discovery, fall back to curated list.
@@ -3332,9 +3332,9 @@ def _model_flow_qwen_oauth(_config, current_model=""):
     if selected:
         _save_model_choice(selected)
         _update_config_for_provider("qwen-oauth", DEFAULT_QWEN_BASE_URL)
-        print(f"Default model set to: {selected} (via Qwen OAuth)")
+        print(f"默认模型已设置为：{selected}（通过 Qwen OAuth)")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_minimax_oauth(config, current_model="", args=None):
@@ -3353,7 +3353,7 @@ def _model_flow_minimax_oauth(config, current_model="", args=None):
 
     state = get_provider_auth_state("minimax-oauth")
     if not state or not state.get("access_token"):
-        print("Not logged into MiniMax. Starting OAuth login...")
+        print("未登录 MiniMax。正在启动 OAuth 登录...")
         print()
         try:
             mock_args = argparse.Namespace(
@@ -3363,10 +3363,10 @@ def _model_flow_minimax_oauth(config, current_model="", args=None):
             )
             _login_minimax_oauth(mock_args, PROVIDER_REGISTRY["minimax-oauth"])
         except SystemExit:
-            print("Login cancelled or failed.")
+            print("登录已取消或失败。")
             return
         except Exception as exc:
-            print(f"Login failed: {exc}")
+            print(f"登录失败：{exc}")
             return
 
     try:
@@ -3407,18 +3407,18 @@ def _model_flow_google_gemini_cli(_config, current_model=""):
     from hermes_cli.models import _PROVIDER_MODELS
 
     print()
-    print("⚠  Google considers using the Gemini CLI OAuth client with third-party")
-    print("   software a policy violation. Some users have reported account")
-    print("   restrictions. You can use your own API key via 'gemini' provider")
-    print("   for the lowest-risk experience.")
+    print("⚠  Google 认为将 Gemini CLI OAuth 客户端与第三方")
+    print("   软件联用违反政策。部分用户报告了账户")
+    print("   限制。您可以通过 'gemini' 提供商使用自己的 API 密钥")
+    print("   以获得最低风险的体验。")
     print()
     try:
         proceed = input("Continue with OAuth login? [y/N]: ").strip().lower()
     except (EOFError, KeyboardInterrupt):
-        print("Cancelled.")
+        print("已取消。")
         return
     if proceed not in {"y", "yes"}:
-        print("Cancelled.")
+        print("已取消。")
         return
 
     status = get_gemini_oauth_auth_status()
@@ -3429,7 +3429,7 @@ def _model_flow_google_gemini_cli(_config, current_model=""):
             env_project = resolve_project_id_from_env()
             start_oauth_flow(force_relogin=True, project_id=env_project)
         except Exception as exc:
-            print(f"OAuth login failed: {exc}")
+            print(f"OAuth 登录失败：{exc}")
             return
 
     # Verify creds resolve + trigger project discovery
@@ -3437,13 +3437,13 @@ def _model_flow_google_gemini_cli(_config, current_model=""):
         creds = resolve_gemini_oauth_runtime_credentials(force_refresh=False)
         project_id = creds.get("project_id", "")
         if project_id:
-            print(f"  Using GCP project: {project_id}")
+            print(f"  使用 GCP 项目：{project_id}")
         else:
             print(
-                "  No GCP project configured — free tier will be auto-provisioned on first request."
+                "  没有 GCP project configured — free tier will be auto-provisioned on first request."
             )
     except Exception as exc:
-        print(f"Failed to resolve Gemini credentials: {exc}")
+        print(f"解析 Gemini 凭据失败：{exc}")
         return
 
     models = list(_PROVIDER_MODELS.get("google-gemini-cli") or [])
@@ -3455,10 +3455,10 @@ def _model_flow_google_gemini_cli(_config, current_model=""):
             "google-gemini-cli", DEFAULT_GEMINI_CLOUDCODE_BASE_URL
         )
         print(
-            f"Default model set to: {selected} (via Google Gemini OAuth / Code Assist)"
+            f"默认模型已设置为：{selected}（通过 Google Gemini OAuth / Code Assist)"
         )
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_custom(config):
@@ -3473,11 +3473,11 @@ def _model_flow_custom(config):
     current_url = get_env_value("OPENAI_BASE_URL") or ""
     current_key = get_env_value("OPENAI_API_KEY") or ""
 
-    print("Custom OpenAI-compatible endpoint configuration:")
+    print("自定义兼容 OpenAI 的端点配置：")
     if current_url:
-        print(f"  Current URL: {current_url}")
+        print(f"  当前 URL：{current_url}")
     if current_key:
-        print(f"  Current key: {current_key[:8]}...")
+        print(f"  当前密钥：{current_key[:8]}...")
     print()
 
     try:
@@ -3490,17 +3490,17 @@ def _model_flow_custom(config):
             f"API key [{current_key[:8] + '...' if current_key else 'optional'}]: "
         ).strip()
     except (KeyboardInterrupt, EOFError):
-        print("\nCancelled.")
+        print("\n已取消。")
         return
 
     if not base_url and not current_url:
-        print("No URL provided. Cancelled.")
+        print("未提供 URL。已取消。")
         return
 
     # Validate URL format
     effective_url = base_url or current_url
     if not effective_url.startswith(("http://", "https://")):
-        print(f"Invalid URL: {effective_url} (must start with http:// or https://)")
+        print(f"无效的 URL：{effective_url}（必须以 http:// 或 https:// 开头）")
         return
 
     effective_key = api_key or current_key
@@ -3515,8 +3515,8 @@ def _model_flow_custom(config):
     )
     if _looks_local and not _url_lower.endswith("/v1"):
         print()
-        print(f"  Hint: Did you mean to add /v1 at the end?")
-        print(f"  Most local model servers (Ollama, vLLM, llama.cpp) require it.")
+        print(f"  提示：您是否打算在末尾添加 /v1？")
+        print(f"  大多数本地模型服务器（Ollama、vLLM、llama.cpp）都需要它。")
         print(f"  e.g. {effective_url.rstrip('/')}/v1")
         try:
             _add_v1 = input("  Add /v1? [Y/n]: ").strip().lower()
@@ -3526,7 +3526,7 @@ def _model_flow_custom(config):
             effective_url = effective_url.rstrip("/") + "/v1"
             if base_url:
                 base_url = effective_url
-            print(f"  Updated URL: {effective_url}")
+            print(f"  更新后的 URL：{effective_url}")
         print()
 
     from hermes_cli.models import probe_api_models
@@ -3534,8 +3534,8 @@ def _model_flow_custom(config):
     probe = probe_api_models(effective_key, effective_url)
     if probe.get("used_fallback") and probe.get("resolved_base_url"):
         print(
-            f"Warning: endpoint verification worked at {probe['resolved_base_url']}/models, "
-            f"not the exact URL you entered. Saving the working base URL instead."
+            f"警告：端点验证在 {probe['resolved_base_url']}/models 成功，"
+            f"而非您输入的精确 URL。正在保存可用的 base URL。"
         )
         effective_url = probe["resolved_base_url"]
         if base_url:
@@ -3547,8 +3547,8 @@ def _model_flow_custom(config):
         )
     else:
         print(
-            f"Warning: could not verify this endpoint via {probe.get('probed_url')}. "
-            f"Hermes will still save it."
+            f"警告：无法通过 {probe.get('probed_url')}. "
+            f"Hermes 仍将保存它。"
         )
         if probe.get("suggested_base_url"):
             suggested = probe["suggested_base_url"]
@@ -3572,21 +3572,21 @@ def _model_flow_custom(config):
     if api_mode:
         print(f"  API mode: {api_mode}")
     else:
-        print("  API mode: auto-detect")
+        print("  API 模式：自动检测")
 
     # Select model — use probe results when available, fall back to manual input
     model_name = ""
     detected_models = probe.get("models") or []
     try:
         if len(detected_models) == 1:
-            print(f"  Detected model: {detected_models[0]}")
+            print(f"  检测到的模型：{detected_models[0]}")
             confirm = input("  Use this model? [Y/n]: ").strip().lower()
             if confirm in {"", "y", "yes"}:
                 model_name = detected_models[0]
             else:
                 model_name = input("Model name (e.g. gpt-4, llama-3-70b): ").strip()
         elif len(detected_models) > 1:
-            print("  Available models:")
+            print("  可用模型：")
             for i, m in enumerate(detected_models, 1):
                 print(f"    {i}. {m}")
             pick = input(
@@ -3607,7 +3607,7 @@ def _model_flow_custom(config):
         default_name = _auto_provider_name(effective_url)
         display_name = input(f"Display name [{default_name}]: ").strip() or default_name
     except (KeyboardInterrupt, EOFError):
-        print("\nCancelled.")
+        print("\n已取消。")
         return
 
     context_length = None
@@ -3621,7 +3621,7 @@ def _model_flow_custom(config):
             if context_length <= 0:
                 context_length = None
         except ValueError:
-            print(f"Invalid context length: {context_length_str} — will auto-detect.")
+            print(f"无效的上下文长度：{context_length_str} — 将自动检测。")
             context_length = None
 
     if model_name:
@@ -3650,7 +3650,7 @@ def _model_flow_custom(config):
         # the stale values from its own config dict (#4172).
         config["model"] = dict(model)
 
-        print(f"Default model set to: {model_name} (via {effective_url})")
+        print(f"默认模型已设置为：{model_name}（通过 {effective_url})")
     else:
         if base_url or api_key:
             deactivate_provider()
@@ -3668,7 +3668,7 @@ def _model_flow_custom(config):
         else:
             _caller_model.pop("api_mode", None)
         config["model"] = _caller_model
-        print("Endpoint saved. Use `/model` in chat or `hermes model` to set a model.")
+        print("端点已保存。在聊天中使用 `/model` 或运行 `hermes model` 设置模型。")
 
     # Auto-save to custom_providers so it appears in the menu next time
     _save_custom_provider(
@@ -3716,7 +3716,7 @@ def _prompt_custom_api_mode_selection(base_url: str, current_api_mode: str = "")
     ]
 
     print()
-    print("Select API compatibility mode:")
+    print("选择 API 兼容性模式：")
     for idx, (value, label, description) in enumerate(mode_options, 1):
         markers = []
         if value == detected_mode:
@@ -3732,7 +3732,7 @@ def _prompt_custom_api_mode_selection(base_url: str, current_api_mode: str = "")
             "Choice [1-4, Enter to keep current/detected]: "
         ).strip().lower()
     except (KeyboardInterrupt, EOFError):
-        print("\nCancelled.")
+        print("\n已取消。")
         raise
 
     if not raw:
@@ -3747,7 +3747,7 @@ def _prompt_custom_api_mode_selection(base_url: str, current_api_mode: str = "")
     if raw in {"4", "anthropic", "anthropic_messages", "messages"}:
         return "anthropic_messages"
 
-    print(f"Invalid API mode choice: {raw}. Falling back to auto-detect.")
+    print(f"无效的 API 模式选择：{raw}。回退到自动检测。")
     return None
 
 
@@ -3874,7 +3874,7 @@ def _model_flow_azure_foundry(config, current_model=""):
       ``api_key=`` contract is used; for Anthropic-style an
       ``httpx.Client`` with a request event hook (built by
       :func:`agent.azure_identity_adapter.build_bearer_http_client`)
-      mints a fresh JWT per request because the Anthropic SDK does not
+      mints a fresh JWT per request 因为 the Anthropic SDK does not
       accept a callable ``auth_token`` natively.
 
     The wizard auto-detects the transport and available models when
@@ -3917,28 +3917,28 @@ def _model_flow_azure_foundry(config, current_model=""):
     current_api_key = get_env_value("AZURE_FOUNDRY_API_KEY") or ""
 
     print()
-    print("Azure Foundry Configuration")
+    print("Azure Foundry 配置")
     print("=" * 50)
     print()
-    print("Azure Foundry can host models with either OpenAI-style or")
-    print("Anthropic-style API endpoints.  Hermes will probe your")
-    print("endpoint to auto-detect the transport and the deployed")
-    print("models when possible.")
+    print("Azure Foundry 可托管采用 OpenAI 风格或")
+    print("Anthropic 风格 API 端点的模型。Hermes 将探测您的")
+    print("端点以自动检测传输方式和已部署的")
+    print("模型（如果可能）。")
     print()
 
     if current_base_url:
-        print(f"  Current endpoint:  {current_base_url}")
+        print(f"  当前端点：  {current_base_url}")
     if current_api_mode:
         _lbl = (
             "OpenAI-style"
             if current_api_mode == "chat_completions"
             else "Anthropic-style"
         )
-        print(f"  Current API mode:  {_lbl}")
+        print(f"  当前 API 模式：  {_lbl}")
     if current_auth_mode == "entra_id":
-        print(f"  Current auth mode: Microsoft Entra ID (keyless)")
+        print(f"  当前认证模式：Microsoft Entra ID（无密钥）")
     elif current_api_key:
-        print(f"  Current auth mode: API key ({current_api_key[:8]}...)")
+        print(f"  当前认证模式：API 密钥（{current_api_key[:8]}...)")
     print()
 
     # ── Step 1: endpoint URL ─────────────────────────────────────────
@@ -3952,24 +3952,24 @@ def _model_flow_azure_foundry(config, current_model=""):
             f"API endpoint URL [{_placeholder}]: "
         ).strip()
     except (KeyboardInterrupt, EOFError):
-        print("\nCancelled.")
+        print("\n已取消。")
         return
 
     effective_url = (base_url or current_base_url).rstrip("/")
     if not effective_url:
-        print("No endpoint URL provided. Cancelled.")
+        print("未提供端点 URL. 已取消。")
         return
     if not effective_url.startswith(("http://", "https://")):
-        print(f"Invalid URL: {effective_url} (must start with http:// or https://)")
+        print(f"无效的 URL：{effective_url}（必须以 http:// 或 https:// 开头）")
         return
 
     # ── Step 2: authentication mode ──────────────────────────────────
     print()
-    print("Authentication:")
-    print("  1. API key                  (AZURE_FOUNDRY_API_KEY in .env)")
-    print("  2. Microsoft Entra ID       (managed identity / workload identity / az login)")
-    print("     Recommended by Microsoft. Works for both OpenAI-style and Anthropic-style endpoints.")
-    print("     Requires the 'Azure AI User' role on the Foundry resource.")
+    print("认证方式：")
+    print("  1. API 密钥                   (.env 中的 AZURE_FOUNDRY_API_KEY)")
+    print("  2. Microsoft Entra ID        （托管标识 / 工作负载标识 / az login）")
+    print("     微软推荐。适用于 OpenAI 风格和 Anthropic 风格的端点。")
+    print("     需要在 Foundry 资源上具有 'Azure AI User' 角色。")
     try:
         _auth_default = "2" if current_auth_mode == "entra_id" else "1"
         auth_choice = (
@@ -3977,7 +3977,7 @@ def _model_flow_azure_foundry(config, current_model=""):
             or _auth_default
         )
     except (KeyboardInterrupt, EOFError):
-        print("\nCancelled.")
+        print("\n已取消。")
         return
     use_entra = auth_choice == "2"
     auth_mode_label = "entra_id" if use_entra else "api_key"
@@ -3999,15 +3999,15 @@ def _model_flow_azure_foundry(config, current_model=""):
             )
         except ImportError as exc:
             print()
-            print(f"⚠ Could not import azure-identity adapter: {exc}")
-            print("  Falling back to API key auth.")
+            print(f"⚠ 无法导入 azure-identity 适配器：{exc}")
+            print("  回退到 API 密钥认证。")
             use_entra = False
             auth_mode_label = "api_key"
 
     if use_entra:
         print()
         if not has_azure_identity_installed():
-            print("◐ The 'azure-identity' package is not installed yet.")
+            print("◐ 'azure-identity' 包尚未安装。")
             print(
                 "  Hermes will install it now (the preflight below "
                 "triggers the lazy-install). To skip lazy installs, "
@@ -4025,7 +4025,7 @@ def _model_flow_azure_foundry(config, current_model=""):
             entra_overrides["scope"] = _persisted_scope_override
 
         print()
-        print("◐ Probing Microsoft Entra ID credential chain (up to 10s)...")
+        print("◐ 正在探测 Microsoft Entra ID 凭据链（最多 10 秒）...")
         _config = EntraIdentityConfig(
             scope=entra_scope,
         )
@@ -4033,7 +4033,7 @@ def _model_flow_azure_foundry(config, current_model=""):
         if info.get("ok"):
             env_sources = info.get("env_sources") or []
             tag = ", ".join(env_sources) if env_sources else "default chain"
-            print(f"✓ Entra ID token acquired ({tag}, scope={entra_scope})")
+            print(f"✓ 已获取 Entra ID 令牌（{tag}，作用域={entra_scope})")
         else:
             err = info.get("error") or "credential chain exhausted"
             hint = info.get("hint") or (
@@ -4045,10 +4045,10 @@ def _model_flow_azure_foundry(config, current_model=""):
             try:
                 ans = input("Save Entra config anyway and validate later? [Y/n]: ").strip().lower()
             except (KeyboardInterrupt, EOFError):
-                print("\nCancelled.")
+                print("\n已取消。")
                 return
             if ans and ans not in ("y", "yes"):
-                print("Cancelled.")
+                print("已取消。")
                 return
 
         # Build the token provider for the detection probe (best-effort —
@@ -4057,7 +4057,7 @@ def _model_flow_azure_foundry(config, current_model=""):
         try:
             token_provider = build_token_provider(config=_config)
         except Exception as exc:
-            print(f"⚠ Could not build token provider for probing: {exc}")
+            print(f"⚠ 无法构建用于探测的令牌提供程序：{exc}")
             token_provider = None
     else:
         print()
@@ -4066,17 +4066,17 @@ def _model_flow_azure_foundry(config, current_model=""):
                 f"API key [{current_api_key[:8] + '...' if current_api_key else 'required'}]: "
             ).strip()
         except (KeyboardInterrupt, EOFError):
-            print("\nCancelled.")
+            print("\n已取消。")
             return
 
         effective_key = api_key or current_api_key
         if not effective_key:
-            print("No API key provided. Cancelled.")
+            print("未提供 API 密钥。已取消。")
             return
 
     # ── Step 4: auto-detect transport + models ───────────────────────
     print()
-    print("◐ Probing endpoint to auto-detect transport and models...")
+    print("◐ 正在探测端点以自动检测传输方式和模型...")
     detection = azure_detect.detect(
         effective_url,
         api_key=effective_key,
@@ -4090,7 +4090,7 @@ def _model_flow_azure_foundry(config, current_model=""):
         mode_label = (
             "OpenAI-style" if api_mode == "chat_completions" else "Anthropic-style"
         )
-        print(f"✓ Detected API transport: {mode_label}")
+        print(f"✓ 检测到的 API 传输方式：{mode_label}")
         if detection.reason:
             print(f"    ({detection.reason})")
         if discovered_models:
@@ -4098,13 +4098,13 @@ def _model_flow_azure_foundry(config, current_model=""):
                 f"✓ Found {len(discovered_models)} deployed model(s) on this endpoint"
             )
     else:
-        print(f"⚠ Auto-detection incomplete: {detection.reason}")
+        print(f"⚠ 自动检测不完整：{detection.reason}")
         print()
-        print("Select the API format your Azure Foundry endpoint uses:")
-        print("  1. OpenAI-style  (POST /v1/chat/completions)")
-        print("     For: GPT models, Llama, Mistral, and most open models")
-        print("  2. Anthropic-style  (POST /v1/messages)")
-        print("     For: Claude models deployed via Anthropic API format")
+        print("选择您的 Azure Foundry 端点使用的 API 格式：")
+        print("  1. OpenAI 风格  (POST /v1/chat/completions)")
+        print("     适用于：GPT 模型、Llama、Mistral 及大多数开源模型")
+        print("  2. Anthropic 风格  (POST /v1/messages)")
+        print("     适用于：通过 Anthropic API 格式部署的 Claude 模型")
         try:
             default_choice = "2" if current_api_mode == "anthropic_messages" else "1"
             mode_choice = (
@@ -4112,7 +4112,7 @@ def _model_flow_azure_foundry(config, current_model=""):
                 or default_choice
             )
         except (KeyboardInterrupt, EOFError):
-            print("\nCancelled.")
+            print("\n已取消。")
             return
         api_mode = "anthropic_messages" if mode_choice == "2" else "chat_completions"
 
@@ -4120,7 +4120,7 @@ def _model_flow_azure_foundry(config, current_model=""):
     print()
     effective_model = ""
     if discovered_models:
-        print("Available models on this endpoint:")
+        print("此端点上的可用模型：")
         for i, mid in enumerate(discovered_models[:30], start=1):
             print(f"  {i:>2}. {mid}")
         if len(discovered_models) > 30:
@@ -4133,7 +4133,7 @@ def _model_flow_azure_foundry(config, current_model=""):
                 f"Pick by number, or type a deployment name [{current_model or discovered_models[0]}]: "
             ).strip()
         except (KeyboardInterrupt, EOFError):
-            print("\nCancelled.")
+            print("\n已取消。")
             return
         if not pick:
             effective_model = current_model or discovered_models[0]
@@ -4147,12 +4147,12 @@ def _model_flow_azure_foundry(config, current_model=""):
                 f"Model / deployment name [{current_model or 'e.g. gpt-5.4, claude-sonnet-4-6'}]: "
             ).strip()
         except (KeyboardInterrupt, EOFError):
-            print("\nCancelled.")
+            print("\n已取消。")
             return
         effective_model = model_name or current_model
 
     if not effective_model:
-        print("No model name provided. Cancelled.")
+        print("未提供模型名称。已取消。")
         return
 
     # ── Step 6: context-length lookup ────────────────────────────────
@@ -4212,15 +4212,15 @@ def _model_flow_azure_foundry(config, current_model=""):
         "Microsoft Entra ID (keyless)" if use_entra else "API key"
     )
     print()
-    print("✓ Azure Foundry configured:")
-    print(f"    Endpoint:       {effective_url}")
-    print(f"    API mode:       {mode_label}")
-    print(f"    Auth:           {auth_label}")
-    print(f"    Model:          {effective_model}")
+    print("✓ Azure Foundry 已配置：")
+    print(f"    端点：       {effective_url}")
+    print(f"    API 模式：       {mode_label}")
+    print(f"    认证：           {auth_label}")
+    print(f"    模型：          {effective_model}")
     if ctx_len:
-        print(f"    Context length: {ctx_len:,} tokens")
+        print(f"    上下文长度： {ctx_len:,} 个 token")
     else:
-        print("    Context length: not auto-detected (will fall back at runtime)")
+        print("    上下文长度： not auto-detected (will fall back at runtime)")
     print()
 
 
@@ -4231,7 +4231,7 @@ def _remove_custom_provider(config):
     cfg = load_config()
     providers = cfg.get("custom_providers") or []
     if not isinstance(providers, list) or not providers:
-        print("No custom providers configured.")
+        print("未配置自定义提供商。")
         return
 
     print("Remove a custom provider:\n")
@@ -4276,7 +4276,7 @@ def _remove_custom_provider(config):
             idx = None
 
     if idx is None or idx >= len(providers):
-        print("No change.")
+        print("未做更改。")
         return
 
     removed = providers.pop(idx)
@@ -4285,7 +4285,7 @@ def _remove_custom_provider(config):
     removed_name = (
         removed.get("name", "unnamed") if isinstance(removed, dict) else str(removed)
     )
-    print(f'✅ Removed "{removed_name}" from custom providers.')
+    print(f'✅ Removed "{removed_name}" 从自定义提供商。')
 
 
 def _model_flow_named_custom(config, provider_info):
@@ -4312,13 +4312,13 @@ def _model_flow_named_custom(config, provider_info):
         api_key = os.environ.get(key_env, "")
     config_api_key = _custom_provider_api_key_config_value(provider_info, api_key)
 
-    print(f"  Provider: {name}")
-    print(f"  URL:      {base_url}")
+    print(f"  提供商：{name}")
+    print(f"  URL：      {base_url}")
     if saved_model:
-        print(f"  Current:  {saved_model}")
+        print(f"  当前：  {saved_model}")
     print()
 
-    print("Fetching available models...")
+    print("正在获取可用模型...")
     fetch_kwargs = {"timeout": 8.0}
     if api_mode:
         fetch_kwargs["api_mode"] = api_mode
@@ -4335,7 +4335,7 @@ def _model_flow_named_custom(config, provider_info):
 
             menu_items = [
                 f"  {m} (current)" if m == saved_model else f"  {m}" for m in models
-            ] + ["  Cancel"]
+            ] + ["  取消"]
             menu = TerminalMenu(
                 menu_items,
                 cursor_index=default_idx,
@@ -4352,7 +4352,7 @@ def _model_flow_named_custom(config, provider_info):
             flush_stdin()
             print()
             if idx is None or idx >= len(models):
-                print("Cancelled.")
+                print("已取消。")
                 return
             model_name = models[idx]
         except (ImportError, NotImplementedError, OSError, subprocess.SubprocessError):
@@ -4364,32 +4364,32 @@ def _model_flow_named_custom(config, provider_info):
             try:
                 val = input(f"Choice [1-{len(models) + 1}]: ").strip()
                 if not val:
-                    print("Cancelled.")
+                    print("已取消。")
                     return
                 idx = int(val) - 1
                 if idx < 0 or idx >= len(models):
-                    print("Cancelled.")
+                    print("已取消。")
                     return
                 model_name = models[idx]
             except (ValueError, KeyboardInterrupt, EOFError):
-                print("\nCancelled.")
+                print("\n已取消。")
                 return
     elif saved_model:
-        print("Could not fetch models from endpoint.")
+        print("无法从端点获取模型。")
         try:
             model_name = input(f"Model name [{saved_model}]: ").strip() or saved_model
         except (KeyboardInterrupt, EOFError):
-            print("\nCancelled.")
+            print("\n已取消。")
             return
     else:
-        print("Could not fetch models from endpoint. Enter model name manually.")
+        print("无法从端点获取模型。 Enter model name manually.")
         try:
             model_name = input("Model name: ").strip()
         except (KeyboardInterrupt, EOFError):
-            print("\nCancelled.")
+            print("\n已取消。")
             return
         if not model_name:
-            print("No model specified. Cancelled.")
+            print("未指定模型。已取消。")
             return
 
     # Activate and save the model to the custom_providers entry
@@ -4456,7 +4456,7 @@ def _model_flow_named_custom(config, provider_info):
         _save_custom_provider(base_url, config_api_key, model_name, api_mode=api_mode)
 
     print(f"\n✅ Model set to: {model_name}")
-    print(f"   Provider: {name} ({base_url})")
+    print(f"   提供商：{name} ({base_url})")
 
 
 # Keep the historical eager model catalog import on desktop/CI. Termux defers
@@ -4525,7 +4525,7 @@ def _prompt_reasoning_effort_selection(efforts, current_effort=""):
             menu_highlight_style=("fg_green",),
             cycle_cursor=True,
             clear_screen=False,
-            title="Select reasoning effort:",
+            title="选择推理力度：",
         )
         idx = menu.show()
         from hermes_cli.curses_ui import flush_stdin
@@ -4542,7 +4542,7 @@ def _prompt_reasoning_effort_selection(efforts, current_effort=""):
     except (ImportError, NotImplementedError, OSError, subprocess.SubprocessError):
         pass
 
-    print("Select reasoning effort:")
+    print("选择推理力度：")
     for i, effort in enumerate(ordered, 1):
         print(f"  {i}. {_label(effort)}")
     n = len(ordered)
@@ -4562,9 +4562,9 @@ def _prompt_reasoning_effort_selection(efforts, current_effort=""):
                 return "none"
             if idx == n + 2:
                 return None
-            print(f"Please enter 1-{n + 2}")
+            print(f"请输入 1-{n + 2}")
         except ValueError:
-            print("Please enter a number")
+            print("请输入 a number")
         except (KeyboardInterrupt, EOFError):
             return None
 
@@ -4596,9 +4596,9 @@ def _model_flow_copilot(config, current_model=""):
     source = creds.get("source", "")
 
     if not api_key:
-        print("No GitHub token configured for GitHub Copilot.")
+        print("未为 GitHub Copilot 配置 GitHub 令牌。")
         print()
-        print("  Supported token types:")
+        print("  支持的令牌类型：")
         print(
             "    → OAuth token (gho_*)          via `copilot login` or device code flow"
         )
@@ -4606,10 +4606,10 @@ def _model_flow_copilot(config, current_model=""):
         print("    → GitHub App token (ghu_*)     via environment variable")
         print("    ✗ Classic PAT (ghp_*)          NOT supported by Copilot API")
         print()
-        print("  Options:")
-        print("    1. Login with GitHub (OAuth device code flow)")
-        print("    2. Enter a token manually")
-        print("    3. Cancel")
+        print("  选项：")
+        print("    1. 使用 GitHub 登录（OAuth 设备码流程）")
+        print("    2. 手动输入令牌")
+        print("    3. 取消")
         print()
         try:
             choice = input("  Choice [1-3]: ").strip()
@@ -4624,13 +4624,13 @@ def _model_flow_copilot(config, current_model=""):
                 token = copilot_device_code_login()
                 if token:
                     save_env_value("COPILOT_GITHUB_TOKEN", token)
-                    print("  Copilot token saved.")
+                    print("  Copilot 令牌已保存。")
                     print()
                 else:
-                    print("  Login cancelled or failed.")
+                    print("  登录已取消或失败。")
                     return
             except Exception as exc:
-                print(f"  Login failed: {exc}")
+                print(f"  登录失败：{exc}")
                 return
         elif choice == "2":
             try:
@@ -4641,7 +4641,7 @@ def _model_flow_copilot(config, current_model=""):
                 print()
                 return
             if not new_key:
-                print("  Cancelled.")
+                print("  已取消。")
                 return
             # Validate token type
             try:
@@ -4654,10 +4654,10 @@ def _model_flow_copilot(config, current_model=""):
             except ImportError:
                 pass
             save_env_value("COPILOT_GITHUB_TOKEN", new_key)
-            print("  Token saved.")
+            print("  令牌已保存。")
             print()
         else:
-            print("  Cancelled.")
+            print("  已取消。")
             return
 
         creds = resolve_api_key_provider_credentials(provider_id)
@@ -4669,9 +4669,9 @@ def _model_flow_copilot(config, current_model=""):
             bw_suffix = format_secret_source_suffix(source)
             print(f"  GitHub token: {api_key[:8]}... ✓ ({source}{bw_suffix})")
         elif source == "gh auth token":
-            print("  GitHub token: ✓ (from `gh auth token`)")
+            print("  GitHub 令牌：✓（来自 `gh auth token`）")
         else:
-            print("  GitHub token: ✓")
+            print("  GitHub 令牌：✓")
         print()
 
     effective_base = pconfig.inference_base_url
@@ -4692,7 +4692,7 @@ def _model_flow_copilot(config, current_model=""):
     )
     if live_models:
         model_list = [model_id for model_id in live_models if model_id]
-        print(f"  Found {len(model_list)} model(s) from GitHub Copilot")
+        print(f"  找到 {len(model_list)} 个来自 GitHub Copilot 的模型")
     else:
         model_list = _PROVIDER_MODELS.get(provider_id, [])
         if model_list:
@@ -4753,14 +4753,14 @@ def _model_flow_copilot(config, current_model=""):
         save_config(cfg)
         deactivate_provider()
 
-        print(f"Default model set to: {selected} (via {pconfig.name})")
+        print(f"默认模型已设置为：{selected}（通过 {pconfig.name})")
         if reasoning_efforts:
             if selected_effort == "none":
-                print("Reasoning disabled for this model.")
+                print("已禁用此模型的推理。")
             elif selected_effort:
-                print(f"Reasoning effort set to: {selected_effort}")
+                print(f"推理力度设置为：{selected_effort}")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_copilot_acp(config, current_model=""):
@@ -4795,8 +4795,8 @@ def _model_flow_copilot_acp(config, current_model=""):
     print("  GitHub Copilot ACP delegates Hermes turns to `copilot --acp`.")
     print("  Hermes currently starts its own ACP subprocess for each request.")
     print("  Hermes uses your selected model as a hint for the Copilot ACP session.")
-    print(f"  Command: {resolved_command}")
-    print(f"  Backend marker: {effective_base}")
+    print(f"  命令：{resolved_command}")
+    print(f"  后端标记：{effective_base}")
     print()
 
     try:
@@ -4829,7 +4829,7 @@ def _model_flow_copilot_acp(config, current_model=""):
 
     if catalog:
         model_list = [item.get("id", "") for item in catalog if item.get("id")]
-        print(f"  Found {len(model_list)} model(s) from GitHub Copilot")
+        print(f"  找到 {len(model_list)} 个来自 GitHub Copilot 的模型")
     else:
         model_list = _PROVIDER_MODELS.get("copilot", [])
         if model_list:
@@ -4850,7 +4850,7 @@ def _model_flow_copilot_acp(config, current_model=""):
             selected = None
 
     if not selected:
-        print("No change.")
+        print("未做更改。")
         return
 
     selected = (
@@ -4874,7 +4874,7 @@ def _model_flow_copilot_acp(config, current_model=""):
     save_config(cfg)
     deactivate_provider()
 
-    print(f"Default model set to: {selected} (via {pconfig.name})")
+    print(f"默认模型已设置为：{selected}（通过 {pconfig.name})")
 
 
 def _prompt_api_key(pconfig, existing_key: str, provider_id: str = "") -> tuple:
@@ -4911,15 +4911,15 @@ def _prompt_api_key(pconfig, existing_key: str, provider_id: str = "") -> tuple:
 
     # First-time entry ────────────────────────────────────────────────────
     if not existing_key:
-        print(f"No {pconfig.name} API key configured.")
+        print(f"没有 {pconfig.name} API 密钥已配置。")
         if not key_env:
             return "", True
         new_key = _prompt_new_key(allow_lmstudio_default=True)
         if not new_key:
-            print("Cancelled.")
+            print("已取消。")
             return "", True
         save_env_value(key_env, new_key)
-        print("API key saved.")
+        print("API 密钥已保存。")
         print()
         return new_key, False
 
@@ -4941,11 +4941,11 @@ def _prompt_api_key(pconfig, existing_key: str, provider_id: str = "") -> tuple:
     if choice.startswith("r"):
         new_key = _prompt_new_key(allow_lmstudio_default=False)
         if not new_key:
-            print("  No change.")
+            print("  未做更改。")
             print()
             return existing_key, False
         save_env_value(key_env, new_key)
-        print("  API key updated.")
+        print("  API 密钥已更新。")
         print()
         return new_key, False
 
@@ -4967,7 +4967,7 @@ def _model_flow_kimi(config, current_model=""):
     - sk-kimi-* keys   → api.kimi.com/coding/v1  (Kimi Coding Plan)
     - Other keys        → api.moonshot.ai/v1      (legacy Moonshot)
 
-    No manual base URL prompt — endpoint is determined by key prefix.
+    无手动 base URL 输入 — endpoint is determined by key prefix.
     """
     from hermes_cli.auth import (
         PROVIDER_REGISTRY,
@@ -5006,10 +5006,10 @@ def _model_flow_kimi(config, current_model=""):
     is_coding_plan = existing_key.startswith("sk-kimi-")
     if is_coding_plan:
         effective_base = KIMI_CODE_BASE_URL
-        print(f"  Detected Kimi Coding Plan key → {effective_base}")
+        print(f"  检测到 Kimi Coding Plan 密钥 → {effective_base}")
     else:
         effective_base = pconfig.inference_base_url
-        print(f"  Using Moonshot endpoint → {effective_base}")
+        print(f"  正在使用 Moonshot 端点 → {effective_base}")
     # Clear any manual base URL override so auto-detection works at runtime
     if base_url_env and get_env_value(base_url_env):
         save_env_value(base_url_env, "")
@@ -5053,9 +5053,9 @@ def _model_flow_kimi(config, current_model=""):
         deactivate_provider()
 
         endpoint_label = "Kimi Coding" if is_coding_plan else "Moonshot"
-        print(f"Default model set to: {selected} (via {endpoint_label})")
+        print(f"默认模型已设置为：{selected}（通过 {endpoint_label})")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _infer_stepfun_region(base_url: str) -> str:
@@ -5138,7 +5138,7 @@ def _model_flow_stepfun(config, current_model=""):
 
     region_idx = _prompt_provider_choice([label for _, label in ordered_regions])
     if region_idx is None or ordered_regions[region_idx][0] == "cancel":
-        print("No change.")
+        print("未做更改。")
         return
 
     selected_region = ordered_regions[region_idx][0]
@@ -5149,7 +5149,7 @@ def _model_flow_stepfun(config, current_model=""):
     live_models = fetch_api_models(existing_key, effective_base)
     if live_models:
         model_list = live_models
-        print(f"  Found {len(model_list)} model(s) from {pconfig.name} API")
+        print(f"  找到 {len(model_list)} 个模型来自 {pconfig.name} API")
     else:
         model_list = _PROVIDER_MODELS.get(provider_id, [])
         if model_list:
@@ -5181,9 +5181,9 @@ def _model_flow_stepfun(config, current_model=""):
         deactivate_provider()
 
         config["model"] = dict(model)
-        print(f"Default model set to: {selected} (via {pconfig.name})")
+        print(f"默认模型已设置为：{selected}（通过 {pconfig.name})")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _model_flow_bedrock_api_key(config, region, current_model=""):
@@ -5214,7 +5214,7 @@ def _model_flow_bedrock_api_key(config, region, current_model=""):
         source_suffix = format_secret_source_suffix("AWS_BEARER_TOKEN_BEDROCK")
         print(f"  Bedrock API Key: {existing_key[:12]}... ✓{source_suffix}")
     else:
-        print(f"  Endpoint: {mantle_base_url}")
+        print(f"  端点：{mantle_base_url}")
         print()
         try:
             import getpass
@@ -5224,16 +5224,16 @@ def _model_flow_bedrock_api_key(config, region, current_model=""):
             print()
             return
         if not api_key:
-            print("  Cancelled.")
+            print("  已取消。")
             return
         save_env_value("AWS_BEARER_TOKEN_BEDROCK", api_key)
         existing_key = api_key
-        print("  ✓ API key saved.")
+        print("  ✓ API 密钥已保存。")
     print()
 
     # Model selection — use static list (mantle doesn't need boto3 for discovery)
     model_list = _PROVIDER_MODELS.get("bedrock", [])
-    print(f"  Showing {len(model_list)} curated models")
+    print(f"  正在显示 {len(model_list)} 个精选模型")
 
     if model_list:
         selected = _prompt_model_selection(model_list, current_model=current_model)
@@ -5270,10 +5270,10 @@ def _model_flow_bedrock_api_key(config, region, current_model=""):
         save_config(cfg)
         deactivate_provider()
 
-        print(f"  Default model set to: {selected} (via Bedrock API Key, {region})")
-        print(f"  Endpoint: {mantle_base_url}")
+        print(f"  默认模型已设置为：{selected}（通过 Bedrock API Key, {region})")
+        print(f"  端点：{mantle_base_url}")
     else:
-        print("  No change.")
+        print("  未做更改。")
 
 
 def _model_flow_bedrock(config, current_model=""):
@@ -5300,21 +5300,21 @@ def _model_flow_bedrock(config, current_model=""):
             discover_bedrock_models,
         )
     except ImportError:
-        print("  ✗ boto3 is not installed. Install it with:")
+        print("  ✗ boto3 未安装。请使用以下命令安装：")
         print("    pip install boto3")
         print()
         return
 
     if not has_aws_credentials():
-        print("  ⚠ No AWS credentials detected via environment variables.")
-        print("  Bedrock will use boto3's default credential chain (IMDS, SSO, etc.)")
+        print("  ⚠ 没有 AWS credentials detected via environment variables.")
+        print("  Bedrock 将使用 boto3 的默认凭据链（IMDS、SSO 等）")
         print()
 
     auth_var = resolve_aws_auth_env_var()
     if auth_var:
-        print(f"  AWS credentials: {auth_var} ✓")
+        print(f"  AWS 凭据：{auth_var} ✓")
     else:
-        print("  AWS credentials: boto3 default chain (instance role / SSO)")
+        print("  AWS 凭据：boto3 default chain (instance role / SSO)")
     print()
 
     # 2. Region selection
@@ -5327,13 +5327,13 @@ def _model_flow_bedrock(config, current_model=""):
     region = region_input or current_region
 
     # 2b. Authentication mode
-    print("  Choose authentication method:")
+    print("  选择认证方式：")
     print()
-    print("    1. IAM credential chain (recommended)")
-    print("       Works with EC2 instance roles, SSO, env vars, aws configure")
-    print("    2. Bedrock API Key")
-    print("       Enter your Bedrock API Key directly — also supports")
-    print("       team scenarios where an admin distributes keys")
+    print("    1. IAM 凭据链（推荐）")
+    print("       适用于 EC2 实例角色、SSO、环境变量、aws configure")
+    print("    2. Bedrock API 密钥")
+    print("       直接输入 Bedrock API 密钥 — 也支持")
+    print("       管理员分发密钥的团队场景")
     print()
     try:
         auth_choice = input("  Choice [1]: ").strip()
@@ -5346,7 +5346,7 @@ def _model_flow_bedrock(config, current_model=""):
         return
 
     # 3. Model discovery — try live API first, fall back to static list
-    print(f"  Discovering models in {region}...")
+    print(f"  正在发现 {region}...")
     live_models = discover_bedrock_models(region)
 
     if live_models:
@@ -5410,17 +5410,17 @@ def _model_flow_bedrock(config, current_model=""):
         deduped.sort(key=_sort_key)
         model_list = [m["id"] for m in deduped]
         print(
-            f"  Found {len(model_list)} text model(s) (filtered from {len(live_models)} total)"
+            f"  找到 {len(model_list)} 个文本模型（从 {len(live_models)} 个总数中筛选）"
         )
     else:
         model_list = _PROVIDER_MODELS.get("bedrock", [])
         if model_list:
             print(
-                f"  Using {len(model_list)} curated models (live discovery unavailable)"
+                f"  Using {len(model_list)} 个精选模型 (live discovery unavailable)"
             )
         else:
             print(
-                "  No models found. Check IAM permissions for bedrock:ListFoundationModels."
+                "  没有 models found. Check IAM permissions for bedrock:ListFoundationModels."
             )
             return
 
@@ -5454,9 +5454,9 @@ def _model_flow_bedrock(config, current_model=""):
         save_config(cfg)
         deactivate_provider()
 
-        print(f"  Default model set to: {selected} (via AWS Bedrock, {region})")
+        print(f"  默认模型已设置为：{selected}（通过 AWS Bedrock, {region})")
     else:
-        print("  No change.")
+        print("  未做更改。")
 
 
 def _model_flow_api_key_provider(config, provider_id, current_model=""):
@@ -5508,7 +5508,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
         except Exception:
             probe_gemini_tier = None
         if probe_gemini_tier is not None:
-            print("  Checking Gemini API tier...")
+            print("  正在检查 Gemini API 层级...")
             probe_base = (
                 (get_env_value(base_url_env) if base_url_env else "")
                 or os.getenv(base_url_env or "", "")
@@ -5529,7 +5529,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                     "   so the free tier is exhausted after a handful of "
                     "messages and cannot sustain"
                 )
-                print("   an agent session.")
+                print("   一个代理会话。")
                 print()
                 print(
                     "   To use Gemini with Hermes, enable billing on your "
@@ -5545,15 +5545,15 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                     "OpenRouter (free models), Groq, Nous."
                 )
                 print()
-                print("Not saving Gemini as the default provider.")
+                print("不将 Gemini 保存为默认提供商。")
                 return
             if tier == "paid":
-                print("  Tier check: paid ✓")
+                print("  层级检查：付费 ✓")
             else:
                 # "unknown" -- network issue, auth problem, unexpected response.
                 # Don't block; the runtime 429 handler will surface free-tier
                 # guidance if the key turns out to be free tier.
-                print("  Tier check: could not verify (proceeding anyway).")
+                print("  层级检查：无法验证（仍继续）。")
             print()
 
     # Optional base URL override.
@@ -5604,11 +5604,11 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                 api_key=api_key_for_probe, base_url=effective_base
             )
         except AuthError as exc:
-            print(f"  LM Studio rejected the request: {exc}")
-            print("  Set LM_API_KEY (or update it) to match the server's bearer token.")
+            print(f"  LM Studio 拒绝了请求：{exc}")
+            print("  设置 LM_API_KEY（或更新它）以匹配服务器的 bearer 令牌。")
             model_list = []
         if model_list:
-            print(f"  Found {len(model_list)} model(s) from LM Studio")
+            print(f"  找到 {len(model_list)} 个模型来自 LM Studio")
     elif provider_id == "ollama-cloud":
         from hermes_cli.models import fetch_ollama_cloud_models
 
@@ -5623,7 +5623,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
             force_refresh=True,
         )
         if model_list:
-            print(f"  Found {len(model_list)} model(s) from Ollama Cloud")
+            print(f"  找到 {len(model_list)} 个模型来自 Ollama Cloud")
     elif provider_id == "novita":
         from hermes_cli.models import fetch_api_models
 
@@ -5632,7 +5632,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
         live_models = fetch_api_models(api_key_for_probe, effective_base)
         if live_models:
             model_list = live_models
-            print(f"  Found {len(model_list)} model(s) from {pconfig.name} API")
+            print(f"  找到 {len(model_list)} 个模型来自 {pconfig.name} API")
         else:
             mdev_models: list = []
             try:
@@ -5648,12 +5648,12 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                     if m.lower() not in seen:
                         model_list.append(m)
                         seen.add(m.lower())
-                print(f"  Found {len(model_list)} model(s) from models.dev registry")
+                print(f"  找到 {len(model_list)} 个模型来自 models.dev registry")
             else:
                 model_list = curated
                 if model_list:
                     print(
-                        f'  Showing {len(model_list)} curated models — use "Enter custom model name" for others.'
+                        f'  正在显示 {len(model_list)} 个精选模型 — use "Enter custom model name" for others.'
                     )
     else:
         curated = _PROVIDER_MODELS.get(provider_id, [])
@@ -5680,12 +5680,12 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                 model_list = merged
             else:
                 model_list = mdev_models
-            print(f"  Found {len(model_list)} model(s) from models.dev registry")
+            print(f"  找到 {len(model_list)} 个模型来自 models.dev registry")
         elif curated and len(curated) >= 8:
             # Curated list is substantial — use it directly, skip live probe
             model_list = curated
             print(
-                f'  Showing {len(model_list)} curated models — use "Enter custom model name" for others.'
+                f'  正在显示 {len(model_list)} 个精选模型 — use "Enter custom model name" for others.'
             )
         else:
             api_key_for_probe = existing_key or (
@@ -5694,12 +5694,12 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
             live_models = fetch_api_models(api_key_for_probe, effective_base)
             if live_models and len(live_models) >= len(curated):
                 model_list = live_models
-                print(f"  Found {len(model_list)} model(s) from {pconfig.name} API")
+                print(f"  找到 {len(model_list)} 个模型来自 {pconfig.name} API")
             else:
                 model_list = curated
                 if model_list:
                     print(
-                        f'  Showing {len(model_list)} curated models — use "Enter custom model name" for others.'
+                        f'  正在显示 {len(model_list)} 个精选模型 — use "Enter custom model name" for others.'
                     )
             # else: no defaults either, will fall through to raw input
 
@@ -5739,9 +5739,9 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
         save_config(cfg)
         deactivate_provider()
 
-        print(f"Default model set to: {selected} (via {pconfig.name})")
+        print(f"默认模型已设置为：{selected}（通过 {pconfig.name})")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def _run_anthropic_oauth_flow(save_env_value):
@@ -5765,7 +5765,7 @@ def _run_anthropic_oauth_flow(save_env_value):
             is_claude_code_token_valid(creds) or bool(creds.get("refreshToken"))
         ):
             use_anthropic_claude_code_credentials(save_fn=save_env_value)
-            print("  ✓ Claude Code credentials linked.")
+            print("  ✓ Claude Code 凭据已关联。")
             from hermes_constants import display_hermes_home as _dhh_fn
 
             print(
@@ -5776,20 +5776,20 @@ def _run_anthropic_oauth_flow(save_env_value):
 
     try:
         print()
-        print("  Running 'claude setup-token' — follow the prompts below.")
-        print("  A browser window will open for you to authorize access.")
+        print("  正在运行 'claude setup-token' — 请按照以下提示操作。")
+        print("  将打开一个浏览器窗口供您授权访问。")
         print()
         token = run_oauth_setup_token()
         if token:
             if _activate_claude_code_credentials_if_available():
                 return True
             save_anthropic_oauth_token(token, save_fn=save_env_value)
-            print("  ✓ OAuth credentials saved.")
+            print("  ✓ OAuth 凭据已保存。")
             return True
 
         # Subprocess completed but no token auto-detected — ask user to paste
         print()
-        print("  If the setup-token was displayed above, paste it here:")
+        print("  如果上方显示了 setup-token，请在此粘贴：")
         print()
         try:
             import getpass
@@ -5802,25 +5802,25 @@ def _run_anthropic_oauth_flow(save_env_value):
             return False
         if manual_token:
             save_anthropic_oauth_token(manual_token, save_fn=save_env_value)
-            print("  ✓ Setup-token saved.")
+            print("  ✓ Setup-token 已保存。")
             return True
 
-        print("  ⚠ Could not detect saved credentials.")
+        print("  ⚠ 无法检测到已保存的凭据。")
         return False
 
     except FileNotFoundError:
         # Claude CLI not installed — guide user through manual setup
         print()
-        print("  The 'claude' CLI is required for OAuth login.")
+        print("  OAuth 登录需要 'claude' CLI。")
         print()
-        print("  To install and authenticate:")
+        print("  要安装并认证：")
         print()
-        print("    1. Install Claude Code:  npm install -g @anthropic-ai/claude-code")
-        print("    2. Run:                  claude setup-token")
-        print("    3. Follow the browser prompts to authorize")
-        print("    4. Re-run:               hermes model")
+        print("    1. 安装 Claude Code：npm install -g @anthropic-ai/claude-code")
+        print("    2. 运行：                 claude setup-token")
+        print("    3. 按照浏览器提示进行授权")
+        print("    4. 重新运行：             hermes model")
         print()
-        print("  Or paste an existing setup-token now (sk-ant-oat-...):")
+        print("  或立即粘贴现有的 setup-token (sk-ant-oat-...)：")
         print()
         try:
             import getpass
@@ -5831,9 +5831,9 @@ def _run_anthropic_oauth_flow(save_env_value):
             return False
         if token:
             save_anthropic_oauth_token(token, save_fn=save_env_value)
-            print("  ✓ Setup-token saved.")
+            print("  ✓ Setup-token 已保存。")
             return True
-        print("  Cancelled — install Claude Code and try again.")
+        print("  已取消 — install Claude Code and try again.")
         return False
 
 
@@ -5900,11 +5900,11 @@ def _model_flow_anthropic(config, current_model=""):
                 f"  Anthropic credentials: {existing_key[:12]}... ✓{source_suffix}"
             )
         elif cc_available:
-            print("  Claude Code credentials: ✓ (auto-detected)")
+            print("  Claude Code 凭据：✓（自动检测）")
         print()
-        print("    1. Use existing credentials")
-        print("    2. Reauthenticate (new OAuth login)")
-        print("    3. Cancel")
+        print("    1. 使用现有凭据")
+        print("    2. 重新认证（新的 OAuth 登录）")
+        print("    3. 取消")
         print()
         try:
             choice = input("  Choice [1/2/3]: ").strip()
@@ -5920,11 +5920,11 @@ def _model_flow_anthropic(config, current_model=""):
     if needs_auth:
         # Show auth method choice
         print()
-        print("  Choose authentication method:")
+        print("  选择认证方式：")
         print()
-        print("    1. Claude Pro/Max subscription (OAuth login)")
-        print("    2. Anthropic API key (pay-per-token)")
-        print("    3. Cancel")
+        print("    1. Claude Pro/Max 订阅（OAuth 登录）")
+        print("    2. Anthropic API 密钥（按 token 付费）")
+        print("    3. 取消")
         print()
         try:
             choice = input("  Choice [1/2/3]: ").strip()
@@ -5948,13 +5948,13 @@ def _model_flow_anthropic(config, current_model=""):
                 print()
                 return
             if not api_key:
-                print("  Cancelled.")
+                print("  已取消。")
                 return
             save_anthropic_api_key(api_key, save_fn=save_env_value)
-            print("  ✓ API key saved.")
+            print("  ✓ API 密钥已保存。")
 
         else:
-            print("  No change.")
+            print("  未做更改。")
             return
     print()
 
@@ -5985,9 +5985,9 @@ def _model_flow_anthropic(config, current_model=""):
         save_config(cfg)
         deactivate_provider()
 
-        print(f"Default model set to: {selected} (via Anthropic)")
+        print(f"默认模型已设置为：{selected}（通过 Anthropic)")
     else:
-        print("No change.")
+        print("未做更改。")
 
 
 def cmd_login(args):
@@ -6041,7 +6041,7 @@ def cmd_slack(args):
     """
     sub = getattr(args, "slack_command", None)
     if sub in {None, ""}:
-        # No subcommand — print usage hint.
+        # 没有 subcommand — print usage hint.
         print(
             "usage: hermes slack <subcommand>\n"
             "\n"
@@ -6334,7 +6334,7 @@ def _web_ui_build_needed(web_dir: Path) -> bool:
 
     The Vite build outputs to ``hermes_cli/web_dist/`` (per vite.config.ts
     outDir: "../hermes_cli/web_dist"), NOT to ``web/dist/``.  Uses the Vite
-    manifest as the sentinel because it is written last and therefore has the
+    manifest as the sentinel 因为 it is written last and therefore has the
     newest mtime of any build output.
     """
     dist_dir = web_dir.parent / "hermes_cli" / "web_dist"
@@ -6757,7 +6757,7 @@ def _kill_stale_dashboard_processes(
     Windows: ``taskkill /PID <pid> /F`` since there's no clean SIGTERM
     equivalent for background console apps.
 
-    The dashboard isn't auto-restarted because we don't know the original
+    The dashboard isn't auto-restarted 因为 we don't know the original
     launch args (--host, --port, --insecure, --tui, --no-open).  The user
     restarts it manually; a hint is printed.
     """
@@ -8391,7 +8391,7 @@ def _run_pre_update_backup(args) -> None:
     """Create a full zip backup of HERMES_HOME before running the update.
 
     Gated on ``updates.pre_update_backup`` in config (default false).  Off
-    by default because the zip can add minutes to every update on large
+    by default 因为 the zip can add minutes to every update on large
     HERMES_HOME directories.  The ``--backup`` flag on ``hermes update``
     opts in for a single run; ``--no-backup`` forces it off when config
     has it enabled.  Never raises — a backup failure should not block the
@@ -9608,7 +9608,7 @@ def _cmd_update_impl(args, gateway_mode: bool):
                         )
 
             if not restarted_services and not killed_pids:
-                # No gateways were running — nothing to do
+                # 没有 gateways were running — nothing to do
                 pass
 
             # --- Post-restart survivor sweep -----------------------------
@@ -9830,7 +9830,7 @@ def cmd_profile(args):
         active = get_active_profile_name()
 
         if not profiles:
-            print("No profiles found.")
+            print("未找到配置文件。")
             return
 
         # Header
@@ -9872,7 +9872,7 @@ def cmd_profile(args):
             else:
                 print(f"Switched to: {name}")
         except (ValueError, FileNotFoundError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "create":
@@ -9924,7 +9924,7 @@ def cmd_profile(args):
                 result = seed_profile_skills(profile_dir)
                 if result and result.get("skipped_opt_out"):
                     print(
-                        "No bundled skills seeded (--no-skills). "
+                        "没有 bundled skills seeded (--no-skills). "
                         "Delete .no-bundled-skills in the profile to opt back in."
                     )
                 elif result:
@@ -9965,7 +9965,7 @@ def cmd_profile(args):
 
             # Next steps
             print(f"\nNext steps:")
-            print(f"  {name} setup              Configure API keys and model")
+            print(f"  {name} setup              配置 API keys and model")
             print(f"  {name} chat               Start chatting")
             print(f"  {name} gateway start      Start the messaging gateway")
             if clone or clone_all:
@@ -9980,7 +9980,7 @@ def cmd_profile(args):
             print()
 
         except (ValueError, FileExistsError, FileNotFoundError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "delete":
@@ -9989,7 +9989,7 @@ def cmd_profile(args):
         try:
             delete_profile(name, yes=yes)
         except (ValueError, FileNotFoundError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "describe":
@@ -10032,10 +10032,10 @@ def cmd_profile(args):
                 else:
                     profile_dir = _profiles_mod.get_profile_dir(name)
             except Exception as exc:
-                print(f"Error: {exc}", file=sys.stderr)
+                print(f"错误：{exc}", file=sys.stderr)
                 sys.exit(1)
             if not profile_dir.is_dir():
-                print(f"Error: profile '{name}' not found", file=sys.stderr)
+                print(f"错误：profile '{name}' not found", file=sys.stderr)
                 sys.exit(1)
             meta = _profiles_mod.read_profile_meta(profile_dir)
             desc = meta.get("description") or ""
@@ -10061,7 +10061,7 @@ def cmd_profile(args):
                 )
                 print(f"Description updated for '{name}'.")
             except Exception as exc:
-                print(f"Error: {exc}", file=sys.stderr)
+                print(f"错误：{exc}", file=sys.stderr)
                 sys.exit(1)
             sys.exit(0)
 
@@ -10105,7 +10105,7 @@ def cmd_profile(args):
         )
 
         if not profile_exists(name):
-            print(f"Error: Profile '{name}' does not exist.")
+            print(f"错误：Profile '{name}' does not exist.")
             sys.exit(1)
         profile_dir = get_profile_dir(name)
         model, provider = _read_config_model(profile_dir)
@@ -10143,7 +10143,7 @@ def cmd_profile(args):
         from hermes_cli.profiles import profile_exists
 
         if not profile_exists(name):
-            print(f"Error: Profile '{name}' does not exist.")
+            print(f"错误：Profile '{name}' does not exist.")
             sys.exit(1)
 
         alias_name = custom_name or name
@@ -10152,11 +10152,11 @@ def cmd_profile(args):
             if remove_wrapper_script(alias_name):
                 print(f"✓ Removed alias '{alias_name}'")
             else:
-                print(f"No alias '{alias_name}' found to remove.")
+                print(f"未找到别名 '{alias_name}' found to remove.")
         else:
             collision = check_alias_collision(alias_name)
             if collision:
-                print(f"Error: {collision}")
+                print(f"错误：{collision}")
                 sys.exit(1)
             wrapper_path = create_wrapper_script(alias_name)
             if wrapper_path:
@@ -10175,7 +10175,7 @@ def cmd_profile(args):
             print(f"\nProfile renamed: {args.old_name} → {args.new_name}")
             print(f"Path: {new_dir}\n")
         except (ValueError, FileExistsError, FileNotFoundError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "export":
@@ -10187,7 +10187,7 @@ def cmd_profile(args):
             result_path = export_profile(name, output)
             print(f"✓ Exported '{name}' to {result_path}")
         except (ValueError, FileNotFoundError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "import":
@@ -10208,7 +10208,7 @@ def cmd_profile(args):
                     print(f"  Wrapper created: {wrapper_path}")
             print()
         except (ValueError, FileExistsError, FileNotFoundError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "install":
@@ -10260,7 +10260,7 @@ def cmd_profile(args):
                 )
             print(f"\n  Use with:      hermes -p {plan.manifest.name} chat")
         except (DistributionError, ValueError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "update":
@@ -10277,7 +10277,7 @@ def cmd_profile(args):
             current = read_manifest(get_profile_dir(canon))
             if current is None:
                 print(
-                    f"Error: Profile '{canon}' is not a distribution (no distribution.yaml). "
+                    f"错误：Profile '{canon}' is not a distribution (no distribution.yaml). "
                     "Only profiles installed via `hermes profile install` can be updated."
                 )
                 sys.exit(1)
@@ -10307,7 +10307,7 @@ def cmd_profile(args):
                     f"hermes -p {plan.manifest.name} cron list"
                 )
         except (DistributionError, ValueError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
 
     elif action == "info":
@@ -10316,7 +10316,7 @@ def cmd_profile(args):
         try:
             data = describe_distribution(args.profile_name)
         except (DistributionError, ValueError) as e:
-            print(f"Error: {e}")
+            print(f"错误：{e}")
             sys.exit(1)
         if not data:
             print(
@@ -10424,7 +10424,7 @@ def _report_dashboard_status() -> int:
     """
     pids = _find_stale_dashboard_pids()
     if not pids:
-        print("No hermes dashboard processes running.")
+        print("没有正在运行的 hermes 仪表盘进程。")
         return 0
 
     print(f"{len(pids)} hermes dashboard process(es) running:")
@@ -10462,7 +10462,7 @@ def cmd_dashboard(args):
     if getattr(args, "stop", False):
         pids = _find_stale_dashboard_pids()
         if not pids:
-            print("No hermes dashboard processes running.")
+            print("没有正在运行的 hermes 仪表盘进程。")
             sys.exit(0)
         # Reuse the same SIGTERM-grace-SIGKILL path used after `hermes update`.
         _kill_stale_dashboard_processes(reason="requested via --stop")
@@ -12379,7 +12379,7 @@ Examples:
     # =========================================================================
     # Plugin CLI commands — dynamically registered by memory/general plugins.
     # Plugins provide a register_cli(subparser) function that builds their
-    # own argparse tree.  No hardcoded plugin commands in main.py.
+    # own argparse tree.  没有 hardcoded plugin commands in main.py.
     #
     # Skipped when the invocation is already targeting a known built-in
     # subcommand — ``hermes --help``, ``hermes version``, ``hermes logs``,
@@ -12522,10 +12522,10 @@ Examples:
                 try:
                     answer = input("\n  Type 'yes' to confirm: ").strip().lower()
                 except (EOFError, KeyboardInterrupt):
-                    print("\n  Cancelled.\n")
+                    print("\n  已取消。\n")
                     return
                 if answer != "yes":
-                    print("  Cancelled.\n")
+                    print("  已取消。\n")
                     return
 
             for f, desc in existing:
@@ -12687,7 +12687,7 @@ Examples:
             print("cua-driver: not installed")
             print("  Run: hermes computer-use install")
             return
-        # No subcommand → show help
+        # 没有 subcommand → show help
         computer_use_parser.print_help()
 
     computer_use_parser.set_defaults(func=cmd_computer_use)
@@ -12853,7 +12853,7 @@ Examples:
 
             db = SessionDB()
         except Exception as e:
-            print(f"Error: Could not open session database: {e}")
+            print(f"错误：Could not open session database: {e}")
             return
 
         action = args.sessions_action
@@ -12867,7 +12867,7 @@ Examples:
                 source=args.source, exclude_sources=_exclude, limit=args.limit
             )
             if not sessions:
-                print("No sessions found.")
+                print("未找到会话。")
                 return
             has_titles = any(s.get("title") for s in sessions)
             if has_titles:
@@ -12930,7 +12930,7 @@ Examples:
                 if not _confirm_prompt(
                     f"Delete session '{resolved_session_id}' and all its messages? [y/N] "
                 ):
-                    print("Cancelled.")
+                    print("已取消。")
                     return
             sessions_dir = get_hermes_home() / "sessions"
             if db.delete_session(resolved_session_id, sessions_dir=sessions_dir):
@@ -12945,7 +12945,7 @@ Examples:
                 if not _confirm_prompt(
                     f"Delete all ended sessions older than {days} days{source_msg}? [y/N] "
                 ):
-                    print("Cancelled.")
+                    print("已取消。")
                     return
             sessions_dir = get_hermes_home() / "sessions"
             count = db.prune_sessions(
@@ -12965,7 +12965,7 @@ Examples:
                 else:
                     print(f"Session '{args.session_id}' not found.")
             except ValueError as e:
-                print(f"Error: {e}")
+                print(f"错误：{e}")
 
         elif action == "browse":
             limit = getattr(args, "limit", 500) or 500
@@ -12976,12 +12976,12 @@ Examples:
             )
             db.close()
             if not sessions:
-                print("No sessions found.")
+                print("未找到会话。")
                 return
 
             selected_id = _session_browse_picker(sessions)
             if not selected_id:
-                print("Cancelled.")
+                print("已取消。")
                 return
 
             # Launch hermes --resume <id> by replacing the current process
@@ -13514,7 +13514,7 @@ Examples:
     )
     # Lifecycle flags — mutually exclusive with each other and with the
     # start-a-server flags above (if both are passed, --stop / --status win
-    # because they exit before the server is started).  The dashboard has
+    # 因为 they exit before the server is started).  The dashboard has
     # no service manager and no PID file, so these scan the process table
     # for `hermes dashboard` cmdlines and SIGTERM them directly — the same
     # path `hermes update` uses to clean up stale dashboards.
