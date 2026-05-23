@@ -94,7 +94,7 @@ def show_status(args):
 
     print()
     print(color("┌─────────────────────────────────────────────────────────┐", Colors.CYAN))
-    print(color("│                 ⚕ Hermes Agent 状态                │", Colors.CYAN))
+    print(color("│                 ⚕ Nermes Agent 状态                │", Colors.CYAN))
     print(color("└─────────────────────────────────────────────────────────┘", Colors.CYAN))
 
     # =========================================================================

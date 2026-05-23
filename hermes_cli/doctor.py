@@ -380,7 +380,7 @@ def run_doctor(args):
 
     print()
     print(color("┌─────────────────────────────────────────────────────────┐", Colors.CYAN))
-    print(color("│                 🩺 Hermes 诊断                          │", Colors.CYAN))
+    print(color("│                 🩺 Nermes 诊断                          │", Colors.CYAN))
     print(color("└─────────────────────────────────────────────────────────┘", Colors.CYAN))
 
     _section("安全公告")
