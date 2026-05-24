@@ -9,7 +9,7 @@
 ## 一键安装
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nousresearch/nermes-core/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/elliotmessi/nermes-core/main/scripts/install.sh | bash
 ```
 
 ## 安装过程
@@ -42,9 +42,9 @@ nermes
 ## 手动安装（高级用户）
 
 ```bash
-git clone https://github.com/nousresearch/nermes-core.git
+git clone https://github.com/elliotmessi/nermes-core.git
 cd nermes-core
-./setup-hermes.sh
+./scripts/setup.sh
 ```
 
 ## 卸载
