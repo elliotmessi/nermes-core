@@ -61,12 +61,76 @@ try:
 except ModuleNotFoundError:
     pass
 
+import os
+import sys
+
+
+def _is_termux_startup_environment_fast() -> bool:
+    """Tiny Termux check for pre-import startup shortcuts."""
+    prefix = os.environ.get("PREFIX", "")
+    return bool(
+        os.environ.get("TERMUX_VERSION")
+        or "com.termux/files/usr" in prefix
+        or prefix.startswith("/data/data/com.termux/")
+    )
+
+
+def _is_termux_fast_version_argv(argv: list[str]) -> bool:
+    return argv in (["--version"], ["-V"], ["version"])
+
+
+def _read_openai_version_fast() -> str | None:
+    """Read OpenAI SDK version without importing ``importlib.metadata``."""
+    for base in sys.path:
+        if not base:
+            base = os.getcwd()
+        version_file = os.path.join(base, "openai", "_version.py")
+        try:
+            with open(version_file, encoding="utf-8") as handle:
+                for line in handle:
+                    stripped = line.strip()
+                    if not stripped.startswith("__version__"):
+                        continue
+                    _key, _sep, value = stripped.partition("=")
+                    value = value.split("#", 1)[0].strip().strip("\"'")
+                    return value or None
+        except OSError:
+            continue
+    return None
+
+
+def _print_fast_version_info() -> None:
+    from hermes_cli import __release_date__, __version__
+
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    print(f"Nermes v{__version__} ({__release_date__})")
+    print(f"Project: {project_root}")
+    print(f"Python: {sys.version.split()[0]}")
+
+    openai_version = _read_openai_version_fast()
+    print(f"OpenAI SDK: {openai_version}" if openai_version else "OpenAI SDK: Not installed")
+
+
+def _try_termux_ultrafast_version() -> bool:
+    """Handle ``hermes --version`` before config/logging imports on Termux."""
+    if os.environ.get("HERMES_TERMUX_DISABLE_FAST_CLI") == "1":
+        return False
+    if not _is_termux_startup_environment_fast():
+        return False
+    if not _is_termux_fast_version_argv(sys.argv[1:]):
+        return False
+
+    _print_fast_version_info()
+    return True
+
+
+if _try_termux_ultrafast_version():
+    raise SystemExit(0)
+
 import argparse
 import json
-import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 from typing import Optional
 
@@ -1390,7 +1454,7 @@ def _launch_tui(
     provider: Optional[str] = None,
     toolsets: object = None,
     skills: object = None,
-    verbose: bool = False,
+    verbose: Optional[bool] = None,
     quiet: bool = False,
     query: Optional[str] = None,
     image: Optional[str] = None,
@@ -1622,10 +1686,10 @@ def cmd_chat(args):
     if not _has_any_provider_configured():
         print()
         print(
-            "看起来 Hermes 尚未配置 -- 未找到 API 密钥或提供商。"
+            "看起来 Nermes 尚未配置 -- 未找到 API 密钥或提供商。"
         )
         print()
-        print("  运行：hermes setup")
+        print("  运行：nermes setup")
         print()
 
         from hermes_cli.setup import (
@@ -1672,7 +1736,7 @@ def cmd_chat(args):
         os.environ["HERMES_YOLO_MODE"] = "1"
 
     # --ignore-user-config: make load_cli_config() / load_config() skip the
-    # user's ~/.hermes/config.yaml and return built-in defaults. Set BEFORE
+    # user's ~/.nermes/config.yaml and return built-in defaults. Set BEFORE
     # importing cli (which runs `CLI_CONFIG = load_cli_config()` at module
     # import time). Credentials in .env are still loaded — this flag only
     # ignores behavioral/config settings.
@@ -1699,7 +1763,7 @@ def cmd_chat(args):
             provider=getattr(args, "provider", None),
             toolsets=getattr(args, "toolsets", None),
             skills=getattr(args, "skills", None),
-            verbose=getattr(args, "verbose", False),
+            verbose=getattr(args, "verbose", None),
             quiet=getattr(args, "quiet", False),
             query=getattr(args, "query", None),
             image=getattr(args, "image", None),
@@ -1719,7 +1783,7 @@ def cmd_chat(args):
         "provider": getattr(args, "provider", None),
         "toolsets": args.toolsets,
         "skills": getattr(args, "skills", None),
-        "verbose": args.verbose,
+        "verbose": getattr(args, "verbose", None),
         "quiet": getattr(args, "quiet", False),
         "query": args.query,
         "image": getattr(args, "image", None),
@@ -1730,6 +1794,7 @@ def cmd_chat(args):
         "max_turns": getattr(args, "max_turns", None),
         "ignore_rules": getattr(args, "ignore_rules", False),
         "ignore_user_config": getattr(args, "ignore_user_config", False),
+        "compact": getattr(args, "compact", False),
     }
     # Filter out None values
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
@@ -1772,7 +1837,7 @@ def cmd_whatsapp(args):
     current_mode = get_env_value("WHATSAPP_MODE") or ""
     if not current_mode:
         print()
-        print("您将如何使用 WhatsApp 与 Hermes？")
+        print("您将如何使用 WhatsApp 与 Nermes？")
         print()
         print("  1. 独立机器人号码（推荐）")
         print("     用户直接向机器人号码发送消息 — 最干净的体验。")
@@ -1966,14 +2031,14 @@ def cmd_whatsapp(args):
             print("    2. 向机器人的 WhatsApp 号码发送消息")
             print("    3. 代理将自动回复")
             print()
-            print("  提示：代理回复以 '⚕ Hermes Agent' 为前缀")
+            print("  提示：代理回复以 '⚕ Nermes' 为前缀")
         else:
             print("  后续步骤：")
             print("    1. 启动网关：hermes gateway")
             print("    2. 打开 WhatsApp → 给自己发消息")
             print("    3. 输入消息 — 代理将回复")
             print()
-            print("  提示：代理回复以 '⚕ Hermes Agent' 为前缀")
+            print("  提示：代理回复以 '⚕ Nermes' 为前缀")
             print("  以便您区分代理回复和您自己的消息。")
         print()
         print("  或安装为服务：hermes gateway install")
@@ -2440,6 +2505,27 @@ _AUX_TASKS: list[tuple[str, str, str]] = [
 ]
 
 
+def _all_aux_tasks() -> list[tuple[str, str, str]]:
+    """Return built-in + plugin-registered auxiliary tasks for picker/menu use.
+
+    Built-in tasks come first (preserving order), followed by plugin tasks
+    sorted by key. Used by ``_aux_config_menu``, ``_reset_aux_to_auto``, and
+    display-name lookups so plugin-registered tasks (registered via
+    :meth:`hermes_cli.plugins.PluginContext.register_auxiliary_task`) appear
+    in the same surfaces as built-in ones without core knowing about them.
+    """
+    tasks = list(_AUX_TASKS)
+    try:
+        from hermes_cli.plugins import get_plugin_auxiliary_tasks
+        for entry in get_plugin_auxiliary_tasks():
+            tasks.append((entry["key"], entry["display_name"], entry["description"]))
+    except Exception:
+        # Plugin discovery failure must not break the aux config UI.
+        # Built-in tasks remain available.
+        pass
+    return tasks
+
+
 def _format_aux_current(task_cfg: dict) -> str:
     """Render the current aux config for display in the task menu."""
     if not isinstance(task_cfg, dict):
@@ -2490,7 +2576,11 @@ def _save_aux_choice(
 
 
 def _reset_aux_to_auto() -> int:
-    """Reset every known aux task back to auto/empty. Returns number reset."""
+    """Reset every known aux task back to auto/empty. Returns number reset.
+
+    Includes plugin-registered tasks (via ``_all_aux_tasks``) so a plugin
+    that contributed an auxiliary task gets reset alongside built-ins.
+    """
     from hermes_cli.config import load_config, save_config
 
     cfg = load_config()
@@ -2499,7 +2589,7 @@ def _reset_aux_to_auto() -> int:
         aux = {}
         cfg["auxiliary"] = aux
     count = 0
-    for task, _name, _desc in _AUX_TASKS:
+    for task, _name, _desc in _all_aux_tasks():
         entry = aux.setdefault(task, {})
         if not isinstance(entry, dict):
             entry = {}
@@ -2542,10 +2632,11 @@ def _aux_config_menu() -> None:
         print()
 
         # Build the task menu with current settings inline
-        name_col = max(len(name) for _, name, _ in _AUX_TASKS) + 2
-        desc_col = max(len(desc) for _, _, desc in _AUX_TASKS) + 4
+        all_tasks = _all_aux_tasks()
+        name_col = max(len(name) for _, name, _ in all_tasks) + 2
+        desc_col = max(len(desc) for _, _, desc in all_tasks) + 4
         entries: list[tuple[str, str]] = []
-        for task_key, name, desc in _AUX_TASKS:
+        for task_key, name, desc in all_tasks:
             task_cfg = (
                 aux.get(task_key, {}) if isinstance(aux.get(task_key), dict) else {}
             )
@@ -2596,7 +2687,7 @@ def _aux_select_for_task(task: str) -> None:
     current_model = str(task_cfg.get("model") or "").strip()
     current_base_url = str(task_cfg.get("base_url") or "").strip()
 
-    display_name = next((name for key, name, _ in _AUX_TASKS if key == task), task)
+    display_name = next((name for key, name, _ in _all_aux_tasks() if key == task), task)
 
     # Gather authenticated providers (has credentials + curated model list)
     try:
@@ -2667,7 +2758,7 @@ def _aux_flow_provider_model(
     from hermes_cli.auth import _prompt_model_selection
     from hermes_cli.models import get_pricing_for_provider
 
-    display_name = next((name for key, name, _ in _AUX_TASKS if key == task), task)
+    display_name = next((name for key, name, _ in _all_aux_tasks() if key == task), task)
 
     # Fetch live pricing for this provider (non-blocking)
     pricing: dict = {}
@@ -2713,7 +2804,7 @@ def _aux_flow_custom_endpoint(task: str, task_cfg: dict) -> None:
     """Prompt for a direct OpenAI-compatible base_url + optional api_key/model."""
     import getpass
 
-    display_name = next((name for key, name, _ in _AUX_TASKS if key == task), task)
+    display_name = next((name for key, name, _ in _all_aux_tasks() if key == task), task)
     current_base_url = str(task_cfg.get("base_url") or "").strip()
     current_model = str(task_cfg.get("model") or "").strip()
 
@@ -3696,7 +3787,7 @@ def _prompt_custom_api_mode_selection(base_url: str, current_api_mode: str = "")
         (
             "",
             "Auto-detect",
-            "Use Hermes URL heuristics; best for standard OpenAI-compatible endpoints.",
+            "Use Nermes URL heuristics; best for standard OpenAI-compatible endpoints.",
         ),
         (
             "chat_completions",
@@ -3921,7 +4012,7 @@ def _model_flow_azure_foundry(config, current_model=""):
     print("=" * 50)
     print()
     print("Azure Foundry 可托管采用 OpenAI 风格或")
-    print("Anthropic 风格 API 端点的模型。Hermes 将探测您的")
+    print("Anthropic 风格 API 端点的模型。Nermes 将探测您的")
     print("端点以自动检测传输方式和已部署的")
     print("模型（如果可能）。")
     print()
@@ -4792,8 +4883,8 @@ def _model_flow_copilot_acp(config, current_model=""):
     )
     effective_base = status.get("base_url") or pconfig.inference_base_url
 
-    print("  GitHub Copilot ACP delegates Hermes turns to `copilot --acp`.")
-    print("  Hermes currently starts its own ACP subprocess for each request.")
+    print("  GitHub Copilot ACP delegates Nermes turns to `copilot --acp`.")
+    print("  Nermes currently starts its own ACP subprocess for each request.")
     print("  Nermes uses your selected model as a hint for the Copilot ACP session.")
     print(f"  命令：{resolved_command}")
     print(f"  后端标记：{effective_base}")
@@ -5522,7 +5613,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                     "(<= 250 requests/day for gemini-2.5-flash)."
                 )
                 print(
-                    "   Hermes typically makes 3-10 API calls per user turn "
+                    "   Nermes typically makes 3-10 API calls per user turn "
                     "(tool iterations + auxiliary tasks),"
                 )
                 print(
@@ -5532,7 +5623,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
                 print("   一个代理会话。")
                 print()
                 print(
-                    "   To use Gemini with Hermes, enable billing on your "
+                    "   To use Gemini with Nermes, enable billing on your "
                     "Google Cloud project and regenerate"
                 )
                 print(
@@ -6030,6 +6121,13 @@ def cmd_webhook(args):
     from hermes_cli.webhook import webhook_command
 
     webhook_command(args)
+
+
+def cmd_portal(args):
+    """Nous Portal status and Tool Gateway routing surface."""
+    from hermes_cli.portal_cli import portal_command
+
+    return portal_command(args)
 
 
 def cmd_slack(args):
@@ -6860,8 +6958,8 @@ def _update_via_zip(args):
     )
 
     print("→ Downloading latest version...")
+    tmp_dir = tempfile.mkdtemp(prefix="hermes-update-")
     try:
-        tmp_dir = tempfile.mkdtemp(prefix="hermes-update-")
         zip_path = os.path.join(tmp_dir, f"hermes-agent-{branch}.zip")
         urlretrieve(zip_url, zip_path)
 
@@ -6908,12 +7006,11 @@ def _update_via_zip(args):
 
         print(f"✓ Updated {update_count} items from ZIP")
 
-        # Cleanup
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-
     except Exception as e:
         print(f"✗ ZIP update failed: {e}")
         sys.exit(1)
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
     # Clear stale bytecode after ZIP extraction
     removed = _clear_bytecode_cache(PROJECT_ROOT)
@@ -7083,7 +7180,7 @@ def _restore_stashed_changes(
         print(
             "  Restoring them may reapply local customizations onto the updated codebase."
         )
-        print("  Review the result afterward if Hermes behaves unexpectedly.")
+        print("  Review the result afterward if Nermes behaves unexpectedly.")
         print("Restore local changes now? [Y/n]")
         if input_fn is not None:
             response = input_fn("Restore local changes now? [Y/n]", "y")
@@ -7147,7 +7244,7 @@ def _restore_stashed_changes(
     stash_selector = _resolve_stash_selector(git_cmd, cwd, stash_ref)
     if stash_selector is None:
         print(
-            "⚠ Local changes were restored, but Hermes couldn't find the stash entry to drop."
+            "⚠ Local changes were restored, but Nermes couldn't find the stash entry to drop."
         )
         print(
             "  The stash was left in place. You can remove it manually after checking the result."
@@ -7162,7 +7259,7 @@ def _restore_stashed_changes(
         )
         if drop.returncode != 0:
             print(
-                "⚠ Local changes were restored, but Hermes couldn't drop the saved stash entry."
+                "⚠ Local changes were restored, but Nermes couldn't drop the saved stash entry."
             )
             if drop.stdout.strip():
                 print(drop.stdout.strip())
@@ -7174,7 +7271,7 @@ def _restore_stashed_changes(
             _print_stash_cleanup_guidance(stash_ref, stash_selector)
 
     print("⚠ Local changes were restored on top of the updated codebase.")
-    print("  Review `git diff` / `git status` if Hermes behaves unexpectedly.")
+    print("  Review `git diff` / `git status` if Nermes behaves unexpectedly.")
     return True
 
 
@@ -7321,7 +7418,7 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path) -> None:
 
         # Ask user if they want to add upstream
         print()
-        print("ℹ Your fork is not tracking the official Hermes repository.")
+        print("ℹ Your fork is not tracking the official Hermes repository (upstream).")
         print("  This means you may miss updates from NousResearch/hermes-agent.")
         print()
         try:
@@ -7620,7 +7717,7 @@ def _format_concurrent_instances_message(
     lines.append(f"  Updating now would fail to overwrite {shim} because")
     lines.append("  Windows blocks REPLACE on a running executable.")
     lines.append("")
-    lines.append("  Close Hermes Desktop, exit any open `hermes` REPLs, and")
+    lines.append("  Close Nermes Desktop, exit any open `hermes` REPLs, and")
     lines.append("  stop the gateway (`hermes gateway stop`) before retrying.")
     lines.append("  Override with `hermes update --force` if you've already")
     lines.append("  confirmed those processes will not write to the venv.")
@@ -7644,7 +7741,7 @@ def _quarantine_running_hermes_exe(
 
     Rename can still fail when *another* process has opened the .exe without
     ``FILE_SHARE_DELETE`` — typically AV real-time scanners with transient
-    handles (recovers in <1s), or the Hermes Desktop backend child process
+    handles (recovers in <1s), or the Nermes Desktop backend child process
     (won't recover until the user closes it). We mitigate:
 
     1. Retry up to ``max_attempts`` times with exponential backoff
@@ -7656,7 +7753,7 @@ def _quarantine_running_hermes_exe(
        update can complete; the user just needs to reboot to fully unload
        the stale image.
     3. Print a clear warning naming the most likely culprit (running
-       Hermes Desktop / gateway / REPL) and pointing to ``--force``.
+       Nermes Desktop / gateway / REPL) and pointing to ``--force``.
 
     Returns the list of (original, quarantined) pairs so the caller can roll
     back if the install itself fails before uv writes a replacement. Pairs
@@ -7723,7 +7820,7 @@ def _quarantine_running_hermes_exe(
             f"another process is holding it open)."
         )
         print(
-            "    Close Hermes Desktop, exit other `hermes` REPLs, stop the "
+            "    Close Nermes Desktop, exit other `hermes` REPLs, stop the "
             "gateway, or pause AV scanning, then re-run `hermes update`."
         )
 
@@ -8493,7 +8590,7 @@ def cmd_update(args):
     from hermes_cli.config import is_managed, managed_error
 
     if is_managed():
-        managed_error("update Hermes Agent")
+        managed_error("update Nermes")
         return
 
     if getattr(args, "check", False):
@@ -8513,7 +8610,7 @@ def cmd_update(args):
 
 
 def _cmd_update_pip(args):
-    """Update Hermes via pip (for PyPI installs)."""
+    """Update Nermes via pip (for PyPI installs)."""
     from hermes_cli import __version__
 
     print(f"→ Current version: {__version__}")
@@ -9670,7 +9767,7 @@ def _cmd_update_impl(args, gateway_mode: bool):
 
             if supports_systemd_services() and has_legacy_hermes_units():
                 print()
-                print("⚠ Legacy Hermes gateway unit(s) detected:")
+                print("⚠ Legacy Nermes gateway unit(s) detected:")
                 for name, path, is_sys in _find_legacy_hermes_units():
                     scope = "system" if is_sys else "user"
                     print(f"    {path}  ({scope} scope)")
@@ -10333,7 +10430,7 @@ def cmd_profile(args):
         if data.get("license"):
             print(f"License:      {data['license']}")
         if data.get("hermes_requires"):
-            print(f"Requires:     Hermes {data['hermes_requires']}")
+            print(f"Requires:     Nermes {data['hermes_requires']}")
         if data.get("source"):
             print(f"Source:       {data['source']}")
         if data.get("installed_at"):
@@ -10362,7 +10459,7 @@ def _render_distribution_plan(plan) -> None:
     if mf.author:
         print(f"  Author:   {mf.author}")
     if mf.hermes_requires:
-        print(f"  Requires: Hermes {mf.hermes_requires}")
+        print(f"  Requires: Nermes {mf.hermes_requires}")
     print(f"  Source:   {plan.provenance}")
     print(f"  Target:   {plan.target_dir}")
     if plan.existing:
@@ -10530,7 +10627,7 @@ def cmd_completion(args, parser=None):
 
 
 def cmd_logs(args):
-    """View and filter Hermes log files."""
+    """View and filter Nermes log files."""
     from hermes_cli.logs import tail_log, list_logs
 
     log_name = getattr(args, "log_name", "agent") or "agent"
@@ -10582,7 +10679,7 @@ _BUILTIN_SUBCOMMANDS = frozenset(
         "config", "cron", "curator", "dashboard", "debug", "doctor",
         "dump", "fallback", "gateway", "hooks", "import", "insights",
         "kanban", "login", "logout", "logs", "lsp", "mcp", "memory", "migrate",
-        "model", "pairing", "plugins", "postinstall", "profile", "proxy",
+        "model", "pairing", "plugins", "portal", "postinstall", "profile", "proxy",
         "send", "sessions", "setup",
         "skills", "slack", "status", "tools", "uninstall", "update",
         "version", "webhook", "whatsapp", "chat", "secrets",
@@ -10742,10 +10839,6 @@ def _set_chat_arg_defaults(args) -> None:
             setattr(args, attr, default)
 
 
-def _is_termux_fast_version_argv(argv: list[str]) -> bool:
-    return argv in (["--version"], ["-V"], ["version"])
-
-
 def _try_termux_fast_cli_launch() -> bool:
     """Run obvious Termux non-TUI chat/oneshot/version paths on a light parser."""
     if not _is_termux_startup_environment():
@@ -10799,7 +10892,17 @@ def _try_termux_fast_cli_launch() -> bool:
 
     if args.command in {None, "chat"}:
         _set_chat_arg_defaults(args)
-        _prepare_agent_startup(args)
+        interactive_prompt = not getattr(args, "query", None) and not getattr(args, "image", None)
+        if interactive_prompt:
+            # Bare Termux CLI should reach the prompt first and do agent-only
+            # discovery on the first submitted turn instead of before input.
+            setattr(args, "compact", True)
+            os.environ["HERMES_DEFER_AGENT_STARTUP"] = "1"
+            os.environ["HERMES_FAST_STARTUP_BANNER"] = "1"
+            if getattr(args, "accept_hooks", False):
+                os.environ["HERMES_ACCEPT_HOOKS"] = "1"
+        else:
+            _prepare_agent_startup(args)
         cmd_chat(args)
         return True
 
@@ -11313,6 +11416,13 @@ def main():
         help="On existing installs: only prompt for items that are missing "
         "or unset, instead of running the full reconfigure wizard.",
     )
+    setup_parser.add_argument(
+        "--portal",
+        action="store_true",
+        help="One-shot Nous Portal setup: log in via OAuth, set Nous as the "
+        "inference provider, and opt into the Tool Gateway. Skips the "
+        "rest of the wizard.",
+    )
     setup_parser.set_defaults(func=cmd_setup)
 
     # =========================================================================
@@ -11342,7 +11452,7 @@ def main():
     slack_parser = subparsers.add_parser(
         "slack",
         help="Slack integration helpers (manifest generation, etc.)",
-        description="Slack integration helpers for Hermes.",
+        description="Slack integration helpers for Nermes.",
     )
     slack_sub = slack_parser.add_subparsers(dest="slack_command")
     slack_manifest = slack_sub.add_parser(
@@ -11396,7 +11506,7 @@ def main():
     login_parser = subparsers.add_parser(
         "login",
         help="Authenticate with an inference provider",
-        description="Run OAuth device authorization flow for Hermes CLI",
+        description="Run OAuth device authorization flow for Nermes CLI",
     )
     login_parser.add_argument(
         "--provider",
@@ -11523,7 +11633,7 @@ def main():
     )
     auth_logout.add_argument("provider", help="Provider id")
     auth_spotify = auth_subparsers.add_parser(
-        "spotify", help="Authenticate Hermes with Spotify via PKCE"
+        "spotify", help="Authenticate Nermes with Spotify via PKCE"
     )
     auth_spotify.add_argument(
         "spotify_action",
@@ -11789,6 +11899,12 @@ def main():
     webhook_parser.set_defaults(func=cmd_webhook)
 
     # =========================================================================
+    # portal command — Nous Portal status + Tool Gateway routing
+    # =========================================================================
+    from hermes_cli.portal_cli import add_parser as _add_portal_parser
+    _add_portal_parser(subparsers)
+
+    # =========================================================================
     # kanban command — multi-profile collaboration board
     # =========================================================================
     from hermes_cli.kanban import build_parser as _build_kanban_parser
@@ -11892,7 +12008,7 @@ def main():
     dump_parser = subparsers.add_parser(
         "dump",
         help="Dump setup summary for support/debugging",
-        description="Output a compact, plain-text summary of your Hermes setup "
+        description="Output a compact, plain-text summary of your Nermes setup "
         "that can be copy-pasted into Discord/GitHub for support context",
     )
     dump_parser.add_argument(
@@ -11972,7 +12088,7 @@ Examples:
     backup_parser = subparsers.add_parser(
         "backup",
         help="Back up Nermes home directory to a zip file",
-        description="Create a zip archive of your entire Hermes configuration, "
+        description="Create a zip archive of your entire Nermes configuration, "
         "skills, sessions, and data (excludes the hermes-agent codebase). "
         "Use --quick for a fast snapshot of just critical state files.",
     )
@@ -12012,7 +12128,7 @@ Examples:
     import_parser = subparsers.add_parser(
         "import",
         help="Restore a Nermes backup from a zip file",
-        description="Extract a previously created Hermes backup into your "
+        description="Extract a previously created Nermes backup into your "
         "Nermes home directory, restoring configuration, skills, "
         "sessions, and data",
     )
@@ -12210,6 +12326,11 @@ Examples:
     )
     skills_audit.add_argument(
         "name", nargs="?", help="Specific skill to audit (default: all)"
+    )
+    skills_audit.add_argument(
+        "--deep",
+        action="store_true",
+        help="Run AST-level analysis on Python files (opt-in diagnostic)",
     )
 
     skills_uninstall = skills_subparsers.add_parser(
@@ -12698,17 +12819,17 @@ Examples:
         "mcp",
         help="Manage MCP servers and run Nermes as an MCP server",
         description=(
-            "Manage MCP server connections and run Hermes as an MCP server.\n\n"
+            "Manage MCP server connections and run Nermes as an MCP server.\n\n"
             "MCP servers provide additional tools via the Model Context Protocol.\n"
             "Use 'hermes mcp add' to connect to a new server, or\n"
-            "'hermes mcp serve' to expose Hermes conversations over MCP."
+            "'hermes mcp serve' to expose Nermes conversations over MCP."
         ),
     )
     mcp_sub = mcp_parser.add_subparsers(dest="mcp_action")
 
     mcp_serve_p = mcp_sub.add_parser(
         "serve",
-        help="Run Hermes as an MCP server (expose conversations to other agents)",
+        help="Run Nermes as an MCP server (expose conversations to other agents)",
     )
     mcp_serve_p.add_argument(
         "-v",
@@ -13048,14 +13169,14 @@ Examples:
     claw_parser = subparsers.add_parser(
         "claw",
         help="OpenClaw migration tools",
-        description="Migrate settings, memories, skills, and API keys from OpenClaw to Hermes",
+        description="Migrate settings, memories, skills, and API keys from OpenClaw to Nermes",
     )
     claw_subparsers = claw_parser.add_subparsers(dest="claw_action")
 
     # claw migrate
     claw_migrate = claw_subparsers.add_parser(
         "migrate",
-        help="Migrate from OpenClaw to Hermes",
+        help="Migrate from OpenClaw to Nermes",
         description="Import settings, memories, skills, and API keys from an OpenClaw installation. "
         "Always shows a preview before making changes.",
     )
@@ -13215,7 +13336,7 @@ Examples:
         "--version",
         action="store_true",
         dest="acp_version",
-        help="Print Hermes ACP version and exit",
+        help="Print Nermes ACP version and exit",
     )
     acp_parser.add_argument(
         "--check",
@@ -13225,7 +13346,7 @@ Examples:
     acp_parser.add_argument(
         "--setup",
         action="store_true",
-        help="Run interactive Hermes provider/model setup for ACP terminal auth",
+        help="Run interactive Nermes provider/model setup for ACP terminal auth",
     )
     acp_parser.add_argument(
         "--setup-browser",
@@ -13403,7 +13524,7 @@ Examples:
         "install",
         help="Install a profile distribution from a git URL or local directory",
         description=(
-            "Install a Hermes profile distribution. SOURCE can be a git URL "
+            "Install a Nermes profile distribution. SOURCE can be a git URL "
             "(github.com/user/repo, https://..., git@...) or a local "
             "directory containing distribution.yaml at its root."
         ),
@@ -13690,7 +13811,7 @@ Examples:
             ("model", None),
             ("provider", None),
             ("toolsets", None),
-            ("verbose", False),
+            ("verbose", None),
             ("worktree", False),
         ]:
             if not hasattr(args, attr):
@@ -13705,7 +13826,7 @@ Examples:
             ("model", None),
             ("provider", None),
             ("toolsets", None),
-            ("verbose", False),
+            ("verbose", None),
             ("resume", None),
             ("continue_last", None),
             ("worktree", False),

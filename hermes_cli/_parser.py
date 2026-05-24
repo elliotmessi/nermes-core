@@ -129,7 +129,9 @@ def build_top_level_parser():
         default=None,
         help=(
             "Provider override for this invocation (e.g. openrouter, anthropic). "
-            "Applies to -z/--oneshot and --tui. Also settable via NERMES_INFERENCE_PROVIDER env var."
+            "Applies to -z/--oneshot and --tui. Also settable via NERMES_INFERENCE_PROVIDER env var. "
+            "The persistent provider lives in config.yaml under model.provider — "
+            "use `nermes setup` or edit the file to change it."
         ),
     )
     parser.add_argument(
@@ -268,7 +270,11 @@ def build_top_level_parser():
         help="Inference provider (default: auto). Built-in or a user-defined name from `providers:` in config.yaml.",
     )
     chat_parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Verbose output"
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Verbose output",
     )
     chat_parser.add_argument(
         "-Q",
