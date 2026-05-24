@@ -2477,7 +2477,7 @@ def setup_gateway(config: dict):
     selected = prompt_checklist("选择要配置的平台：", items, pre_selected)
 
     if not selected:
-        print_info("未选择任何平台。稍后运行 'hermes setup gateway' 进行配置。")
+        print_info("未选择任何平台。稍后运行 'nermes setup gateway' 进行配置。")
         return
 
     for idx in selected:
@@ -3125,13 +3125,13 @@ def run_setup_wizard(args):
     """Run the interactive setup wizard.
 
     Supports full, quick, and section-specific setup:
-      hermes setup           — full or quick (auto-detected)
-      hermes setup model     — just model/provider
-      hermes setup tts       — just text-to-speech
-      hermes setup terminal  — just terminal backend
-      hermes setup gateway   — just messaging platforms
-      hermes setup tools     — just tool configuration
-      hermes setup agent     — just agent settings
+      nermes setup           — full or quick (auto-detected)
+      nermes setup model     — just model/provider
+      nermes setup tts       — just text-to-speech
+      nermes setup terminal  — just terminal backend
+      nermes setup gateway   — just messaging platforms
+      nermes setup tools     — just tool configuration
+      nermes setup agent     — just agent settings
     """
     from hermes_cli.config import is_managed, managed_error
     if is_managed():
@@ -3364,7 +3364,7 @@ def _run_first_time_quick_setup(config: dict, hermes_home, is_existing: bool):
         "连接消息平台？（Telegram、Discord 等）",
         [
             "立即设置消息（推荐）",
-            "跳过 — 稍后用 'hermes setup gateway' 设置",
+            "跳过 — 稍后用 'nermes setup gateway' 设置",
         ],
         0,
     )
@@ -3376,9 +3376,9 @@ def _run_first_time_quick_setup(config: dict, hermes_home, is_existing: bool):
     print()
     print_success("安装完成！准备就绪。")
     print()
-    print_info("  配置所有设置：hermes setup")
+    print_info("  配置所有设置：nermes setup")
     if gateway_choice != 0:
-        print_info("  连接 Telegram/Discord：hermes setup gateway")
+        print_info("  连接 Telegram/Discord：nermes setup gateway")
     print()
 
     _print_setup_summary(config, hermes_home)
@@ -3477,8 +3477,8 @@ def _run_quick_setup(config: dict, hermes_home):
     if missing_messaging:
         print()
         print_header("消息平台")
-        print_info("连接 Hermes 到消息应用，随时随地聊天。")
-        print_info("稍后可通过 'hermes setup gateway' 配置。")
+        print_info("连接 Nermes 到消息应用，随时随地聊天。")
+        print_info("稍后可通过 'nermes setup gateway' 配置。")
 
         # Group by platform (preserving order)
         platform_order = []
@@ -3491,6 +3491,16 @@ def _run_quick_setup(config: dict, hermes_home):
                 plat = "Discord"
             elif "SLACK" in name:
                 plat = "Slack"
+            elif "WECOM" in name or "WECOM" in name.upper():
+                plat = "WeCom"
+            elif "DINGTALK" in name or "DINGTALK" in name.upper():
+                plat = "DingTalk"
+            elif "FEISHU" in name or "FEISHU" in name.upper():
+                plat = "Feishu"
+            elif "WECHAT" in name and "WECOM" not in name:
+                plat = "WeChat"
+            elif "QQ" in name:
+                plat = "QQ"
             else:
                 continue
             if plat not in platforms:
@@ -3502,6 +3512,11 @@ def _run_quick_setup(config: dict, hermes_home):
                 "Telegram": "📱 Telegram",
                 "Discord": "💬 Discord",
                 "Slack": "💼 Slack",
+                "WeChat": "💚 微信",
+                "WeCom": "🏢 企业微信",
+                "DingTalk": "📌 钉钉",
+                "Feishu": "🐦 飞书",
+                "QQ": "🐧 QQ",
             }.get(p, p)
             for p in platform_order
         ]
@@ -3514,7 +3529,16 @@ def _run_quick_setup(config: dict, hermes_home):
         for idx in selected_indices:
             plat = platform_order[idx]
             vars_list = platforms[plat]
-            emoji = {"Telegram": "📱", "Discord": "💬", "Slack": "💼"}.get(plat, "")
+            emoji = {
+                "Telegram": "📱",
+                "Discord": "💬",
+                "Slack": "💼",
+                "WeChat": "💚",
+                "WeCom": "🏢",
+                "DingTalk": "📌",
+                "Feishu": "🐦",
+                "QQ": "🐧",
+            }.get(plat, "")
             print()
             print(color(f"  ─── {emoji} {plat} ───", Colors.CYAN))
             print()

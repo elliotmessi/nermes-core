@@ -1,16 +1,18 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Nermes Agent" width="100%">
+  <img src="assets/banner.png" alt="Nermes" width="100%">
 </p>
 
-# Nermes Agent 🐂
+# Nermes 🐂
 
 <p align="center">
-  <a href="https://nermes.nousresearch.com/docs/"><img src="https://img.shields.io/badge/文档-nermes.nousresearch.com-FFD700?style=for-the-badge" alt="文档"></a>
-  <a href="https://github.com/nousresearch/nermes-core/blob/main/LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green?style=for-the-badge" alt="许可证: MIT"></a>
-  <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/基于-Hermes%20Agent-blueviolet?style=for-the-badge" alt="基于 Hermes Agent"></a>
+  <a href="https://github.com/elliotmessi/nermes-core"><img src="https://img.shields.io/badge/代码-GitHub-black?style=for-the-badge&logo=github" alt="GitHub"></a>
+  <a href="https://github.com/elliotmessi/nermes-core/blob/main/LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-green?style=for-the-badge" alt="许可证: MIT"></a>
+  <a href="https://github.com/NousResearch/hermes-agent"><img src="https://img.shields.io/badge/修改自-Hermes%20Agent-blueviolet?style=for-the-badge" alt="修改自 Hermes Agent"></a>
 </p>
 
-**面向中国专业人士的自进化 AI 工作助手。** 基于 Nous Research 的 Hermes Agent，专为中国市场深度定制：全中文交互、DeepSeek 原生支持、国内镜像加速、行业专属技能包。它不是通用聊天机器人——它会记住你的习惯，从每次任务中学习，越用越懂你。
+**面向中国专业人士的自进化 AI 工作助手。** 基于 [Hermes Agent](https://github.com/NousResearch/hermes-agent)（由 [Nous Research](https://nousresearch.com) 开发），专为中国市场深度定制：全中文交互、DeepSeek 原生支持、国内镜像加速、行业专属技能包。
+
+> **Nermes = Hermes + 牛马** —— 懂你专业、越用越聪明的工作搭档。
 
 ## 什么是「自进化」？
 
@@ -22,14 +24,14 @@ Nermes 是唯一一个内置闭环学习系统的 AI 助手：
 - **跨会话回忆** — 搜索所有历史对话，不用重复解释
 - **用户画像深化** — 随着使用逐步建立对你的深度理解
 
-在第一版中，我们为**财务专业人士**提供了完整的职业套件（18 个专属技能 + 专业人格 + 知识库）。
+第一版为**财务专业人士**提供了完整的职业套件（18 个专属技能 + 专业人格 + 知识库）。
 
 ## 安装
 
 ### Linux / macOS / WSL2
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nousresearch/nermes-core/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/elliotmessi/nermes-core/main/scripts/install.sh | bash
 ```
 
 安装脚本会自动处理一切：Python、依赖、配置。安装完成后会询问是否安装职业预设包。
@@ -51,8 +53,6 @@ nermes gateway      # 启动消息网关（微信/企微/钉钉/飞书等）
 nermes setup        # 运行完整配置向导
 nermes doctor       # 系统诊断
 ```
-
-📖 **[完整文档 →](https://nermes.nousresearch.com/docs/)**
 
 ## 平台支持
 
@@ -98,4 +98,4 @@ Nermes 支持全部主流中国即时通讯平台：
 
 MIT — 详见 [LICENSE](LICENSE)。
 
-基于 [Hermes Agent](https://github.com/NousResearch/hermes-agent) 构建，由 [Nous Research](https://nousresearch.com) 提供技术支持。
+修改自 [Hermes Agent](https://github.com/NousResearch/hermes-agent)，原始版权归 [Nous Research](https://nousresearch.com) 所有。Nermes 是一个面向中国市场的独立分支，修改部分版权归 Nermes 贡献者所有。

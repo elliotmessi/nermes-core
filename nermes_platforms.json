@@ -1,0 +1,80 @@
+{
+  "_description": "Nermes supported messaging platforms catalog — loaded locally from repo, no remote fetch required.",
+  "_version": "1.0.0",
+  "platforms": {
+    "wechat": {
+      "name": "微信",
+      "name_en": "WeChat",
+      "emoji": "💚",
+      "env_vars": ["WECHAT_APP_ID", "WECHAT_APP_SECRET"],
+      "category": "china",
+      "description": "微信个人号，支持文字、图片、语音消息"
+    },
+    "wecom": {
+      "name": "企业微信",
+      "name_en": "WeCom",
+      "emoji": "🏢",
+      "env_vars": ["WECOM_CORP_ID", "WECOM_AGENT_SECRET"],
+      "category": "china",
+      "description": "企业微信，支持企业内部通讯和客户联系"
+    },
+    "dingtalk": {
+      "name": "钉钉",
+      "name_en": "DingTalk",
+      "emoji": "📌",
+      "env_vars": ["DINGTALK_APP_KEY", "DINGTALK_APP_SECRET"],
+      "category": "china",
+      "description": "钉钉机器人，支持群聊和私聊"
+    },
+    "feishu": {
+      "name": "飞书",
+      "name_en": "Feishu",
+      "emoji": "🐦",
+      "env_vars": ["FEISHU_APP_ID", "FEISHU_APP_SECRET"],
+      "category": "china",
+      "description": "飞书机器人，支持群聊、私聊和卡片消息"
+    },
+    "qq": {
+      "name": "QQ",
+      "name_en": "QQ Bot",
+      "emoji": "🐧",
+      "env_vars": ["QQ_BOT_APP_ID", "QQ_BOT_TOKEN"],
+      "category": "china",
+      "description": "QQ 机器人，支持群聊和私聊"
+    },
+    "telegram": {
+      "name": "Telegram",
+      "name_en": "Telegram",
+      "emoji": "📱",
+      "env_vars": ["TELEGRAM_BOT_TOKEN"],
+      "category": "international",
+      "description": "Telegram Bot，全球最流行的即时通讯机器人平台"
+    },
+    "discord": {
+      "name": "Discord",
+      "name_en": "Discord",
+      "emoji": "💬",
+      "env_vars": ["DISCORD_BOT_TOKEN"],
+      "category": "international",
+      "description": "Discord Bot，支持服务器频道和私聊"
+    },
+    "slack": {
+      "name": "Slack",
+      "name_en": "Slack",
+      "emoji": "💼",
+      "env_vars": ["SLACK_BOT_TOKEN", "SLACK_APP_TOKEN"],
+      "category": "international",
+      "description": "Slack Bot，支持频道和私聊"
+    }
+  },
+  "categories": {
+    "china": {
+      "label": "中国平台",
+      "description": "面向中国用户的即时通讯平台，无需科学上网"
+    },
+    "international": {
+      "label": "国际平台",
+      "description": "国际主流即时通讯平台"
+    }
+  }
+}
