@@ -6189,6 +6189,34 @@ def cmd_dump(args):
     run_dump(args)
 
 
+def cmd_test(args):
+    """运行 Nermes 行业技能效果测试。"""
+    if not args.test_command:
+        print("请指定测试类型，例如：nermes test finance")
+        print("可用子命令：finance")
+        sys.exit(1)
+
+    if args.test_command == "finance":
+        # 调用 professions/finance/tests/runner.py
+        runner = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "professions", "finance", "tests", "runner.py"
+        )
+        cmd = [sys.executable, runner]
+        if args.list:
+            cmd.append("--list")
+        if args.category:
+            cmd.extend(["--category", args.category])
+        if getattr(args, 'id', None):
+            cmd.extend(["--id", args.id])
+        if getattr(args, 'quiet', None):
+            cmd.append("--quiet")
+        subprocess.run(cmd)
+    else:
+        print(f"未知的测试类型：{args.test_command}")
+        sys.exit(1)
+
+
 def cmd_debug(args):
     """Debug tools (share report, etc.)."""
     from hermes_cli.debug import run_debug
@@ -10681,7 +10709,7 @@ _BUILTIN_SUBCOMMANDS = frozenset(
         "kanban", "login", "logout", "logs", "lsp", "mcp", "memory", "migrate",
         "model", "pairing", "plugins", "portal", "postinstall", "profile", "proxy",
         "send", "sessions", "setup",
-        "skills", "slack", "status", "tools", "uninstall", "update",
+        "skills", "slack", "status", "test", "tools", "uninstall", "update",
         "version", "webhook", "whatsapp", "chat", "secrets",
         # Help-ish invocations — plugin commands not being listed in
         # top-level --help is an acceptable trade-off for skipping an
@@ -12081,6 +12109,33 @@ Examples:
         help="One or more paste URLs to delete (e.g. https://paste.rs/abc123)",
     )
     debug_parser.set_defaults(func=cmd_debug)
+
+    # =========================================================================
+    # test command — Nermes 行业技能效果测试
+    # =========================================================================
+    test_parser = subparsers.add_parser(
+        "test",
+        help="运行行业技能效果测试",
+        description="运行 Nermes 行业预设的效果测试，验证财务/法律等专业技能。",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+子命令:
+  nermes test finance              运行全部 18 个财务场景
+  nermes test finance --list       列出所有财务测试场景
+  nermes test finance --category 税务计算  按分类筛选
+  nermes test finance --id F-001          运行指定场景
+""",
+    )
+    test_sub = test_parser.add_subparsers(dest="test_command")
+    test_finance = test_sub.add_parser(
+        "finance",
+        help="运行财务版效果测试（18 个场景）",
+    )
+    test_finance.add_argument("--list", action="store_true", help="列出所有测试场景")
+    test_finance.add_argument("--category", type=str, help="按分类筛选")
+    test_finance.add_argument("--id", type=str, help="运行指定场景 ID")
+    test_finance.add_argument("--quiet", action="store_true", help="静默模式")
+    test_parser.set_defaults(func=cmd_test)
 
     # =========================================================================
     # backup command
