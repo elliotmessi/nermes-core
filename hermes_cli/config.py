@@ -1593,16 +1593,15 @@ DEFAULT_CONFIG = {
         },
     },
 
-    # Remotely-hosted model catalog manifest.  When enabled, the CLI fetches
-    # curated model lists for OpenRouter and Nous Portal from this URL,
-    # falling back to the in-repo snapshot on network failure.  Lets us
-    # update model picker lists without shipping a hermes-agent release.
-    # The default URL is served by the docs site GitHub Pages deploy.
+    # Nermes uses a bundled local model catalog (nermes_catalog.json in repo root).
+    # The url below is a placeholder — it's overridden to file:// at module load.
+    # To use a remote catalog instead, set model_catalog.url in ~/.nermes/config.yaml
+    # or set NERMES_MODEL_CATALOG_URL env var.
     "model_catalog": {
         "enabled": True,
-        "url": "https://hermes-agent.nousresearch.com/docs/api/model-catalog.json",  # upstream catalog (nermes shares hermes model data)
+        "url": "file://__NERMES_CATALOG_PLACEHOLDER__",
         # Disk cache TTL in hours.  Beyond this, the CLI refetches on the
-        # next /model or `hermes model` invocation; network failures
+        # next /model or `nermes model` invocation; network failures
         # silently fall back to the stale cache.
         "ttl_hours": 24,
         # Optional per-provider override URLs for third parties that want
@@ -1781,6 +1780,15 @@ DEFAULT_CONFIG = {
     # Config schema version - bump this when adding new required fields
     "_config_version": 23,
 }
+
+# Resolve bundled model catalog to local file path.
+# urllib supports file:// natively, so no HTTP call needed for the default.
+import os as _os
+_catalog_path = _os.path.join(_os.path.dirname(__file__), "..", "nermes_catalog.json")
+_catalog_abs = _os.path.abspath(_catalog_path)
+if _os.path.exists(_catalog_abs):
+    DEFAULT_CONFIG["model_catalog"]["url"] = "file://" + _catalog_abs
+del _os, _catalog_path, _catalog_abs
 
 # =============================================================================
 # Config Migration System
