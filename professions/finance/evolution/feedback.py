@@ -20,7 +20,7 @@ from typing import Optional, List
 
 def _get_feedback_dir() -> Path:
     """获取反馈数据目录。"""
-    nermes_home = os.environ.get("NERMES_HOME") or os.environ.get("HERMES_HOME") or os.path.expanduser("~/.nermes")
+    nermes_home = os.environ.get("NERMES_HOME") or os.path.expanduser("~/.nermes")
     fb_dir = Path(nermes_home) / "feedback"
     fb_dir.mkdir(parents=True, exist_ok=True)
     return fb_dir

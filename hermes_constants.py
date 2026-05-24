@@ -61,10 +61,8 @@ def get_hermes_home() -> Path:
     if override:
         return Path(override)
 
-    # Check NERMES_HOME first, then fall back to HERMES_HOME for compatibility
+    # Check NERMES_HOME, default to ~/.nermes
     val = os.environ.get("NERMES_HOME", "").strip()
-    if not val:
-        val = os.environ.get("HERMES_HOME", "").strip()
     if val:
         return Path(val)
 
@@ -278,7 +276,7 @@ def get_subprocess_home() -> str | None:
     Activation is directory-based: if the ``home/`` subdirectory doesn't
     exist, returns ``None`` and behavior is unchanged.
     """
-    hermes_home = get_hermes_home_override() or os.getenv("NERMES_HOME") or os.getenv("HERMES_HOME")
+    hermes_home = get_hermes_home_override() or os.getenv("NERMES_HOME")
     if not hermes_home:
         return None
     profile_home = os.path.join(hermes_home, "home")

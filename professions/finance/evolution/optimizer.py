@@ -25,7 +25,7 @@ from feedback import (
 # ── 优化记录 ──────────────────────────────────────────────────
 
 def _get_evolution_log() -> Path:
-    nermes_home = os.environ.get("NERMES_HOME") or os.environ.get("HERMES_HOME") or os.path.expanduser("~/.nermes")
+    nermes_home = os.environ.get("NERMES_HOME") or os.path.expanduser("~/.nermes")
     return Path(nermes_home) / "evolution_log.jsonl"
 
 
