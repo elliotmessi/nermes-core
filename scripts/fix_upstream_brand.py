@@ -22,7 +22,7 @@ reps = [
     ("Hermes couldn't find", "Nermes couldn't find"),
     ("Hermes couldn't drop", "Nermes couldn't drop"),
     ('Hermes behaves unexpectedly', 'Nermes behaves unexpectedly'),
-    ('the official Hermes repository', 'the official Hermes repository (upstream)'),
+    ('the official Hermes repository.', 'the official Hermes repository (upstream).'),
     ('Close Hermes Desktop', 'Close Nermes Desktop'),
     ('Hermes Desktop backend', 'Nermes Desktop backend'),
     ('Hermes Desktop / gateway', 'Nermes Desktop / gateway'),
