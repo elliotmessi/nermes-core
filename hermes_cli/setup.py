@@ -176,16 +176,16 @@ def is_interactive_stdin() -> bool:
 def print_noninteractive_setup_guidance(reason: str | None = None) -> None:
     """Print guidance for headless/non-interactive setup flows."""
     print()
-    print(color("⚕ Hermes 安装 — 非交互模式", Colors.CYAN, Colors.BOLD))
+    print(color("⚕ Nermes 安装 — 非交互模式", Colors.CYAN, Colors.BOLD))
     print()
     if reason:
         print_info(reason)
     print_info("此处无法使用交互式安装向导。")
     print()
-    print_info("请使用环境变量或配置命令来设置 Hermes：")
-    print_info("  hermes config set model.provider custom")
-    print_info("  hermes config set model.base_url http://localhost:8080/v1")
-    print_info("  hermes config set model.default your-model-name")
+    print_info("请使用环境变量或配置命令来设置 Nermes：")
+    print_info("  nermes config set model.provider custom")
+    print_info("  nermes config set model.base_url http://localhost:8080/v1")
+    print_info("  nermes config set model.default your-model-name")
     print()
     print_info("或者在环境中设置 OPENROUTER_API_KEY / OPENAI_API_KEY。")
     print_info("在交互式终端中运行 'nermes setup' 以使用完整的安装向导。")

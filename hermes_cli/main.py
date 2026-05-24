@@ -1995,7 +1995,7 @@ def cmd_postinstall(args):
 
     stamp_install_method("pip")
 
-    print("⚕ Hermes 安装后引导")
+    print("⚕ Nermes 安装后引导")
     print()
 
     for dep in ("node", "browser", "ripgrep", "ffmpeg"):

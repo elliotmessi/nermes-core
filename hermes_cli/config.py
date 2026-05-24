@@ -267,7 +267,7 @@ def recommended_update_command() -> str:
     return recommended_update_command_for_method(method)
 
 
-def format_managed_message(action: str = "修改此 Hermes 安装") -> str:
+def format_managed_message(action: str = "修改此 Nermes 安装") -> str:
     """Build a user-facing error for managed installs."""
     managed_system = get_managed_system() or "包管理器"
     raw = os.getenv("HERMES_MANAGED", "").strip().lower()
@@ -275,7 +275,7 @@ def format_managed_message(action: str = "修改此 Hermes 安装") -> str:
     if managed_system == "NixOS":
         env_hint = "true" if raw in _MANAGED_TRUE_VALUES else raw or "true"
         return (
-            f"无法 {action}：此 Hermes 安装由 NixOS 管理"
+            f"无法 {action}：此 Nermes 安装由 NixOS 管理"
             f"（HERMES_MANAGED={env_hint}）。\n"
             "请在 configuration.nix 中编辑 services.hermes-agent.settings 然后运行：\n"
             "  sudo nixos-rebuild switch"
@@ -284,14 +284,14 @@ def format_managed_message(action: str = "修改此 Hermes 安装") -> str:
     if managed_system == "Homebrew":
         env_hint = raw or "homebrew"
         return (
-            f"无法 {action}：此 Hermes 安装由 Homebrew 管理"
+            f"无法 {action}：此 Nermes 安装由 Homebrew 管理"
             f"（HERMES_MANAGED={env_hint}）。\n"
             "请使用：\n"
             "  brew upgrade hermes-agent"
         )
 
     return (
-        f"无法 {action}：此 Hermes 安装由 {managed_system} 管理。\n"
+        f"无法 {action}：此 Nermes 安装由 {managed_system} 管理。\n"
         "请使用您的包管理器升级或重新安装 Hermes。"
     )
 
@@ -5331,7 +5331,7 @@ def config_command(args):
             print("Usage: hermes config set <key> <value>")
             print()
             print("Examples:")
-            print("  hermes config set model anthropic/claude-sonnet-4")
+            print("  nermes config set model anthropic/claude-sonnet-4")
             print("  hermes config set terminal.backend docker")
             print("  hermes config set OPENROUTER_API_KEY sk-or-...")
             sys.exit(1)

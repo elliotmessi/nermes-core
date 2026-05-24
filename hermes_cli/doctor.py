@@ -611,7 +611,7 @@ def run_doctor(args):
                         (
                             f"model.provider '{provider_raw}' 未知。"
                             f"有效的提供者：{known_list}。"
-                            f"修复：运行 'hermes config set model.provider <有效提供者>'"
+                            f"修复：运行 'nermes config set model.provider <有效提供者>'"
                         ),
                         issues,
                     )
@@ -678,7 +678,7 @@ def run_doctor(args):
                             (
                                 f"未找到提供者 '{runtime_provider}' 的凭据。"
                                 f"运行 'hermes setup' 或在该提供者的 API 密钥添加到 {_DHH}/.env，"
-                                f"或通过 'hermes config set model.provider <名称>' 切换提供者"
+                                f"或通过 'nermes config set model.provider <名称>' 切换提供者"
                             ),
                             issues,
                         )
@@ -1405,7 +1405,7 @@ def run_doctor(args):
                     [(color("✗", Colors.RED), "OpenRouter API",
                       color("（余额不足——需要充值）", Colors.DIM))],
                     ["OpenRouter 账户余额不足。"
-                     "修复：运行 'hermes config set model.provider <provider>' "
+                     "修复：运行 'nermes config set model.provider <provider>' "
                      "切换提供者，或在 https://openrouter.ai/settings/credits 为账户充值"],
                 )
             if r.status_code == 429:
