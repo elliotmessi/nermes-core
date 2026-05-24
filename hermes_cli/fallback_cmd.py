@@ -135,7 +135,7 @@ def cmd_fallback_list(args) -> None:  # noqa: ARG001
         print(f"    {i}. {_format_entry(entry)}")
     print()
     print("  Tried in order when the primary fails (rate-limit, 5xx, connection errors).")
-    print("  Docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/fallback-providers")
+    print("  Docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/fallback-providers  (upstream)")
     print()
 
 

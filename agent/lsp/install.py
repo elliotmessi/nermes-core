@@ -112,7 +112,7 @@ _install_lock_meta = threading.Lock()
 
 def hermes_lsp_bin_dir() -> Path:
     """Return the Hermes-owned bin staging dir for LSP servers."""
-    home = os.environ.get("HERMES_HOME")
+    home = os.environ.get("NERMES_HOME")
     if home is None:
         home = os.path.join(os.path.expanduser("~"), ".hermes")
     p = Path(home) / "lsp" / "bin"
