@@ -2371,7 +2371,7 @@ def select_provider_and_model(args=None):
 
     # ── Post-switch cleanup: clear stale OPENAI_BASE_URL ──────────────
     # When the user switches to a named provider (anything except "custom"),
-    # a leftover OPENAI_BASE_URL in ~/.hermes/.env can poison auxiliary
+    # a leftover OPENAI_BASE_URL in ~/.nermes/.env can poison auxiliary
     # clients that use provider:auto. Clear it proactively.  (#5161)
     if selected_provider not in {
         "custom",
@@ -2382,7 +2382,7 @@ def select_provider_and_model(args=None):
 
 
 def _clear_stale_openai_base_url():
-    """Remove OPENAI_BASE_URL from ~/.hermes/.env if the active provider is not 'custom'.
+    """Remove OPENAI_BASE_URL from ~/.nermes/.env if the active provider is not 'custom'.
 
     After a provider switch, a leftover OPENAI_BASE_URL causes auxiliary
     clients (compression, vision, delegation) with provider:auto to route
@@ -2814,7 +2814,7 @@ def _model_flow_openrouter(config, current_model=""):
     from hermes_cli.config import get_env_value
 
     # Route through _prompt_api_key so users can replace a stale/broken key
-    # in-flow (K/R/C) instead of having to edit ~/.hermes/.env by hand. The
+    # in-flow (K/R/C) instead of having to edit ~/.nermes/.env by hand. The
     # previous bypass-when-key-exists branch left no way to recover from a
     # bad paste short of re-running `hermes setup` from scratch. OpenRouter
     # isn't in PROVIDER_REGISTRY so we synthesize a minimal pconfig.
@@ -2875,7 +2875,7 @@ def _model_flow_ai_gateway(config, current_model=""):
     from hermes_cli.config import get_env_value
 
     # Route through _prompt_api_key so users can replace a stale/broken key
-    # in-flow (K/R/C) instead of having to edit ~/.hermes/.env by hand.
+    # in-flow (K/R/C) instead of having to edit ~/.nermes/.env by hand.
     pconfig = PROVIDER_REGISTRY["ai-gateway"]
     existing_key = get_env_value("AI_GATEWAY_API_KEY") or ""
     if not existing_key:
@@ -3394,7 +3394,7 @@ def _model_flow_google_gemini_cli(_config, current_model=""):
       2. If creds missing, run PKCE browser OAuth via agent.google_oauth.
       3. Resolve project context (env -> config -> auto-discover -> free tier).
       4. Prompt user to pick a model.
-      5. Save to ~/.hermes/config.yaml.
+      5. Save to ~/.nermes/config.yaml.
     """
     from hermes_cli.auth import (
         DEFAULT_GEMINI_CLOUDCODE_BASE_URL,
@@ -3548,7 +3548,7 @@ def _model_flow_custom(config):
     else:
         print(
             f"警告：无法通过 {probe.get('probed_url')}. "
-            f"Hermes 仍将保存它。"
+            f"Nermes 仍将保存它。"
         )
         if probe.get("suggested_base_url"):
             suggested = probe["suggested_base_url"]
@@ -4009,7 +4009,7 @@ def _model_flow_azure_foundry(config, current_model=""):
         if not has_azure_identity_installed():
             print("◐ 'azure-identity' 包尚未安装。")
             print(
-                "  Hermes will install it now (the preflight below "
+                "  Nermes will install it now (the preflight below "
                 "triggers the lazy-install). To skip lazy installs, "
                 "run:  pip install azure-identity"
             )
@@ -4794,7 +4794,7 @@ def _model_flow_copilot_acp(config, current_model=""):
 
     print("  GitHub Copilot ACP delegates Hermes turns to `copilot --acp`.")
     print("  Hermes currently starts its own ACP subprocess for each request.")
-    print("  Hermes uses your selected model as a hint for the Copilot ACP session.")
+    print("  Nermes uses your selected model as a hint for the Copilot ACP session.")
     print(f"  命令：{resolved_command}")
     print(f"  后端标记：{effective_base}")
     print()
@@ -4882,7 +4882,7 @@ def _prompt_api_key(pconfig, existing_key: str, provider_id: str = "") -> tuple:
 
     Handles both first-time entry and the already-configured case.  When a key
     is already present, offers [K]eep / [R]eplace / [C]lear so the user can
-    recover from a malformed paste without editing ``~/.hermes/.env`` by hand.
+    recover from a malformed paste without editing ``~/.nermes/.env`` by hand.
 
     Returns ``(resolved_key, abort)``.  ``abort=True`` means the caller should
     ``return`` immediately — the user cancelled entry, declined to replace, or
@@ -5769,7 +5769,7 @@ def _run_anthropic_oauth_flow(save_env_value):
             from hermes_constants import display_hermes_home as _dhh_fn
 
             print(
-                f"    Hermes will use Claude's credential store directly instead of copying a setup-token into {_dhh_fn()}/.env."
+                f"    Nermes will use Claude's credential store directly instead of copying a setup-token into {_dhh_fn()}/.env."
             )
             return True
         return False
@@ -6845,7 +6845,7 @@ _warn_stale_dashboard_processes = _kill_stale_dashboard_processes
 
 
 def _update_via_zip(args):
-    """Update Hermes Agent by downloading a ZIP archive.
+    """Update Nermes Agent by downloading a ZIP archive.
 
     Used on Windows when git file I/O is broken (antivirus, NTFS filter
     drivers causing 'Invalid argument' errors on file creation).
@@ -8024,7 +8024,7 @@ def _update_node_dependencies() -> None:
         # Chromium fetch on first install) print progress instead of
         # appearing to hang silently for minutes (#18840).  The
         # `_UpdateOutputStream` wrapper installed by the updater mirrors
-        # streamed output to ``~/.hermes/logs/update.log`` so nothing is lost.
+        # streamed output to ``~/.nermes/logs/update.log`` so nothing is lost.
         result = _run_npm_install_deterministic(
             npm,
             path,
@@ -8047,7 +8047,7 @@ class _UpdateOutputStream:
     Wraps the process's original stdout/stderr so that:
 
     * Every write is also mirrored to an append-only log file
-      (``~/.hermes/logs/update.log``) that users can inspect after the
+      (``~/.nermes/logs/update.log``) that users can inspect after the
       terminal disconnects.
     * Writes to the original stream that fail with ``BrokenPipeError`` /
       ``OSError`` / ``ValueError`` (closed file) no longer cascade into
@@ -8129,7 +8129,7 @@ def _install_hangup_protection(gateway_mode: bool = False):
        across ``exec()``, so pip and git subprocesses also stop dying on
        hangup.
     2. ``sys.stdout`` / ``sys.stderr`` are wrapped to mirror output to
-       ``~/.hermes/logs/update.log`` and to silently absorb
+       ``~/.nermes/logs/update.log`` and to silently absorb
        ``BrokenPipeError`` when the terminal vanishes.
 
     ``SIGINT`` (Ctrl-C) and ``SIGTERM`` (systemd shutdown) are
@@ -8354,7 +8354,7 @@ def _ensure_fhs_path_guard() -> None:
 
     path_line = 'export PATH="/usr/local/bin:$PATH"'
     path_comment = (
-        "# Hermes Agent — ensure /usr/local/bin is on PATH " "(RHEL non-login shells)"
+        "# Nermes Agent — ensure /usr/local/bin is on PATH " "(RHEL non-login shells)"
     )
     wrote_any = False
     for candidate in (".bashrc", ".bash_profile"):
@@ -8545,7 +8545,7 @@ def _cmd_update_impl(args, gateway_mode: bool):
     )
     assume_yes = bool(getattr(args, "yes", False))
 
-    print("⚕ Updating Hermes Agent...")
+    print("⚕ Updating Nermes Agent...")
     print()
 
     # On Windows, abort early if another hermes.exe is holding the venv shim
@@ -9868,7 +9868,7 @@ def cmd_profile(args):
         try:
             set_active_profile(name)
             if name == "default":
-                print(f"Switched to: default (~/.hermes)")
+                print(f"Switched to: default (~/.nermes)")
             else:
                 print(f"Switched to: {name}")
         except (ValueError, FileNotFoundError) as e:
@@ -10973,7 +10973,7 @@ def main():
         help="Manage external secret sources (Bitwarden Secrets Manager)",
         description=(
             "Pull API keys from an external secret manager at process startup "
-            "instead of storing them in ~/.hermes/.env.  Currently supports "
+            "instead of storing them in ~/.nermes/.env.  Currently supports "
             "Bitwarden Secrets Manager.  See: "
             "https://hermes-agent.nousresearch.com/docs/user-guide/secrets/bitwarden"
         ),
@@ -11282,7 +11282,7 @@ def main():
     setup_parser = subparsers.add_parser(
         "setup",
         help="Interactive setup wizard",
-        description="Configure Hermes Agent with an interactive wizard. "
+        description="Configure Nermes Agent with an interactive wizard. "
         "Run a specific section: hermes setup model|tts|terminal|gateway|tools|agent",
     )
     setup_parser.add_argument(
@@ -11369,7 +11369,7 @@ def main():
     slack_manifest.add_argument(
         "--name",
         default=None,
-        help='Bot display name (default: "Hermes")',
+        help='Bot display name (default: "Nermes")',
     )
     slack_manifest.add_argument(
         "--description",
@@ -11555,7 +11555,7 @@ def main():
     status_parser = subparsers.add_parser(
         "status",
         help="Show status of all components",
-        description="Display status of Hermes Agent components",
+        description="Display status of Nermes Agent components",
     )
     status_parser.add_argument(
         "--all", action="store_true", help="Show all details (redacted for sharing)"
@@ -11602,7 +11602,7 @@ def main():
     cron_create.add_argument(
         "--script",
         help=(
-            "Path to a script under ~/.hermes/scripts/. Default mode: "
+            "Path to a script under ~/.nermes/scripts/. Default mode: "
             "script stdout is injected into the agent's prompt each run. "
             "With --no-agent: the script IS the job and its stdout is "
             "delivered verbatim. .sh/.bash files run via bash, everything "
@@ -11665,7 +11665,7 @@ def main():
     cron_edit.add_argument(
         "--script",
         help=(
-            "Path to a script under ~/.hermes/scripts/. Pass empty string to clear. "
+            "Path to a script under ~/.nermes/scripts/. Pass empty string to clear. "
             "With --no-agent the script IS the job; otherwise its stdout is "
             "injected into the agent's prompt each run."
         ),
@@ -11803,9 +11803,9 @@ def main():
         "hooks",
         help="Inspect and manage shell-script hooks",
         description=(
-            "Inspect shell-script hooks declared in ~/.hermes/config.yaml, "
+            "Inspect shell-script hooks declared in ~/.nermes/config.yaml, "
             "test them against synthetic payloads, and manage the first-use "
-            "consent allowlist at ~/.hermes/shell-hooks-allowlist.json."
+            "consent allowlist at ~/.nermes/shell-hooks-allowlist.json."
         ),
     )
     hooks_subparsers = hooks_parser.add_subparsers(dest="hooks_action")
@@ -11869,7 +11869,7 @@ def main():
     doctor_parser = subparsers.add_parser(
         "doctor",
         help="Check configuration and dependencies",
-        description="Diagnose issues with Hermes Agent setup",
+        description="Diagnose issues with Nermes Agent setup",
     )
     doctor_parser.add_argument(
         "--fix", action="store_true", help="Attempt to fix issues automatically"
@@ -11908,7 +11908,7 @@ def main():
     debug_parser = subparsers.add_parser(
         "debug",
         help="Debug tools — upload logs and system info for support",
-        description="Debug utilities for Hermes Agent. Use 'hermes debug share' to "
+        description="Debug utilities for Nermes Agent. Use 'hermes debug share' to "
         "upload a debug report (system info + recent logs) to a paste "
         "service and get a shareable URL.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -11997,7 +11997,7 @@ Examples:
     # =========================================================================
     checkpoints_parser = subparsers.add_parser(
         "checkpoints",
-        help="Inspect / prune / clear ~/.hermes/checkpoints/",
+        help="Inspect / prune / clear ~/.nermes/checkpoints/",
         description="Manage the filesystem checkpoint store — the shadow git "
         "repo hermes uses to snapshot working directories before "
         "write_file/patch/terminal calls. Lets you see how much "
@@ -12013,7 +12013,7 @@ Examples:
         "import",
         help="Restore a Hermes backup from a zip file",
         description="Extract a previously created Hermes backup into your "
-        "Hermes home directory, restoring configuration, skills, "
+        "Nermes home directory, restoring configuration, skills, "
         "sessions, and data",
     )
     import_parser.add_argument("zipfile", help="Path to the backup zip file")
@@ -12031,7 +12031,7 @@ Examples:
     config_parser = subparsers.add_parser(
         "config",
         help="View and edit configuration",
-        description="Manage Hermes Agent configuration",
+        description="Manage Nermes Agent configuration",
     )
     config_subparsers = config_parser.add_subparsers(dest="config_command")
 
@@ -13088,7 +13088,7 @@ Examples:
     claw_migrate.add_argument(
         "--no-backup",
         action="store_true",
-        help="Skip the pre-migration zip snapshot of ~/.hermes/ (by default a "
+        help="Skip the pre-migration zip snapshot of ~/.nermes/ (by default a "
         "single restore-point archive is written to ~/.hermes/backups/ "
         "before apply; restorable with 'hermes import').",
     )
@@ -13190,7 +13190,7 @@ Examples:
     uninstall_parser = subparsers.add_parser(
         "uninstall",
         help="Uninstall Hermes Agent",
-        description="Remove Hermes Agent from your system. Can keep configs/data for reinstall.",
+        description="Remove Nermes Agent from your system. Can keep configs/data for reinstall.",
     )
     uninstall_parser.add_argument(
         "--full",
@@ -13207,8 +13207,8 @@ Examples:
     # =========================================================================
     acp_parser = subparsers.add_parser(
         "acp",
-        help="Run Hermes Agent as an ACP (Agent Client Protocol) server",
-        description="Start Hermes Agent in ACP mode for editor integration (VS Code, Zed, JetBrains)",
+        help="Run Nermes Agent as an ACP (Agent Client Protocol) server",
+        description="Start Nermes Agent in ACP mode for editor integration (VS Code, Zed, JetBrains)",
     )
     _add_accept_hooks_flag(acp_parser)
     acp_parser.add_argument(
@@ -13243,7 +13243,7 @@ Examples:
     )
 
     def cmd_acp(args):
-        """Launch Hermes Agent as an ACP server."""
+        """Launch Nermes Agent as an ACP server."""
         try:
             from acp_adapter.entry import main as acp_main
 
@@ -13479,7 +13479,7 @@ Examples:
     dashboard_parser = subparsers.add_parser(
         "dashboard",
         help="Start the web UI dashboard",
-        description="Launch the Hermes Agent web dashboard for managing config, API keys, and sessions",
+        description="Launch the Nermes Agent web dashboard for managing config, API keys, and sessions",
     )
     dashboard_parser.add_argument(
         "--port", type=int, default=9119, help="Port (default 9119)"
@@ -13535,7 +13535,7 @@ Examples:
     # =========================================================================
     logs_parser = subparsers.add_parser(
         "logs",
-        help="View and filter Hermes log files",
+        help="View and filter Nermes log files",
         description="View, tail, and filter agent.log / errors.log / gateway.log",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\

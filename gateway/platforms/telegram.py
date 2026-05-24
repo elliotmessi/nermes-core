@@ -1061,7 +1061,7 @@ class TelegramAdapter(BasePlatformAdapter):
             "Telegram polling could not recover after %d retries (%ds total wait). "
             "The previous gateway session is still held open on Telegram's servers, "
             "or another process is using the same bot token. "
-            "To recover: ensure no other Hermes or OpenClaw instance is running "
+            "To recover: ensure no other Nermes or OpenClaw instance is running "
             "with this token, then restart the gateway with 'hermes gateway restart'."
             % (MAX_CONFLICT_RETRIES, sum(10 + i * 10 for i in range(1, MAX_CONFLICT_RETRIES + 1)))
         )
@@ -3242,7 +3242,7 @@ class TelegramAdapter(BasePlatformAdapter):
             logger.error("Failed to write update response from callback: %s", exc)
 
     # Maps `gt:<verb>` -> (script-name, extra-args, success-label, is_state).
-    # Scripts live in ~/.hermes/scripts/gmail-triage/. `arg` from the callback
+    # Scripts live in ~/.nermes/scripts/gmail-triage/. `arg` from the callback
     # data is always passed as the first positional arg.
     # is_state=True means the verb is a sticky sender-rule change (mute, trust,
     # vip) that should leave the keyboard tappable for follow-on actions.

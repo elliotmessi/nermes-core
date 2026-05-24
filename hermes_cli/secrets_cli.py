@@ -274,7 +274,7 @@ def cmd_status(args: argparse.Namespace) -> int:
         return 0
     if not token_set:
         console.print(
-            f"\n  [yellow]Enabled but {token_env} is not set — Hermes will skip BSM "
+            f"\n  [yellow]Enabled but {token_env} is not set — Nermes will skip BSM "
             "and warn on next startup.[/yellow]"
         )
     if not project_id:

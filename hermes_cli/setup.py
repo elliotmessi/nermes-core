@@ -1,4 +1,4 @@
-"""Hermes Agent 交互式安装向导。
+"""Nermes Agent 交互式安装向导。
 
 模块化向导，各章节可独立运行：
   1. 模型与提供商 — 选择你的 AI 提供商和模型
@@ -847,7 +847,7 @@ def setup_model_provider(config: dict, *, quick: bool = False):
             print()
             print_header("同提供商备用与轮换")
             print_info(
-                "Hermes 可以为同一提供商保存多个凭据，并在凭据用尽或限流时轮换使用。"
+                "Nermes 可以为同一提供商保存多个凭据，并在凭据用尽或限流时轮换使用。"
             )
             print_info(
                 "这样可以保持你的主要提供商，同时减少配额问题带来的中断。"
@@ -2180,7 +2180,7 @@ def _write_slack_manifest_and_instruct():
         from hermes_constants import get_hermes_home
 
         manifest = _build_full_manifest(
-            bot_name="Hermes",
+            bot_name="Nermes",
             bot_description="你的 Hermes 代理在 Slack 上",
         )
         target = Path(get_hermes_home()) / "slack-manifest.json"
@@ -2992,7 +2992,7 @@ def _offer_openclaw_migration(hermes_home: Path) -> bool:
     print()
     print_header("检测到 OpenClaw 安装")
     print_info(f"在 {openclaw_dir} 找到 OpenClaw 数据")
-    print_info("Hermes 可以在进行任何更改之前预览将导入的内容。")
+    print_info("Nermes 可以在进行任何更改之前预览将导入的内容。")
     print()
 
     if not prompt_yes_no("是否要查看可以导入的内容？", default=True):

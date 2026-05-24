@@ -1653,7 +1653,7 @@ class FeishuAdapter(BasePlatformAdapter):
             if not acquired:
                 owner_pid = existing.get("pid") if isinstance(existing, dict) else None
                 message = (
-                    "Another local Hermes gateway is already using this Feishu app_id"
+                    "Another local Nermes gateway is already using this Feishu app_id"
                     + (f" (PID {owner_pid})." if owner_pid else ".")
                     + " Stop the other gateway before starting a second Feishu websocket client."
                 )
@@ -3139,7 +3139,7 @@ class FeishuAdapter(BasePlatformAdapter):
             response = await client.get(
                 file_url,
                 headers={
-                    "User-Agent": "Mozilla/5.0 (compatible; HermesAgent/1.0)",
+                    "User-Agent": "Mozilla/5.0 (compatible; NermesAgent/1.0)",
                     "Accept": "*/*",
                 },
             )
@@ -3250,7 +3250,7 @@ class FeishuAdapter(BasePlatformAdapter):
             return web.Response(status=401, text="Invalid signature")
 
         if payload.get("encrypt"):
-            logger.error("[Feishu] Encrypted webhook payloads are not supported by Hermes webhook mode")
+            logger.error("[Feishu] Encrypted webhook payloads are not supported by Nermes webhook mode")
             self._record_webhook_anomaly(remote_ip, "400-encrypted")
             return web.json_response({"code": 400, "msg": "encrypted webhook payloads are not supported"}, status=400)
 

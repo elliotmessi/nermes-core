@@ -2,7 +2,7 @@
 """Telephony helper for the Hermes optional telephony skill.
 
 Capabilities:
-- Persist telephony provider credentials to ~/.hermes/.env
+- Persist telephony provider credentials to ~/.nermes/.env
 - Search for, buy, and remember Twilio phone numbers
 - Make direct Twilio calls (TwiML <Say> or <Play>)
 - Send SMS / MMS via Twilio
@@ -69,7 +69,7 @@ class OwnedTwilioNumber:
 
 
 def _hermes_home() -> Path:
-    return Path(os.environ.get("HERMES_HOME", "~/.hermes")).expanduser()
+    return Path(os.environ.get("NERMES_HOME", "~/.nermes")).expanduser()
 
 
 def _env_path() -> Path:
@@ -286,7 +286,7 @@ def _twilio_creds() -> tuple[str, str]:
     if not sid or not token:
         raise TelephonyError(
             "Twilio credentials are not configured. Use 'save-twilio' or set "
-            "TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in ~/.hermes/.env."
+            "TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in ~/.nermes/.env."
         )
     return sid, token
 
@@ -420,7 +420,7 @@ def _resolve_twilio_number(identifier: str | None = None) -> OwnedTwilioNumber:
 
     raise TelephonyError(
         "No default Twilio phone number is set. Use 'twilio-buy --save-env', "
-        "'twilio-set-default', or set TWILIO_PHONE_NUMBER in ~/.hermes/.env."
+        "'twilio-set-default', or set TWILIO_PHONE_NUMBER in ~/.nermes/.env."
     )
 
 
@@ -756,7 +756,7 @@ def _vapi_import_twilio_number(
     api_key = _vapi_api_key()
     if not api_key:
         raise TelephonyError(
-            "Vapi is not configured. Use 'save-vapi' or set VAPI_API_KEY in ~/.hermes/.env first."
+            "Vapi is not configured. Use 'save-vapi' or set VAPI_API_KEY in ~/.nermes/.env first."
         )
     owned = _resolve_twilio_number(phone_identifier)
     sid, token = _twilio_creds()

@@ -3,7 +3,7 @@ Multi-provider authentication system for Hermes Agent.
 
 Supports OAuth device code flows (Nous Portal, future: OpenAI Codex) and
 traditional API key providers (OpenRouter, custom endpoints). Auth state
-is persisted in ~/.hermes/auth.json with cross-process file locking.
+is persisted in ~/.nermes/auth.json with cross-process file locking.
 
 Architecture:
 - ProviderConfig registry defines known OAuth providers
@@ -593,7 +593,7 @@ def _resolve_api_key_provider_secret(
 
     from hermes_cli.config import get_env_value
     for env_var in pconfig.api_key_env_vars:
-        # Check both os.environ and ~/.hermes/.env file
+        # Check both os.environ and ~/.nermes/.env file
         val = (get_env_value(env_var) or "").strip()
         if has_usable_secret(val):
             return val, env_var
@@ -1511,7 +1511,7 @@ def resolve_provider(
     raise AuthError(
         "No inference provider configured. Run 'hermes model' to choose a "
         "provider and model, or set an API key (OPENROUTER_API_KEY, "
-        "OPENAI_API_KEY, etc.) in ~/.hermes/.env.",
+        "OPENAI_API_KEY, etc.) in ~/.nermes/.env.",
         code="no_provider_configured",
     )
 
@@ -2023,7 +2023,7 @@ def get_qwen_auth_status() -> Dict[str, Any]:
 # =============================================================================
 # Google Gemini OAuth (google-gemini-cli) — PKCE flow + Cloud Code Assist.
 #
-# Tokens live in ~/.hermes/auth/google_oauth.json (managed by agent.google_oauth).
+# Tokens live in ~/.nermes/auth/google_oauth.json (managed by agent.google_oauth).
 # The `base_url` here is the marker "cloudcode-pa://google" that run_agent.py
 # uses to construct a GeminiCloudCodeClient instead of the default OpenAI SDK.
 # Actual HTTP traffic goes to https://cloudcode-pa.googleapis.com/v1internal:*.
@@ -2094,7 +2094,7 @@ def get_gemini_oauth_auth_status() -> Dict[str, Any]:
         "email": creds.email,
         "project_id": creds.project_id,
     }
-# Spotify auth — PKCE tokens stored in ~/.hermes/auth.json
+# Spotify auth — PKCE tokens stored in ~/.nermes/auth.json
 # =============================================================================
 
 
@@ -2732,7 +2732,7 @@ def get_spotify_auth_status() -> Dict[str, Any]:
 
 def _spotify_interactive_setup(redirect_uri_hint: str) -> str:
     """Walk the user through creating a Spotify developer app, persist the
-    resulting client_id to ~/.hermes/.env, and return it.
+    resulting client_id to ~/.nermes/.env, and return it.
 
     Raises SystemExit if the user aborts or submits an empty value.
     """
@@ -2786,7 +2786,7 @@ def _spotify_interactive_setup(redirect_uri_hint: str) -> str:
         save_env_value("HERMES_SPOTIFY_REDIRECT_URI", redirect_uri_hint)
 
     print()
-    print("已保存 HERMES_SPOTIFY_CLIENT_ID 到 ~/.hermes/.env")
+    print("已保存 NERMES_SPOTIFY_CLIENT_ID 到 ~/.nermes/.env")
     print()
     return raw
 
