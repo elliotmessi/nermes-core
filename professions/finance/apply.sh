@@ -5,7 +5,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-NERMES_HOME="${NERMES_HOME:-${HERMES_HOME:-$HOME/.nermes}}"
+NERMES_HOME="${NERMES_HOME:-$HOME/.nermes}"
+
+# 确保数据目录存在
+mkdir -p "$NERMES_HOME"
 
 echo "============================================"
 echo "  Nermes 财务版 — 职业预设安装"

@@ -22,7 +22,7 @@ def _resolve_knowledge_dir() -> str:
     """解析知识库目录，优先使用有 .md 文件的目录。"""
     nermes_home = os.environ.get(
         "NERMES_HOME",
-        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+        os.path.expanduser("~/.nermes")
     )
 
     candidates = [
@@ -58,7 +58,7 @@ def _get_maintenance_log_path() -> str:
     """获取维护日志路径。"""
     nermes_home = os.environ.get(
         "NERMES_HOME",
-        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+        os.path.expanduser("~/.nermes")
     )
     return os.path.join(nermes_home, "knowledge_maintenance_log.jsonl")
 

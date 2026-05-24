@@ -25,7 +25,7 @@ def _resolve_knowledge_dir() -> str:
     """解析知识库目录，优先使用用户数据目录 ~/.nermes/ 中有内容的版本。"""
     nermes_home = os.environ.get(
         "NERMES_HOME",
-        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+        os.path.expanduser("~/.nermes")
     )
 
     # 候选路径列表（按优先级）
@@ -252,7 +252,7 @@ def _log_search(query: str, result_count: int, top_score: float):
 
     nermes_home = os.environ.get(
         "NERMES_HOME",
-        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+        os.path.expanduser("~/.nermes")
     )
     log_dir = os.path.join(nermes_home, "logs")
     os.makedirs(log_dir, exist_ok=True)
@@ -284,7 +284,7 @@ def get_search_gaps(min_queries: int = 3) -> list:
 
     nermes_home = os.environ.get(
         "NERMES_HOME",
-        os.environ.get("HERMES_HOME", os.path.expanduser("~/.nermes"))
+        os.path.expanduser("~/.nermes")
     )
     log_path = os.path.join(nermes_home, "logs", "knowledge_search_log.jsonl")
     if not os.path.exists(log_path):
