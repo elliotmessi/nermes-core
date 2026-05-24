@@ -2969,7 +2969,7 @@ def _print_migration_preview(report: dict):
             print(color(f"    {warning}", Colors.YELLOW))
         print()
         print(color("  注意：OpenClaw 配置值在 Hermes 中可能有不同语义。", Colors.YELLOW))
-        print(color("  例如，OpenClaw 的 tool_call_execution: "auto" ≠ Hermes 的 yolo 模式。", Colors.YELLOW))
+        print(color('  例如，OpenClaw 的 tool_call_execution: "auto" ≠ Hermes 的 yolo 模式。', Colors.YELLOW))
         print(color("  OpenClaw 的指令文件（.md）可能包含不兼容的操作步骤。", Colors.YELLOW))
         print()
 

@@ -1254,8 +1254,8 @@ def _windows_gateway_should_absorb_console_controls() -> bool:
 # Service Configuration
 # =============================================================================
 
-_SERVICE_BASE = "hermes-gateway"
-SERVICE_DESCRIPTION = "Hermes Agent Gateway - Messaging Platform Integration"
+_SERVICE_BASE = "nermes-gateway"
+SERVICE_DESCRIPTION = "Nermes Agent Gateway - 消息平台集成"
 
 
 def _profile_suffix() -> str:
@@ -3206,7 +3206,7 @@ def run_gateway(verbose: int = 0, quiet: bool = False, replace: bool = False):
     from gateway.run import start_gateway
     
     print("┌─────────────────────────────────────────────────────────┐")
-    print("│           ⚕ Hermes Gateway Starting...                 │")
+    print("│           ⚕ Nermes Gateway 启动中...               │")
     print("├─────────────────────────────────────────────────────────┤")
     print("│  Messaging platforms + cron scheduler                    │")
     print("│  Press Ctrl+C to stop                                   │")
@@ -4214,12 +4214,14 @@ def _is_service_running() -> bool:
 
 def _setup_weixin():
     """Interactive setup for Weixin / WeChat personal accounts."""
+    from hermes_constants import get_hermes_home
+    env_path = get_hermes_home() / ".env"
     print()
     print(color("  ─── 💬 Weixin / WeChat Setup ───", Colors.CYAN))
     print()
-    print_info("  1. Hermes will open Tencent iLink QR login in this terminal.")
+    print_info("  1. Nermes will open Tencent iLink QR login in this terminal.")
     print_info("  2. Use WeChat to scan and confirm the QR code.")
-    print_info("  3. Hermes will store the returned account_id/token in ~/.hermes/.env.")
+    print_info(f"  3. Nermes will store the returned account_id/token in {env_path}.")
     print_info("  4. This adapter supports native text, image, video, and document delivery.")
 
     existing_account = get_env_value("WEIXIN_ACCOUNT_ID")
@@ -4796,7 +4798,8 @@ def _configure_platform(platform: dict) -> None:
     print(color(f"  ─── {emoji} {label} Setup ───", Colors.CYAN))
     required = entry.required_env if entry else []
     if required:
-        print_info(f"  Set these env vars in ~/.hermes/.env: {', '.join(required)}")
+        home = get_hermes_home()
+        print_info(f"  Set these env vars in {home}/.env: {', '.join(required)}")
     else:
         print_info(f"  Configure {label} in config.yaml under gateway.platforms.{platform['key']}")
     if platform.get("install_hint"):
@@ -5106,7 +5109,8 @@ def _gateway_command_inner(args):
             print()
             print("  hermes gateway run                              # direct foreground")
             print("  tmux new -s hermes 'hermes gateway run'         # persistent via tmux")
-            print("  nohup hermes gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background")
+            home = get_hermes_home()
+            print(f"  nohup hermes gateway run > {home}/logs/gateway.log 2>&1 &  # background")
             sys.exit(1)
         elif is_container():
             print("Service installation is not needed inside a Docker container.")
@@ -5177,7 +5181,8 @@ def _gateway_command_inner(args):
             print()
             print("  hermes gateway run                              # direct foreground")
             print("  tmux new -s hermes 'hermes gateway run'         # persistent via tmux")
-            print("  nohup hermes gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background")
+            home = get_hermes_home()
+            print(f"  nohup hermes gateway run > {home}/logs/gateway.log 2>&1 &  # background")
             print()
             print("To enable systemd: add systemd=true to /etc/wsl.conf and run 'wsl --shutdown' from PowerShell.")
             sys.exit(1)
@@ -5439,10 +5444,12 @@ def _gateway_command_inner(args):
                 print("To start:")
                 print("  hermes gateway run      # Run in foreground")
                 if is_termux():
-                    print("  nohup hermes gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # Best-effort background start")
+                    home = get_hermes_home()
+                    print(f"  nohup hermes gateway run > {home}/logs/gateway.log 2>&1 &  # Best-effort background start")
                 elif is_wsl():
                     print("  tmux new -s hermes 'hermes gateway run'         # persistent via tmux")
-                    print("  nohup hermes gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background")
+                    home = get_hermes_home()
+                    print(f"  nohup hermes gateway run > {home}/logs/gateway.log 2>&1 &  # background")
                 elif is_windows():
                     print("  hermes gateway install  # Install as Windows Scheduled Task (auto-start on login)")
                 else:
