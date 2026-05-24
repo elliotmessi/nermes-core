@@ -39,43 +39,43 @@ def _inherited_flag(parser, *args, **kwargs):
 
 _EPILOGUE = """
 Examples:
-    hermes                        Start interactive chat
-    hermes chat -q "Hello"        Single query mode
-    hermes -c                     Resume the most recent session
-    hermes -c "my project"        Resume a session by name (latest in lineage)
-    hermes --resume <session_id>  Resume a specific session by ID
-    hermes setup                  Run setup wizard
-    hermes logout                 Clear stored authentication
-    hermes auth add <provider>    Add a pooled credential
-    hermes auth list              List pooled credentials
-    hermes auth remove <p> <t>    Remove pooled credential by index, id, or label
-    hermes auth reset <provider>  Clear exhaustion status for a provider
-    hermes model                  Select default model
-    hermes fallback [list]        Show fallback provider chain
-    hermes fallback add           Add a fallback provider (same picker as `hermes model`)
-    hermes fallback remove        Remove a fallback provider from the chain
-    hermes config                 View configuration
-    hermes config edit            Edit config in $EDITOR
-    hermes config set model gpt-4 Set a config value
-    hermes gateway                Run messaging gateway
-    hermes -s hermes-agent-dev,github-auth
-    hermes -w                     Start in isolated git worktree
-    hermes gateway install        Install gateway background service
-    hermes sessions list          List past sessions
-    hermes sessions browse        Interactive session picker
-    hermes sessions rename ID T   Rename/title a session
-    hermes logs                   View agent.log (last 50 lines)
-    hermes logs -f                Follow agent.log in real time
-    hermes logs errors            View errors.log
-    hermes logs --since 1h        Lines from the last hour
-    hermes debug share             Upload debug report for support
-    hermes update                 Update to latest version
-    hermes dashboard              Start web UI dashboard (port 9119)
-    hermes dashboard --stop       Stop running dashboard processes
-    hermes dashboard --status     List running dashboard processes
+    nermes                        Start interactive chat
+    nermes chat -q "Hello"        Single query mode
+    nermes -c                     Resume the most recent session
+    nermes -c "my project"        Resume a session by name (latest in lineage)
+    nermes --resume <session_id>  Resume a specific session by ID
+    nermes setup                 Run setup wizard
+    nermes logout                 Clear stored authentication
+    nermes auth add <provider>    Add a pooled credential
+    nermes auth list              List pooled credentials
+    nermes auth remove <p> <t>    Remove pooled credential by index, id, or label
+    nermes auth reset <provider>  Clear exhaustion status for a provider
+    nermes model                  Select default model
+    nermes fallback [list]        Show fallback provider chain
+    nermes fallback add           Add a fallback provider (same picker as `nermes model`)
+    nermes fallback remove        Remove a fallback provider from the chain
+    nermes config                 View configuration
+    nermes config edit            Edit config in $EDITOR
+    nermes config set model gpt-4 Set a config value
+    nermes gateway                Run messaging gateway
+    nermes -s hermes-agent-dev,github-auth
+    nermes -w                     Start in isolated git worktree
+    nermes gateway install        Install gateway background service
+    nermes sessions list          List past sessions
+    nermes sessions browse        Interactive session picker
+    nermes sessions rename ID T   Rename/title a session
+    nermes logs                   View agent.log (last 50 lines)
+    nermes logs -f                Follow agent.log in real time
+    nermes logs errors            View errors.log
+    nermes logs --since 1h        Lines from the last hour
+    nermes debug share             Upload debug report for support
+    nermes update                 Update to latest version
+    nermes dashboard              Start web UI dashboard (port 9119)
+    nermes dashboard --stop       Stop running dashboard processes
+    nermes dashboard --status     List running dashboard processes
 
 For more help on a command:
-    hermes <command> --help
+    nermes <command> --help
 """
 
 
@@ -120,7 +120,7 @@ def build_top_level_parser():
         default=None,
         help=(
             "Model override for this invocation (e.g. anthropic/claude-sonnet-4.6). "
-            "Applies to -z/--oneshot and --tui. Also settable via HERMES_INFERENCE_MODEL env var."
+            "Applies to -z/--oneshot and --tui. Also settable via NERMES_INFERENCE_MODEL env var."
         ),
     )
     _inherited_flag(
@@ -129,7 +129,7 @@ def build_top_level_parser():
         default=None,
         help=(
             "Provider override for this invocation (e.g. openrouter, anthropic). "
-            "Applies to -z/--oneshot and --tui. Also settable via HERMES_INFERENCE_PROVIDER env var."
+            "Applies to -z/--oneshot and --tui. Also settable via NERMES_INFERENCE_PROVIDER env var."
         ),
     )
     parser.add_argument(
@@ -169,7 +169,7 @@ def build_top_level_parser():
         default=False,
         help=(
             "Auto-approve any unseen shell hooks declared in config.yaml "
-            "without a TTY prompt.  Equivalent to HERMES_ACCEPT_HOOKS=1 or "
+            "without a TTY prompt.  Equivalent to NERMES_ACCEPT_HOOKS=1 or "
             "hooks_auto_accept: true in config.yaml.  Use on CI / headless "
             "runs that can't prompt."
         ),
@@ -307,7 +307,7 @@ def build_top_level_parser():
         default=argparse.SUPPRESS,
         help=(
             "Auto-approve any unseen shell hooks declared in config.yaml "
-            "without a TTY prompt (see also HERMES_ACCEPT_HOOKS env var and "
+            "without a TTY prompt (see also NERMES_ACCEPT_HOOKS env var and "
             "hooks_auto_accept: in config.yaml)."
         ),
     )

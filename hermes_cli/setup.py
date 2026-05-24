@@ -188,7 +188,7 @@ def print_noninteractive_setup_guidance(reason: str | None = None) -> None:
     print_info("  hermes config set model.default your-model-name")
     print()
     print_info("或者在环境中设置 OPENROUTER_API_KEY / OPENAI_API_KEY。")
-    print_info("在交互式终端中运行 'hermes setup' 以使用完整的安装向导。")
+    print_info("在交互式终端中运行 'nermes setup' 以使用完整的安装向导。")
     print()
 
 
@@ -352,7 +352,7 @@ def _prompt_api_key(var: dict):
         save_env_value(var["name"], value)
         print_success("  ✓ 已保存")
     else:
-        print_warning("  已跳过（稍后可通过 'hermes setup' 配置）")
+        print_warning("  已跳过（稍后可通过 'nermes setup' 配置）")
 
 
 def _print_setup_summary(config: dict, hermes_home):
@@ -375,7 +375,7 @@ def _print_setup_summary(config: dict, hermes_home):
     if _vision_backends:
         tool_status.append(("视觉（图像分析）", True, None))
     else:
-        tool_status.append(("视觉（图像分析）", False, "运行 'hermes setup' 进行配置"))
+        tool_status.append(("视觉（图像分析）", False, "运行 'nermes setup' 进行配置"))
 
     # Mixture of Agents — requires OpenRouter specifically (calls multiple models)
     if get_env_value("OPENROUTER_API_KEY"):
@@ -517,7 +517,7 @@ def _print_setup_summary(config: dict, hermes_home):
         if subscription_features.modal.direct_override:
             tool_status.append(("Modal 执行（直接 Modal）", True, None))
         else:
-            tool_status.append(("Modal 执行", False, "运行 'hermes setup terminal'"))
+            tool_status.append(("Modal 执行", False, "运行 'nermes setup terminal'"))
     elif managed_nous_tools_enabled() and subscription_features.nous_auth_present:
         tool_status.append(("Modal 执行（可选，通过 Nous 订阅）", True, None))
 
@@ -569,7 +569,7 @@ def _print_setup_summary(config: dict, hermes_home):
     disabled_tools = [(name, var) for name, avail, var in tool_status if not avail]
     if disabled_tools:
         print_warning(
-            "部分工具尚未启用。运行 'hermes setup tools' 进行配置，"
+            "部分工具尚未启用。运行 'nermes setup tools' 进行配置，"
         )
         from hermes_constants import display_hermes_home as _dhh
         print_warning(f"或直接编辑 {_dhh()}/.env 添加缺失的 API 密钥。")
@@ -633,7 +633,7 @@ def _print_setup_summary(config: dict, hermes_home):
     print()
     print(f"   {color('hermes', Colors.GREEN)}              开始聊天")
     print(f"   {color('hermes gateway', Colors.GREEN)}      启动消息网关")
-    print(f"   {color('hermes doctor', Colors.GREEN)}       检查问题")
+    print(f"   {color('nermes doctor', Colors.GREEN)}       检查问题")
     print()
 
 
@@ -776,7 +776,7 @@ def _read_nearest_vercel_project(start: Path | None = None) -> dict[str, str]:
 
 
 # Tool categories and provider config are now in tools_config.py (shared
-# between `hermes tools` and `hermes setup tools`).
+# between `nermes tools` and `nermes setup tools`).
 
 
 # =============================================================================
@@ -3264,7 +3264,7 @@ def run_setup_wizard(args):
 
         print()
         print_header("重新配置")
-        print_success("你已经配置了 Hermes。")
+        print_success("你已经配置了 Nermes。")
         print_info("运行完整向导 — 每个提示都会显示你当前的值。")
         print_info("回车保留，或输入新值进行更改。")
         print_info("")
@@ -3288,7 +3288,7 @@ def run_setup_wizard(args):
         if migration_ran:
             config = load_config()
 
-        setup_mode = prompt_choice("你希望如何设置 Hermes？", [
+        setup_mode = prompt_choice("你希望如何设置 Nermes？", [
             "快速安装 — 提供商、模型和消息（推荐）",
             "完整安装 — 配置所有内容",
         ], 0)

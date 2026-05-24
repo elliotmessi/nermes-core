@@ -80,7 +80,7 @@ def _add_accept_hooks_flag(parser) -> None:
         default=argparse.SUPPRESS,
         help=(
             "自动批准未见的 shell 钩子，无需 TTY 提示"
-            "（等同于 HERMES_ACCEPT_HOOKS=1 / hooks_auto_accept: true）。"
+            "（等同于 NERMES_ACCEPT_HOOKS=1 / hooks_auto_accept: true）。"
         ),
     )
 
@@ -1442,10 +1442,10 @@ def _launch_tui(
 
     if model:
         env["HERMES_MODEL"] = model
-        env["HERMES_INFERENCE_MODEL"] = model
+        env["NERMES_INFERENCE_MODEL"] = model
     if provider:
         env["HERMES_TUI_PROVIDER"] = provider
-        env["HERMES_INFERENCE_PROVIDER"] = provider
+        env["NERMES_INFERENCE_PROVIDER"] = provider
     tui_toolsets = _normalize_tui_toolsets(toolsets)
     if tui_toolsets:
         env["HERMES_TUI_TOOLSETS"] = ",".join(tui_toolsets)
@@ -1477,7 +1477,7 @@ def _launch_tui(
     elif quiet:
         env["HERMES_TUI_TOOL_PROGRESS"] = "off"
     if accept_hooks:
-        env["HERMES_ACCEPT_HOOKS"] = "1"
+        env["NERMES_ACCEPT_HOOKS"] = "1"
     # Guarantee an 8GB V8 heap for the TUI. Default node cap is ~1.5–4GB
     # depending on version and can fatal-OOM on long sessions with large
     # transcripts / reasoning blobs. Token-level merge: respect any
@@ -1647,7 +1647,7 @@ def cmd_chat(args):
             cmd_setup(args)
             return
         print()
-        print("您可以随时运行 'hermes setup' 进行配置。")
+        print("您可以随时运行 'nermes setup' 进行配置。")
         sys.exit(1)
 
     # Start update check in background (runs while other init happens).
@@ -2064,7 +2064,7 @@ def select_provider_and_model(args=None):
         config_provider = model_cfg.get("provider")
 
     effective_provider = (
-        config_provider or os.getenv("HERMES_INFERENCE_PROVIDER") or "auto"
+        config_provider or os.getenv("NERMES_INFERENCE_PROVIDER", os.getenv("HERMES_INFERENCE_PROVIDER")) or "auto"
     )
     compatible_custom_providers = get_compatible_custom_providers(config)
     def _named_custom_provider_map(cfg) -> dict[str, dict[str, str]]:
@@ -6106,7 +6106,7 @@ def cmd_config(args):
 
 
 def cmd_backup(args):
-    """Back up Hermes home directory to a zip file."""
+    """Back up Nermes home directory to a zip file."""
     if getattr(args, "quick", False):
         from hermes_cli.backup import run_quick_backup
 
@@ -6118,7 +6118,7 @@ def cmd_backup(args):
 
 
 def cmd_import(args):
-    """Restore a Hermes backup from a zip file."""
+    """Restore a Nermes backup from a zip file."""
     from hermes_cli.backup import run_import
 
     run_import(args)
@@ -6171,7 +6171,7 @@ def cmd_version(args):
 
 
 def cmd_uninstall(args):
-    """Uninstall Hermes Agent."""
+    """Uninstall Nermes Agent."""
     _require_tty("uninstall")
     from hermes_cli.uninstall import run_uninstall
 
@@ -8484,7 +8484,7 @@ def _run_pre_update_backup(args) -> None:
 
 
 def cmd_update(args):
-    """Update Hermes Agent to the latest version.
+    """Update Nermes Agent to the latest version.
 
     Thin wrapper around ``_cmd_update_impl``: installs hangup protection,
     runs the update, then restores stdio on the way out (even on
@@ -11283,7 +11283,7 @@ def main():
         "setup",
         help="Interactive setup wizard",
         description="Configure Nermes Agent with an interactive wizard. "
-        "Run a specific section: hermes setup model|tts|terminal|gateway|tools|agent",
+        "Run a specific section: nermes setup model|tts|terminal|gateway|tools|agent",
     )
     setup_parser.add_argument(
         "section",
@@ -11305,7 +11305,7 @@ def main():
         action="store_true",
         help="(Default on existing installs.) Re-run the full wizard, "
         "showing current values as defaults. Kept for backwards "
-        "compatibility — a bare 'hermes setup' now does this.",
+        "compatibility — a bare 'nermes setup' now does this.",
     )
     setup_parser.add_argument(
         "--quick",
@@ -11971,7 +11971,7 @@ Examples:
     # =========================================================================
     backup_parser = subparsers.add_parser(
         "backup",
-        help="Back up Hermes home directory to a zip file",
+        help="Back up Nermes home directory to a zip file",
         description="Create a zip archive of your entire Hermes configuration, "
         "skills, sessions, and data (excludes the hermes-agent codebase). "
         "Use --quick for a fast snapshot of just critical state files.",
@@ -12011,7 +12011,7 @@ Examples:
     # =========================================================================
     import_parser = subparsers.add_parser(
         "import",
-        help="Restore a Hermes backup from a zip file",
+        help="Restore a Nermes backup from a zip file",
         description="Extract a previously created Hermes backup into your "
         "Nermes home directory, restoring configuration, skills, "
         "sessions, and data",
@@ -12696,7 +12696,7 @@ Examples:
     # =========================================================================
     mcp_parser = subparsers.add_parser(
         "mcp",
-        help="Manage MCP servers and run Hermes as an MCP server",
+        help="Manage MCP servers and run Nermes as an MCP server",
         description=(
             "Manage MCP server connections and run Hermes as an MCP server.\n\n"
             "MCP servers provide additional tools via the Model Context Protocol.\n"
@@ -13142,7 +13142,7 @@ Examples:
     # =========================================================================
     update_parser = subparsers.add_parser(
         "update",
-        help="Update Hermes Agent to the latest version",
+        help="Update Nermes Agent to the latest version",
         description="Pull the latest changes from git and reinstall dependencies",
     )
     update_parser.add_argument(
@@ -13189,7 +13189,7 @@ Examples:
     # =========================================================================
     uninstall_parser = subparsers.add_parser(
         "uninstall",
-        help="Uninstall Hermes Agent",
+        help="Uninstall Nermes Agent",
         description="Remove Nermes Agent from your system. Can keep configs/data for reinstall.",
     )
     uninstall_parser.add_argument(
@@ -13271,7 +13271,7 @@ Examples:
     # =========================================================================
     profile_parser = subparsers.add_parser(
         "profile",
-        help="Manage profiles — multiple isolated Hermes instances",
+        help="Manage profiles — multiple isolated Nermes instances",
     )
     profile_subparsers = profile_parser.add_subparsers(dest="profile_action")
 
