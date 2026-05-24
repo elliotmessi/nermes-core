@@ -124,7 +124,7 @@ def list_assignments(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Canvas LMS API CLI for Hermes Agent"
+        description="Canvas LMS API CLI for Nermes Agent"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

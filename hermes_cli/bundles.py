@@ -194,7 +194,7 @@ def register_cli(subparser) -> None:
     )
     p_create.add_argument(
         "--description", "-d", default="",
-        help="Human-readable description shown in /help and `hermes bundles list`",
+        help="Human-readable description shown in /help and `nermes bundles list`",
     )
     p_create.add_argument(
         "--instruction", "-i", default="",

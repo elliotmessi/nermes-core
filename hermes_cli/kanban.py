@@ -583,7 +583,7 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
     # --- daemon (deprecated) ---
     p_daemon = sub.add_parser(
         "daemon",
-        help="已弃用 — 调度器现在运行在网关中。请使用 `hermes gateway start`。",
+        help="已弃用 — 调度器现在运行在网关中。请使用 `nermes gateway start`。",
     )
     p_daemon.add_argument("--interval", type=float, default=60.0,
                           help="调度间隔秒数（默认：60）")
