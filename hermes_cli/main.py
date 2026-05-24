@@ -2289,18 +2289,17 @@ def select_provider_and_model(args=None):
             active = active_def.id
         else:
             warning = (
-                f"Unknown provider '{effective_provider}'. Check 'hermes model' for "
-                "available providers, or run 'hermes doctor' to diagnose config "
-                "issues."
+                f"未知提供商 '{effective_provider}'。请运行 'nermes model' 查看"
+                "可用提供商，或运行 'nermes doctor' 诊断配置问题。"
             )
-            print(f"Warning: {warning} 回退到自动提供商检测。")
+            print(f"⚠️ 警告：{warning} 回退到自动提供商检测。")
     if not active:
         try:
             active = resolve_provider("auto")
         except AuthError as exc:
             if effective_provider == "auto":
                 warning = format_auth_error(exc)
-                print(f"Warning: {warning} 回退到自动提供商检测。")
+                print(f"⚠️ 警告：{warning} 回退到自动提供商检测。")
             active = None  # no provider yet; default to first in list
 
     # Detect custom endpoint

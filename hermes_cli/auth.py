@@ -749,7 +749,7 @@ def format_auth_error(error: Exception) -> str:
         return str(error)
 
     if error.relogin_required:
-        return f"{error} 请运行 `hermes model` 重新认证。"
+        return f"{error} 请运行 'nermes model' 重新认证。"
 
     if error.code == "subscription_required":
         return (
@@ -1369,7 +1369,7 @@ def _get_config_hint_for_unknown_provider(provider_name: str) -> str:
         if not issues:
             return ""
 
-        lines = ["Config issue detected — run 'hermes doctor' for full diagnostics:"]
+        lines = ["配置问题 — 运行 'nermes doctor' 进行完整诊断："]
         for ci in issues:
             prefix = "ERROR" if ci.severity == "error" else "WARNING"
             lines.append(f"  [{prefix}] {ci.message}")
@@ -1462,7 +1462,7 @@ def resolve_provider(
         if _config_hint:
             msg += f"\n\n{_config_hint}"
         else:
-            msg += " Check 'hermes model' for available providers, or run 'hermes doctor' to diagnose config issues."
+            msg += " 请运行 'nermes model' 查看可用提供商，或 'nermes doctor' 诊断配置问题。"
         raise AuthError(msg, code="invalid_provider")
 
     # Explicit one-off CLI creds always mean openrouter/custom
@@ -1509,9 +1509,9 @@ def resolve_provider(
         pass  # boto3 not installed — skip Bedrock auto-detection
 
     raise AuthError(
-        "No inference provider configured. Run 'hermes model' to choose a "
-        "provider and model, or set an API key (OPENROUTER_API_KEY, "
-        "OPENAI_API_KEY, etc.) in ~/.nermes/.env.",
+        "未配置推理提供商。请运行 'nermes model' 选择提供商和模型，"
+        "或在 ~/.nermes/.env 中设置 API 密钥（如 DEEPSEEK_API_KEY、"
+        "OPENROUTER_API_KEY、OPENAI_API_KEY 等）。",
         code="no_provider_configured",
     )
 
@@ -6225,10 +6225,10 @@ def _save_model_choice(model_id: str) -> None:
 
 
 def login_command(args) -> None:
-    """已废弃：请改用 'hermes model' 或 'hermes setup'。"""
-    print("'hermes login' 命令已被移除。")
-    print("请使用 'hermes auth' 管理凭据，")
-    print("'hermes model' 选择提供商，或 'hermes setup' 进行完整设置。")
+    """已废弃：请改用 'nermes model' 或 'nermes setup'。"""
+    print("'nermes login' 命令已被移除。")
+    print("请使用 'nermes auth' 管理凭据，")
+    print("'nermes model' 选择提供商，或 'nermes setup' 进行完整设置。")
     raise SystemExit(0)
 
 
