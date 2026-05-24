@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 
 from hermes_cli.nous_subscription import get_nous_subscription_features
+from hermes_cli import get_cli_name
 from tools.tool_backend_helpers import managed_nous_tools_enabled
 from utils import base_url_hostname
 from hermes_constants import get_optional_skills_dir
@@ -609,17 +610,18 @@ def _print_setup_summary(config: dict, hermes_home):
     print()
     print(color("📝 编辑配置：", Colors.CYAN, Colors.BOLD))
     print()
-    print(f"   {color('hermes setup', Colors.GREEN)}          重新运行完整向导")
-    print(f"   {color('hermes setup model', Colors.GREEN)}    更改模型/提供商")
-    print(f"   {color('hermes setup terminal', Colors.GREEN)} 更改终端后端")
-    print(f"   {color('hermes setup gateway', Colors.GREEN)}  配置消息平台")
-    print(f"   {color('hermes setup tools', Colors.GREEN)}    配置工具提供商")
+    name = get_cli_name()
+    print(f"   {color(f'{name} setup', Colors.GREEN)}          重新运行完整向导")
+    print(f"   {color(f'{name} setup model', Colors.GREEN)}    更改模型/提供商")
+    print(f"   {color(f'{name} setup terminal', Colors.GREEN)} 更改终端后端")
+    print(f"   {color(f'{name} setup gateway', Colors.GREEN)}  配置消息平台")
+    print(f"   {color(f'{name} setup tools', Colors.GREEN)}    配置工具提供商")
     print()
-    print(f"   {color('hermes config', Colors.GREEN)}         查看当前设置")
+    print(f"   {color(f'{name} config', Colors.GREEN)}         查看当前设置")
     print(
-        f"   {color('hermes config edit', Colors.GREEN)}    在编辑器中打开配置文件"
+        f"   {color(f'{name} config edit', Colors.GREEN)}    在编辑器中打开配置文件"
     )
-    print(f"   {color('hermes config set <key> <value>', Colors.GREEN)}")
+    print(f"   {color(f'{name} config set <key> <value>', Colors.GREEN)}")
     print("                          设置特定值")
     print()
     print("   或直接编辑文件：")

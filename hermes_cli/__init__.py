@@ -15,6 +15,11 @@ import os
 import sys
 
 __version__ = "0.14.0"
+
+
+def get_cli_name() -> str:
+    """Return the CLI binary name (e.g. 'hermes' or 'nermes') from sys.argv[0]."""
+    return os.path.basename(sys.argv[0])
 __release_date__ = "2026.5.16"
 
 

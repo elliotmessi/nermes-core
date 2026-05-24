@@ -148,6 +148,7 @@ import yaml
 
 from hermes_cli.colors import Colors, color
 from hermes_cli.default_soul import DEFAULT_SOUL_MD
+from hermes_cli import get_cli_name
 
 
 # =============================================================================
@@ -5193,9 +5194,10 @@ def show_config():
 
     print()
     print(color("─" * 60, Colors.DIM))
-    print(color("  hermes config edit     # Edit config file", Colors.DIM))
-    print(color("  hermes config set <key> <value>", Colors.DIM))
-    print(color("  hermes setup           # Run setup wizard", Colors.DIM))
+    name = get_cli_name()
+    print(color(f"  {name} config edit     # Edit config file", Colors.DIM))
+    print(color(f"  {name} config set <key> <value>", Colors.DIM))
+    print(color(f"  {name} setup           # Run setup wizard", Colors.DIM))
     print()
 
 
