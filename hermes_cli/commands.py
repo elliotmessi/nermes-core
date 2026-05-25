@@ -215,7 +215,7 @@ COMMAND_REGISTRY: list[CommandDef] = [
                cli_only=True),
     CommandDef("image", "为下一条提示词附加本地图片文件", "Info",
                cli_only=True, args_hint="<path>"),
-{"update", "将Nermes更新到最新版本", "Info"}
+    CommandDef("update", "将Nermes更新到最新版本", "Info"),
     CommandDef("debug", "上传调试报告（系统信息+日志）并获取可分享链接", "Info"),
 
     # Exit
