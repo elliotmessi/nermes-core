@@ -3338,7 +3338,7 @@ class HermesCLI:
     def _build_context_bar(self, percent_used: Optional[int], width: int = 10) -> str:
         safe_percent = max(0, min(100, percent_used or 0))
         filled = round((safe_percent / 100) * width)
-        return f"[{('█' * filled) + ('░' * max(0, width - filled))}]"
+        return f"[{('#' * filled) + ('-' * max(0, width - filled))}]"
 
     @staticmethod
     def _format_prompt_elapsed(prompt_start_time: Optional[float], prompt_duration: float, live: bool = False) -> str:
@@ -7643,7 +7643,7 @@ class HermesCLI:
             pct = max(0.0, min(1.0, b.remaining_fraction))
             width = 20
             filled = int(round(pct * width))
-            bar = "▓" * filled + "░" * (width - filled)
+            bar = "#" * filled + "-" * (width - filled)
             pct_str = f"{int(pct * 100):3d}%"
             header = b.model_id
             if b.token_type:
@@ -12121,10 +12121,10 @@ class HermesCLI:
         try:
             from hermes_cli.skin_engine import get_active_skin
             _welcome_skin = get_active_skin()
-            _welcome_text = _welcome_skin.get_branding("welcome", "Welcome to Nermes (牛马)! Type your message or /help for commands.")
+            _welcome_text = _welcome_skin.get_branding("welcome", "欢迎使用 Nermes (牛马)！输入消息开始对话，或 /help 查看命令。")
             _welcome_color = _welcome_skin.get_color("banner_text", "#FFF8DC")
         except Exception:
-            _welcome_text = "Welcome to Nermes (牛马)! Type your message or /help for commands."
+            _welcome_text = "欢迎使用 Nermes (牛马)！输入消息开始对话，或 /help 查看命令。"
             _welcome_color = "#FFF8DC"
         self._console_print(f"[{_welcome_color}]{_welcome_text}[/]")
 
