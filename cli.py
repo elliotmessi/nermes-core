@@ -4712,8 +4712,7 @@ class HermesCLI:
                 tirith_enabled = security_cfg.get("tirith_enabled", True)
                 if tirith_enabled:
                     _cprint(
-                        f"  {_DIM}⚠ tirith security scanner enabled but not available "
-                        f"— command scanning will use pattern matching only{_RST}"
+                        f"  {_DIM}⚠ Tirith 安全扫描器未安装，命令扫描将仅使用模式匹配{_RST}"
                     )
         except Exception:
             pass
@@ -5572,7 +5571,7 @@ class HermesCLI:
             self._input_mode_recovery_notice_shown = True
             _cprint(
                 f"  {_DIM}Recovered terminal input modes after leaked mouse reports. "
-                f"If this repeats, run /new or restart this tab.{_RST}"
+                f"如果重复出现，请执行 /new 或重启此标签页{_RST}"
             )
 
     def _handle_copy_command(self, cmd_original: str) -> None:
@@ -5635,7 +5634,7 @@ class HermesCLI:
         if _remainder:
             _cprint(f"  {_DIM}Now type your prompt (or use --image in single-query mode): {_remainder}{_RST}")
         elif _is_termux_environment():
-            _cprint(f"  {_DIM}Tip: type your next message, or run hermes chat -q --image {_termux_example_image_path(image_path.name)} \"What do you see?\"{_RST}")
+            _cprint(f"  {_DIM}提示：输入下一条消息, or run hermes chat -q --image {_termux_example_image_path(image_path.name)} \"What do you see?\"{_RST}")
 
     def _preprocess_images_with_vision(self, text: str, images: list, *, announce: bool = True) -> str:
         """Analyze attached images via the vision tool and return enriched text.
@@ -5897,7 +5896,7 @@ class HermesCLI:
                     f"{_escape(desc)} [dim]({skill_count} skills)[/]"
                 )
 
-        _cprint(f"\n  {_DIM}Tip: Just type your message to chat with Hermes!{_RST}")
+        _cprint(f"\n  {_DIM}提示：输入消息，开始与 Nermes 对话！{_RST}")
         _cprint(f"  {_DIM}Multi-line: Alt+Enter for a new line{_RST}")
         _cprint(f"  {_DIM}Draft editor: Ctrl+G (Alt+G in VSCode/Cursor){_RST}")
         if _is_termux_environment():
@@ -6053,7 +6052,7 @@ class HermesCLI:
         print()
         print("  (*) = currently enabled")
         print()
-        print("  Tip: Use 'all' or '*' to enable all toolsets")
+        print("  提示：使用 'all' or '*' to enable all toolsets")
         print("  Example: python cli.py --toolsets web,terminal")
         print()
     
@@ -6515,7 +6514,7 @@ class HermesCLI:
             _cprint("  Usage: /resume <session_id_or_title>")
             if self._show_recent_sessions(reason="resume"):
                 return
-            _cprint("  Tip:   Use /history or `hermes sessions list` to find sessions.")
+            _cprint("  提示： 使用 /history or `hermes sessions list` to find sessions.")
             return
 
         if not self._session_db:
@@ -7546,7 +7545,7 @@ class HermesCLI:
             _cprint(f"  {prefix} {line}" if line.startswith("openai_runtime")
                     else f"    {line}")
         if result.success and result.requires_new_session:
-            _cprint("    Tip: `/reset` starts a new session immediately.")
+            _cprint("    提示：`/reset` starts a new session immediately.")
 
     def _should_handle_model_command_inline(self, text: str, has_images: bool = False) -> bool:
         """Return True when /model should be handled immediately on the UI thread."""
@@ -8150,7 +8149,7 @@ class HermesCLI:
                         _tip_color = get_active_skin().get_color("banner_dim", "#B8860B")
                     except Exception:
                         _tip_color = "#B8860B"
-                    cc.print(f"[dim {_tip_color}]✦ Tip: {_tip}[/]")
+                    cc.print(f"[dim {_tip_color}]✦ 提示：{_tip}[/]")
                 except Exception:
                     pass
             else:
@@ -8165,7 +8164,7 @@ class HermesCLI:
                         _tip_color = get_active_skin().get_color("banner_dim", "#B8860B")
                     except Exception:
                         _tip_color = "#B8860B"
-                    self._console_print(f"[dim {_tip_color}]✦ Tip: {_tip}[/]")
+                    self._console_print(f"[dim {_tip_color}]✦ 提示：{_tip}[/]")
                 except Exception:
                     pass
         elif canonical == "history":
@@ -11263,7 +11262,7 @@ class HermesCLI:
 
         # Initialize agent if needed
         if self.agent is None:
-            _cprint(f"{_DIM}Initializing agent...{_RST}")
+            _cprint(f"{_DIM}正在初始化 Nermes...{_RST}")
         if not self._init_agent(
             model_override=turn_route["model"],
             runtime_override=turn_route["runtime"],
@@ -11863,9 +11862,9 @@ class HermesCLI:
         else:
             try:
                 from hermes_cli.skin_engine import get_active_goodbye
-                goodbye = get_active_goodbye("Goodbye! ⚕")
+                goodbye = get_active_goodbye("再见！⚕")
             except Exception:
-                goodbye = "Goodbye! ⚕"
+                goodbye = "再见！⚕"
             print(goodbye)
 
     def _get_tui_prompt_symbols(self) -> tuple[str, str]:
@@ -12178,7 +12177,7 @@ class HermesCLI:
                 _tip_color = _welcome_skin.get_color("banner_dim", "#B8860B")
             except Exception:
                 _tip_color = "#B8860B"
-            self._console_print(f"[dim {_tip_color}]✦ Tip: {_tip}[/]")
+            self._console_print(f"[dim {_tip_color}]✦ 提示：{_tip}[/]")
         except Exception:
             pass  # Tips are non-critical — never break startup
 
