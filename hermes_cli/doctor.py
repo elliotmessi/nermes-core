@@ -1,7 +1,7 @@
 """
 Doctor 命令 —— Hermes 系统诊断。
 
-检查 Hermes Agent 的各项配置与运行状态。
+检查 Nermes 的各项配置与运行状态。
 """
 
 import os
@@ -911,9 +911,9 @@ def run_doctor(args):
         if should_fix:
             soul_path.parent.mkdir(parents=True, exist_ok=True)
             soul_path.write_text(
-                "# Hermes Agent Persona\n\n"
-                "<!-- Edit this file to customize how Hermes communicates. -->\n\n"
-                "You are Hermes, a helpful AI assistant.\n",
+                "# Nermes Persona\n\n"
+                "<!-- Edit this file to customize how Nermes communicates. -->\n\n"
+                "You are Nermes (牛马), a self-evolving AI work companion.\n",
                 encoding="utf-8",
             )
             check_ok(f"已创建 {_DHH}/SOUL.md 基本模板")
