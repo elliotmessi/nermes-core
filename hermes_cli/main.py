@@ -812,7 +812,7 @@ def _session_browse_picker(sessions: list) -> Optional[str]:
         pass
 
     # Fallback: numbered list (Windows without curses, etc.)
-    print("\n  Browse sessions  (enter number to resume, q to cancel)\n")
+    print("\n  浏览会话（输入数字恢复，q 取消）\n")
     for i, s in enumerate(sessions):
         title = (s.get("title") or "").strip()
         preview = (s.get("preview") or "").strip()
@@ -1852,7 +1852,7 @@ def cmd_whatsapp(args):
         try:
             choice = input("  Choose [1/2]: ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\nSetup cancelled.")
+            print("\n设置已取消。")
             return
 
         if choice == "1":
@@ -1861,12 +1861,12 @@ def cmd_whatsapp(args):
             print("  ✓ 模式：独立机器人号码")
             print()
             print("  ┌─────────────────────────────────────────────────┐")
-            print("  │  Getting a second number for the bot:           │")
+            print("  │  为机器人获取第二个号码：                        │")
             print("  │                                                 │")
-            print("  │  Easiest: Install WhatsApp Business (free app)  │")
-            print("  │  on your phone with a second number:            │")
-            print("  │    • Dual-SIM: use your 2nd SIM slot            │")
-            print("  │    • Google Voice: free US number (voice.google) │")
+            print("  │  最简单的方式：安装 WhatsApp Business（免费应用）│")
+            print("  │  在手机上使用第二个号码：                        │")
+            print("  │    • 双卡：使用第二个 SIM 卡槽                   │")
+            print("  │    • Google Voice：免费美国号码 (voice.google)    │")
             print("  │    • Prepaid SIM: $3-10, verify once            │")
             print("  │                                                 │")
             print("  │  WhatsApp Business runs alongside your personal │")
@@ -9794,7 +9794,7 @@ def _cmd_update_impl(args, gateway_mode: bool):
 
             if supports_systemd_services() and has_legacy_hermes_units():
                 print()
-                print("⚠ Legacy Nermes gateway unit(s) detected:")
+                print("找到旧版 Hermes 网关单元：")
                 for name, path, is_sys in _find_legacy_hermes_units():
                     scope = "system" if is_sys else "user"
                     print(f"    {path}  ({scope} scope)")
