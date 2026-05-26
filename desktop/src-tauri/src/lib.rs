@@ -1,5 +1,6 @@
 use serde::Serialize;
 use std::process::Command;
+use tauri::Emitter;
 use tauri::Manager;
 
 // ── Events ──
