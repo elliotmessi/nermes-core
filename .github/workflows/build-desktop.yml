@@ -10,8 +10,11 @@ on:
 
 jobs:
   build-windows:
-    name: Build Windows NSIS Installer
+    name: Build Windows Portable EXE
     runs-on: windows-latest
+
+    env:
+      PORTABLE_NAME: Nermes-v${{ github.ref_name }}-portable
 
     steps:
       - uses: actions/checkout@v4
@@ -35,12 +38,33 @@ jobs:
         working-directory: desktop
         run: pnpm install
 
-      - name: Build Tauri
+      - name: Build Tauri (portable, no installer)
         working-directory: desktop
         run: pnpm tauri build --target x86_64-pc-windows-msvc
 
-      - name: Upload installer
+      - name: Package portable EXE
+        shell: pwsh
+        run: |
+          $src = "desktop/src-tauri/target/x86_64-pc-windows-msvc/release/nermes-desktop.exe"
+          $destDir = "portable-package"
+          mkdir $destDir
+          Copy-Item $src "$destDir/Nermes.exe"
+          # Also include the WebView2 bootstrapper as a helper note
+          @"
+          Nermes 桌面管理工具 — 便携版（免安装）
+
+          用法：双击 Nermes.exe 即可运行
+
+          要求：
+          - Windows 10 1809+ 或 Windows 11
+          - 系统需安装 WebView2 运行时（Win11 已内置，Win10 若无反应请下载）
+            https://go.microsoft.com/fwlink/p/?LinkId=2124703
+
+          日志位置：%LOCALAPPDATA%\Nermes\desktop.log
+          "@ | Out-File -FilePath "$destDir/使用说明.txt" -Encoding UTF8
+
+      - name: Upload portable package
         uses: actions/upload-artifact@v4
         with:
-          name: nermes-desktop-windows
-          path: desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          name: nermes-desktop-portable
+          path: portable-package/*
