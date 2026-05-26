@@ -54,7 +54,7 @@ fn check_nermes() -> Result<String, String> {
 }
 
 #[tauri::command]
-async fn install_nermes(app: tauri::AppHandle, install_dir: String, components: Vec<String>) -> Result<(), String> {
+async fn install_nermes(app: tauri::AppHandle, _install_dir: String, components: Vec<String>) -> Result<(), String> {
     let total = components.len().max(1) as u8;
     for (i, comp) in components.iter().enumerate() {
         let progress = ((i + 1) as f32 / total as f32 * 100.0) as u8;
