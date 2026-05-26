@@ -3,15 +3,12 @@
 body {
   font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
   background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1b2a 100%);
-  color: #e0e0e0;
-  min-height: 100vh;
-  overflow: hidden;
+  color: #e0e0e0; min-height: 100vh; overflow: hidden;
 }
 
 .app-container {
   display: flex; flex-direction: column;
-  height: 100vh;
-  padding: 20px 28px 12px;
+  height: 100vh; padding: 20px 28px 12px;
 }
 
 /* Header */
@@ -28,20 +25,15 @@ body {
 .tab-nav {
   display: flex; justify-content: center; gap: 4px;
   padding: 12px 0 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;
 }
 .tab-btn {
-  padding: 8px 22px;
-  background: transparent; border: none; border-radius: 8px;
-  color: #888; font-size: 14px; cursor: pointer;
-  transition: all 0.2s; font-family: inherit;
+  padding: 8px 22px; background: transparent; border: none;
+  border-radius: 8px; color: #888; font-size: 14px;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
 }
 .tab-btn:hover { color: #ccc; background: rgba(255,255,255,0.05); }
-.tab-btn.active {
-  color: #ffd700; background: rgba(255,215,0,0.1);
-  font-weight: 600;
-}
+.tab-btn.active { color: #ffd700; background: rgba(255,215,0,0.1); font-weight: 600; }
 
 /* Main */
 .app-main {
@@ -58,18 +50,85 @@ body {
 }
 .step-content h2 { font-size: 20px; margin-bottom: 8px; color: #fff; }
 .step-content > p { font-size: 13px; color: #999; margin-bottom: 16px; line-height: 1.5; }
+.installed-ver {
+  color: #2ecc71; font-size: 14px; margin-bottom: 16px;
+  padding: 6px 16px; background: rgba(46,204,113,0.1);
+  border-radius: 6px; display: inline-block;
+}
+
+/* ── Install: Component List ── */
+.component-list { margin: 16px 0; text-align: left; }
+.component-label {
+  display: block; font-size: 12px; font-weight: 600; color: #bbb;
+  margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.component-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; margin-bottom: 6px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; cursor: pointer; transition: all 0.15s;
+}
+.component-item:hover { background: rgba(255,255,255,0.07); }
+.component-item.required { cursor: default; opacity: 0.85; }
+.component-item input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: #ffd700; cursor: pointer; flex-shrink: 0;
+}
+.component-item.required input[type="checkbox"] { cursor: default; }
+.comp-name {
+  font-size: 13px; color: #ddd; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.comp-tag {
+  font-size: 10px; padding: 1px 6px; background: rgba(255,215,0,0.15);
+  color: #ffd700; border-radius: 4px; font-weight: 600;
+}
+.comp-desc { font-size: 11px; color: #666; flex: 1; }
+
+/* ── Progress Bar ── */
+.progress-section {
+  display: flex; align-items: center; gap: 12px; margin: 16px 0;
+}
+.progress-bar {
+  flex: 1; height: 8px; background: rgba(255,255,255,0.08);
+  border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #ffd700, #ff8c00);
+  transition: width 0.4s ease;
+}
+.progress-text {
+  font-size: 13px; font-weight: 700; color: #ffd700;
+  min-width: 36px; text-align: right;
+}
+
+/* ── Install Actions ── */
+.install-actions {
+  display: flex; justify-content: center; gap: 12px;
+  margin-top: 16px; flex-wrap: wrap;
+}
+
+/* Danger button (uninstall) */
+.btn-danger {
+  display: inline-block; margin-top: 16px;
+  padding: 12px 36px;
+  background: transparent; color: #e74c3c;
+  border: 1px solid rgba(231,76,60,0.4); border-radius: 8px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; font-family: inherit;
+}
+.btn-danger:hover {
+  background: rgba(231,76,60,0.12); border-color: #e74c3c;
+}
 
 /* Form */
 .form-group { margin: 12px 0; text-align: left; }
 .form-group label {
   display: block; font-size: 12px; font-weight: 600;
-  color: #bbb; margin-bottom: 5px; text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #bbb; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
 }
 .form-group input, .form-group select, .form-group textarea {
   width: 100%; padding: 10px 14px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
   border-radius: 8px; color: #fff; font-size: 14px;
   font-family: inherit; outline: none; transition: border-color 0.2s;
 }
@@ -84,8 +143,7 @@ body {
 .btn-small {
   padding: 10px 16px; background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
-  color: #ccc; font-size: 13px; cursor: pointer; font-family: inherit;
-  white-space: nowrap;
+  color: #ccc; font-size: 13px; cursor: pointer; font-family: inherit; white-space: nowrap;
 }
 .btn-small:hover { background: rgba(255,255,255,0.15); }
 
@@ -96,8 +154,7 @@ body {
   background: linear-gradient(135deg, #ffd700, #ff8c00);
   color: #1a1a3e; border: none; border-radius: 8px;
   font-size: 15px; font-weight: 700; cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.15s; font-family: inherit;
 }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(255,215,0,0.3); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -105,8 +162,8 @@ body {
 /* Install Log */
 .install-log {
   text-align: left; background: rgba(0,0,0,0.35);
-  border-radius: 8px; padding: 14px; margin: 16px 0 0;
-  max-height: 220px; overflow-y: auto;
+  border-radius: 8px; padding: 14px; margin: 8px 0 0;
+  max-height: 180px; overflow-y: auto;
   font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px;
 }
 .log-line { padding: 2px 0; color: #aaa; animation: slideIn 0.2s ease-out; }
@@ -114,69 +171,38 @@ body {
   from { opacity: 0; transform: translateX(-6px); }
   to { opacity: 1; transform: translateX(0); }
 }
-.done-badge {
-  margin-top: 12px; padding: 10px 16px;
-  background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.3);
-  border-radius: 8px; font-size: 13px; color: #2ecc71;
-}
 
 /* Platform Grid */
-.platform-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  margin: 12px 0;
-}
+.platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
 .platform-card {
   padding: 14px 10px; background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
   cursor: pointer; transition: all 0.2s; text-align: center;
 }
 .platform-card:hover { background: rgba(255,255,255,0.08); }
-.platform-card.selected {
-  border-color: #ffd700; background: rgba(255,215,0,0.08);
-}
+.platform-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.08); }
 .platform-check { font-size: 14px; margin-bottom: 4px; }
 .platform-icon { font-size: 24px; margin-bottom: 4px; }
 .platform-name { font-size: 13px; font-weight: 600; color: #ddd; margin-bottom: 2px; }
 .platform-desc { font-size: 11px; color: #666; }
 
-/* QR Section */
+/* QR */
 .qr-section { margin-top: 16px; }
 .qr-section h3 { font-size: 15px; color: #ccc; margin-bottom: 6px; }
 .qr-hint { font-size: 11px; color: #555; margin-bottom: 12px; }
-.qr-hint code {
-  background: rgba(255,215,0,0.1); color: #ffd700;
-  padding: 2px 6px; border-radius: 4px; font-size: 11px;
-}
+.qr-hint code { background: rgba(255,215,0,0.1); color: #ffd700; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
 .qr-grid { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
-.qr-card {
-  padding: 12px; background: rgba(0,0,0,0.3);
-  border-radius: 10px; text-align: center;
-}
+.qr-card { padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; text-align: center; }
 .qr-card canvas { display: block; border-radius: 6px; }
 .qr-label { font-size: 11px; color: #888; margin-top: 6px; }
 
 /* Env Editor */
-.env-editor {
-  font-family: "Cascadia Code", "Fira Code", monospace;
-  font-size: 12px; line-height: 1.6;
-  resize: vertical;
-}
-.env-hint {
-  text-align: left; margin-top: 16px; padding: 14px;
-  background: rgba(255,255,255,0.04); border-radius: 8px;
-  font-size: 12px; color: #777; line-height: 1.8;
-}
-.env-hint code {
-  color: #ffd700; font-family: "Cascadia Code", monospace;
-  font-size: 11px;
-}
+.env-editor { font-family: "Cascadia Code", "Fira Code", monospace; font-size: 12px; line-height: 1.6; resize: vertical; }
+.env-hint { text-align: left; margin-top: 16px; padding: 14px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 12px; color: #777; line-height: 1.8; }
+.env-hint code { color: #ffd700; font-family: "Cascadia Code", monospace; font-size: 11px; }
 
 /* Footer */
-.app-footer {
-  text-align: center; padding: 8px 0 4px;
-  font-size: 11px; color: #444;
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
+.app-footer { text-align: center; padding: 8px 0 4px; font-size: 11px; color: #444; border-top: 1px solid rgba(255,255,255,0.05); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
