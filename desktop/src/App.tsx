@@ -139,7 +139,6 @@ export default function App() {
 
   const startInstall = () => {
     const selected = state.components;
-    const total = COMPONENTS.filter((c) => selected.has(c.id)).length;
     const steps: { label: string; progress: number }[] = [];
 
     if (selected.has("python")) steps.push({ label: "🐍 检测 Python 环境...", progress: 10 });
