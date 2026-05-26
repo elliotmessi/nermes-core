@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Nermes Installer",
+  "productName": "Nermes",
   "version": "0.1.0",
   "identifier": "com.nermes.installer",
   "build": {
@@ -34,9 +34,14 @@
       "icons/icon.ico"
     ],
     "windows": {
+      "webviewInstaller": {
+        "type": "embedBootstrapper"
+      },
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["SimpChinese", "English"]
+        "languages": ["SimpChinese", "English"],
+        "createDesktopShortcut": true,
+        "startMenuFolder": "Nermes"
       }
     }
   },
@@ -44,26 +49,10 @@
     "shell": {
       "open": true,
       "scope": [
-        {
-          "name": "pip-install",
-          "cmd": "pip",
-          "args": true
-        },
-        {
-          "name": "python",
-          "cmd": "python",
-          "args": true
-        },
-        {
-          "name": "python3",
-          "cmd": "python3",
-          "args": true
-        },
-        {
-          "name": "nermes",
-          "cmd": "nermes",
-          "args": true
-        }
+        { "name": "pip-install", "cmd": "pip", "args": true },
+        { "name": "python", "cmd": "python", "args": true },
+        { "name": "python3", "cmd": "python3", "args": true },
+        { "name": "nermes", "cmd": "nermes", "args": true }
       ]
     }
   }
