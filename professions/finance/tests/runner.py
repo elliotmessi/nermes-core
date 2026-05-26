@@ -35,7 +35,7 @@ def dim(s): return f"\033[2m{s}\033[0m"
 
 
 def load_scenarios() -> List[Dict]:
-    with open(SCENARIOS_PATH) as f:
+    with open(SCENARIOS_PATH, encoding="utf-8") as f:
         data = json.load(f)
     return data["scenarios"]
 
@@ -192,7 +192,7 @@ def run_all(category: Optional[str] = None, scenario_id: Optional[str] = None):
     # ── 保存 JSON 报告 ──
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     report_path = REPORT_DIR / f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(report_path, "w") as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         json.dump({
             "timestamp": datetime.now().isoformat(),
             "total": len(results),

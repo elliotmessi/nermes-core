@@ -102,12 +102,12 @@ def get_evolution_summary() -> dict:
     if os.path.isdir(feedback_dir):
         for f in os.listdir(feedback_dir):
             if f.endswith(".jsonl"):
-                with open(os.path.join(feedback_dir, f)) as fh:
+                with open(os.path.join(feedback_dir, f), encoding="utf-8") as fh:
                     total_feedback += sum(1 for _ in fh)
     
     log_file = _get_evolution_log()
     if log_file.exists():
-        with open(log_file) as f:
+        with open(log_file, encoding="utf-8") as f:
             optimized = sum(1 for _ in f)
     
     return {

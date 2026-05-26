@@ -981,8 +981,8 @@ def do_uninstall(name: str, console: Optional[Console] = None,
         else:
             c.print("[dim]变更将在下一次会话中生效。[/]")
             c.print("[dim]使用 /reset 立即开始新会话，或使用 --now 立即应用（使提示缓存失效）。[/]\n")
-        else:
-            c.print(f"[bold red]错误:[/] {msg}\n")
+    else:
+        c.print(f"[bold red]错误:[/] {msg}\n")
 
 
 def do_reset(name: str, restore: bool = False,

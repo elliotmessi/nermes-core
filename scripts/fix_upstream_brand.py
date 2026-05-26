@@ -4,7 +4,7 @@ import sys
 
 TARGET = sys.argv[1] if len(sys.argv) > 1 else '/home/elliot/projects/nermes-core/hermes_cli/main.py'
 
-with open(TARGET, 'r') as f:
+with open(TARGET, 'r', encoding='utf-8') as f:
     content = f.read()
 
 # Only replace user-facing strings, not code identifiers
@@ -54,7 +54,7 @@ for old, new in reps:
         content = content.replace(old, new)
         count += n
 
-with open(TARGET, 'w') as f:
+with open(TARGET, 'w', encoding='utf-8') as f:
     f.write(content)
 
 print(f'Fixed {count} occurrences in {TARGET}')

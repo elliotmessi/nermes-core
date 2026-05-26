@@ -109,9 +109,9 @@ def scan_locale_keys(merge_base="main"):
     if not os.path.exists(en_path) or not os.path.exists(zh_path):
         return []
     
-    with open(en_path) as f:
+    with open(en_path, encoding='utf-8') as f:
         en_data = yaml.safe_load(f) or {}
-    with open(zh_path) as f:
+    with open(zh_path, encoding='utf-8') as f:
         zh_data = yaml.safe_load(f) or {}
     
     def flatten(d, prefix=""):
